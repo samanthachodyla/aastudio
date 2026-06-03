@@ -14,8 +14,11 @@ import Communications from "./pages/Communications.tsx";
 import Marketing from "./pages/Marketing.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import Settings from "./pages/Settings.tsx";
+import Login from "./pages/Login.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { TierGate } from "./components/TierGate";
+import { AuthProvider } from "./lib/auth";
+import { RequireAuth } from "./components/RequireAuth";
 
 const queryClient = new QueryClient();
 
@@ -25,20 +28,26 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/inventory" element={<Inventory />} />
-          <Route path="/sales" element={<Sales />} />
-          <Route path="/exhibitions" element={<Exhibitions />} />
-          <Route path="/contacts" element={<Contacts />} />
-          <Route path="/studio-manager" element={<TierGate><StudioManager /></TierGate>} />
-          <Route path="/profile-vault" element={<TierGate><ProfileVault /></TierGate>} />
-          <Route path="/communications" element={<TierGate><Communications /></TierGate>} />
-          <Route path="/marketing" element={<TierGate><Marketing /></TierGate>} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            {/* Public */}
+            <Route path="/login" element={<Login />} />
+
+            {/* Authenticated app */}
+            <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
+            <Route path="/inventory" element={<RequireAuth><Inventory /></RequireAuth>} />
+            <Route path="/sales" element={<RequireAuth><Sales /></RequireAuth>} />
+            <Route path="/exhibitions" element={<RequireAuth><Exhibitions /></RequireAuth>} />
+            <Route path="/contacts" element={<RequireAuth><Contacts /></RequireAuth>} />
+            <Route path="/studio-manager" element={<RequireAuth><TierGate><StudioManager /></TierGate></RequireAuth>} />
+            <Route path="/profile-vault" element={<RequireAuth><TierGate><ProfileVault /></TierGate></RequireAuth>} />
+            <Route path="/communications" element={<RequireAuth><TierGate><Communications /></TierGate></RequireAuth>} />
+            <Route path="/marketing" element={<RequireAuth><TierGate><Marketing /></TierGate></RequireAuth>} />
+            <Route path="/pricing" element={<RequireAuth><Pricing /></RequireAuth>} />
+            <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

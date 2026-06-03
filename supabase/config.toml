@@ -1,13 +1,13 @@
 project_id = "xcsukpfqptkianhhfaoq"
 
 [functions.pricing-intelligence]
-verify_jwt = false
+verify_jwt = true
 
 [functions.opportunity-finder]
-verify_jwt = false
+verify_jwt = true
 
 [functions.tailor-document]
-verify_jwt = false
+verify_jwt = true
 
 [functions.marketing-intelligence]
-verify_jwt = false
+verify_jwt = true

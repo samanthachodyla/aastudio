@@ -1,11 +1,47 @@
+import { createClient } from "jsr:@supabase/supabase-js@2";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+/**
+ * Require a real authenticated (non-anon) Supabase user.
+ * The publishable/anon key is public, so it is NOT accepted on its own — this is
+ * what protects the Anthropic-billed call below from anonymous abuse.
+ * Returns the user, or null if the request is not from a signed-in user.
+ */
+async function requireUser(req: Request) {
+  const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
+  if (!token) return null;
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!supabaseUrl || !anonKey) return null;
+
+  const supabase = createClient(supabaseUrl, anonKey, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
+
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data.user) return null;
+  // Only fully authenticated users (not the anon role) may proceed.
+  if (data.user.role && data.user.role !== "authenticated") return null;
+  return data.user;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  // Gate every request behind a signed-in user before doing any billable work.
+  const user = await requireUser(req);
+  if (!user) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const apiKey = Deno.env.get("ANTHROPIC_API_KEY");

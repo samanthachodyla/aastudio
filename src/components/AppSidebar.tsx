@@ -1,11 +1,13 @@
-import { NavLink, Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Boxes, Receipt, CalendarClock, Users, MessageCircle, FolderLock, Inbox, Megaphone, Lock, Settings as SettingsIcon, Sparkles } from "lucide-react";
+import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
+import { LayoutDashboard, Boxes, Receipt, CalendarClock, Users, MessageCircle, FolderLock, Inbox, Megaphone, Lock, Settings as SettingsIcon, Sparkles, LogOut } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
 } from "@/components/ui/sidebar";
 import { useTier, isProPath } from "@/lib/tier";
 import { useUserProfile, getFirstName } from "@/lib/userProfile";
+import { useAuth } from "@/lib/auth";
+import { toast } from "sonner";
 
 const items = [
   { title: "Today", url: "/", icon: LayoutDashboard },
@@ -28,9 +30,17 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { tier } = useTier();
   const { fullName } = useUserProfile();
   const firstName = getFirstName(fullName);
+  const { signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Signed out");
+    navigate("/login", { replace: true });
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -113,6 +123,18 @@ export function AppSidebar() {
                   </SidebarMenuItem>
                 );
               })}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="group relative flex w-full items-center gap-3 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <LogOut className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                    {!collapsed && <span>Sign out</span>}
+                  </button>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
