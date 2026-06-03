@@ -1,0 +1,13 @@
+project_id = "xcsukpfqptkianhhfaoq"
+
+[functions.pricing-intelligence]
+verify_jwt = false
+
+[functions.opportunity-finder]
+verify_jwt = false
+
+[functions.tailor-document]
+verify_jwt = false
+
+[functions.marketing-intelligence]
+verify_jwt = false
