@@ -14,25 +14,9 @@
 -- ============================================================================
 
 -- ---------------------------------------------------------------------------
--- Admin check. SECURITY DEFINER so it can read profiles without tripping the
--- profiles RLS policy (avoids recursion).
--- ---------------------------------------------------------------------------
-create or replace function public.is_admin()
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1 from public.profiles
-    where id = auth.uid() and is_admin = true
-  );
-$$;
-
--- ---------------------------------------------------------------------------
 -- Profiles: one row per auth user. Holds identity + account-level prefs that
 -- used to live in localStorage (tier, vault onboarding, custom statuses).
+-- Created first because is_admin() and the RLS policies below depend on it.
 -- ---------------------------------------------------------------------------
 create table if not exists public.profiles (
   id              uuid primary key references auth.users(id) on delete cascade,
@@ -47,6 +31,24 @@ create table if not exists public.profiles (
 );
 
 alter table public.profiles enable row level security;
+
+-- ---------------------------------------------------------------------------
+-- Admin check. SECURITY DEFINER so it can read profiles without tripping the
+-- profiles RLS policy (avoids recursion). Defined after profiles exists so the
+-- SQL body validates.
+-- ---------------------------------------------------------------------------
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and is_admin = true
+  );
+$$;
 
 create policy "profiles_select_own_or_admin" on public.profiles
   for select using (id = auth.uid() or public.is_admin());
