@@ -1,12 +1,19 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { toast } from "sonner";
 import type {
   Artwork, Invoice, Consignment, Opportunity, Contact, Lead, Interaction, Expense,
-  VaultDoc, PressItem, InboxConnection, FlaggedEmail, FlagStatus,
+  VaultDoc, PressItem, InboxConnection, FlaggedEmail,
   ContentIdea, CaptionDraft, ScheduledPost, Newsletter,
 } from "./types";
+import {
+  pushInsert, pushUpdate, pushDelete, pushInboxConnection, type HydratedData,
+} from "./sync";
 
 interface State {
+  // Loaded from Supabase on login.
+  hydrated: boolean;
+
   artworks: Artwork[];
   invoices: Invoice[];
   consignments: Consignment[];
@@ -17,7 +24,7 @@ interface State {
 
   vaultDocs: VaultDoc[];
   pressItems: PressItem[];
-  vaultOnboarded: boolean;
+  vaultOnboarded: boolean;          // UI pref — persisted locally
   inboxConnection: InboxConnection | null;
   flaggedEmails: FlaggedEmail[];
 
@@ -26,8 +33,12 @@ interface State {
   scheduledPosts: ScheduledPost[];
   newsletters: Newsletter[];
 
-  customStatuses: string[];
+  customStatuses: string[];          // UI pref — persisted locally
   addCustomStatus: (label: string) => void;
+
+  // Replace all server-backed collections at once (called after hydration).
+  hydrateAll: (data: HydratedData) => void;
+  resetHydrated: () => void;
 
   addArtwork: (a: Omit<Artwork, "id" | "createdAt">) => Artwork;
   updateArtwork: (id: string, patch: Partial<Artwork>) => void;
@@ -88,120 +99,31 @@ interface State {
   addNewsletter: (n: Omit<Newsletter, "id">) => Newsletter;
   updateNewsletter: (id: string, patch: Partial<Newsletter>) => void;
   deleteNewsletter: (id: string) => void;
-
-  seedDemo: () => void;
-  resetAll: () => void;
 }
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 const today = () => new Date().toISOString();
 
-const seedArtworks: Artwork[] = [
-  { id: "aw1", title: "Field Notes No. 4", year: 2024, medium: "Oil on linen", dimensions: "36 × 48 in", price: 4800, status: "on_consignment", location: "Pace Editions", createdAt: today() },
-  { id: "aw2", title: "Quiet Hours", year: 2024, medium: "Graphite on paper", dimensions: "22 × 30 in", price: 1600, status: "in_studio", createdAt: today() },
-  { id: "aw3", title: "Margin / Edge", year: 2023, medium: "Mixed media", dimensions: "48 × 60 in", price: 7200, status: "sold", location: "Private collection, NY", createdAt: today() },
-  { id: "aw4", title: "Untitled (Cyanotype)", year: 2024, medium: "Cyanotype on cotton", dimensions: "16 × 20 in, edition of 5", edition: "1/5", price: 900, status: "in_studio", createdAt: today() },
-  { id: "aw5", title: "Slow Light", year: 2023, medium: "Oil on panel", dimensions: "24 × 24 in", price: 3200, status: "on_consignment", location: "Foundry Gallery", createdAt: today() },
-];
-
-const seedInvoices: Invoice[] = [
-  { id: "in1", number: "AS-1003", artworkId: "aw3", buyerName: "L. Nakamura", amount: 7200, status: "paid", issuedAt: today(), paidAt: today(), paymentTerms: "Net 14" },
-  { id: "in2", number: "AS-1004", artworkId: "aw1", buyerName: "Halsey Foundation", amount: 4800, status: "sent", issuedAt: today(), dueAt: new Date(Date.now() + 7 * 86400000).toISOString(), paymentTerms: "Net 30" },
-  { id: "in3", number: "AS-1005", artworkId: "aw5", buyerName: "M. Ortiz", amount: 3200, status: "overdue", issuedAt: new Date(Date.now() - 45 * 86400000).toISOString(), dueAt: new Date(Date.now() - 15 * 86400000).toISOString(), paymentTerms: "Net 30" },
-];
-
-const seedConsignments: Consignment[] = [
-  { id: "co1", artworkId: "aw1", galleryName: "Pace Editions", contactName: "R. Singh", commissionPct: 50, startDate: new Date(Date.now() - 100 * 86400000).toISOString(), endDate: new Date(Date.now() + 80 * 86400000).toISOString(), status: "active" },
-  { id: "co2", artworkId: "aw5", galleryName: "Foundry Gallery", contactName: "J. Park", commissionPct: 40, startDate: new Date(Date.now() - 120 * 86400000).toISOString(), endDate: new Date(Date.now() + 60 * 86400000).toISOString(), status: "active" },
-];
-
-const seedOpportunities: Opportunity[] = [
-  { id: "op1", title: "MacDowell Fellowship — Fall", organization: "MacDowell", deadline: new Date(Date.now() + 4 * 86400000).toISOString(), type: "residency", status: "applying" },
-  { id: "op2", title: "Open Call: New Geographies", organization: "Aperture", deadline: new Date(Date.now() + 12 * 86400000).toISOString(), type: "open_call", status: "researching" },
-  { id: "op3", title: "Pollock-Krasner Grant", organization: "Pollock-Krasner Foundation", deadline: new Date(Date.now() + 25 * 86400000).toISOString(), type: "grant", status: "researching" },
-  { id: "op4", title: "Storefront Group Show", organization: "Storefront Projects", deadline: new Date(Date.now() - 10 * 86400000).toISOString(), type: "show", status: "submitted" },
-];
-
-const seedContacts: Contact[] = [
-  {
-    id: "ct1", name: "R. Singh", type: "gallery", stage: "active",
-    email: "rs@paceeditions.com", phone: "+1 212 555 0142", location: "New York, NY",
-    tags: ["primary gallery", "editions"],
-    notes: "Director, Pace Editions. Prefers studio visits on Thursdays.",
-    lastInteractionAt: new Date(Date.now() - 6 * 86400000).toISOString(),
-    followUpAt: new Date(Date.now() + 4 * 86400000).toISOString(),
-    interactions: [
-      { id: uid(), kind: "email", date: new Date(Date.now() - 6 * 86400000).toISOString(), summary: "Confirmed extension on Field Notes consignment." },
-      { id: uid(), kind: "visit", date: new Date(Date.now() - 40 * 86400000).toISOString(), summary: "Studio visit — reviewed new oil works." },
-      { id: uid(), kind: "sale", date: new Date(Date.now() - 90 * 86400000).toISOString(), summary: "Placed Slow Light with private collector." },
-    ],
-  },
-  {
-    id: "ct2", name: "L. Nakamura", type: "collector", stage: "vip",
-    email: "ln@example.com", location: "San Francisco, CA",
-    tags: ["acquired 2024", "patron"],
-    notes: "Acquired Margin / Edge. Quietly building a collection focused on works on paper.",
-    lastInteractionAt: new Date(Date.now() - 14 * 86400000).toISOString(),
-    interactions: [
-      { id: uid(), kind: "email", date: new Date(Date.now() - 14 * 86400000).toISOString(), summary: "Asked about installation lighting for Margin / Edge." },
-      { id: uid(), kind: "sale", date: new Date(Date.now() - 60 * 86400000).toISOString(), summary: "Purchased Margin / Edge — invoice AS-1003." },
-    ],
-  },
-  {
-    id: "ct3", name: "J. Park", type: "gallery", stage: "active",
-    email: "jp@foundry.gallery", location: "Los Angeles, CA",
-    tags: ["west coast"],
-    notes: "Foundry Gallery — represents West Coast program.",
-    lastInteractionAt: new Date(Date.now() - 30 * 86400000).toISOString(),
-    followUpAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-    interactions: [
-      { id: uid(), kind: "email", date: new Date(Date.now() - 30 * 86400000).toISOString(), summary: "Sent catalog proof for review." },
-    ],
-  },
-  {
-    id: "ct4", name: "M. Ortiz", type: "collector", stage: "warm",
-    email: "mortiz@example.com", location: "Mexico City",
-    tags: ["lead", "follow up"],
-    notes: "Met at Foundry opening. Considering Slow Light.",
-    lastInteractionAt: new Date(Date.now() - 45 * 86400000).toISOString(),
-    followUpAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-    interactions: [
-      { id: uid(), kind: "meeting", date: new Date(Date.now() - 45 * 86400000).toISOString(), summary: "Studio visit during Foundry opening week." },
-    ],
-  },
-  {
-    id: "ct5", name: "Aperture Editors", type: "press", stage: "prospect",
-    email: "openings@aperture.org", location: "New York, NY",
-    tags: ["editorial"],
-    notes: "Submitted for New Geographies. Awaiting committee review.",
-    lastInteractionAt: new Date(Date.now() - 4 * 86400000).toISOString(),
-  },
-];
-
-const seedLeads: Lead[] = [
-  { id: "ld1", name: "A. Whitfield", contactInfo: "aw@collectorsmail.com", interest: "Quiet Hours", notes: "Saw the work at the open studio. Interested in pricing on the smaller pieces.", status: "following_up", followUpAt: new Date(Date.now() + 3 * 86400000).toISOString(), createdAt: today(), updatedAt: today() },
-  { id: "ld2", name: "Halsey Foundation", contactInfo: "acquisitions@halsey.org", interest: "Field Notes series", notes: "Acquisitions committee reviews quarterly. Send updated CV and statement before Sept.", status: "negotiating", followUpAt: new Date(Date.now() + 10 * 86400000).toISOString(), createdAt: today(), updatedAt: today() },
-  { id: "ld3", name: "T. Berman", contactInfo: "tb@example.com", interest: "Cyanotype editions", notes: "Asked about availability of a second edition print.", status: "new", createdAt: today(), updatedAt: today() },
-];
-
-const seedExpenses: Expense[] = [
-  { id: "ex1", date: new Date(Date.now() - 8 * 86400000).toISOString(), category: "materials", amount: 340, description: "Linen, gesso, brushes from Blick", createdAt: today() },
-  { id: "ex2", date: new Date(Date.now() - 22 * 86400000).toISOString(), category: "studio_rent", amount: 1850, description: "Studio rent — current month", createdAt: today() },
-  { id: "ex3", date: new Date(Date.now() - 40 * 86400000).toISOString(), category: "framing", amount: 480, description: "Framing for Margin / Edge", createdAt: today() },
-  { id: "ex4", date: new Date(Date.now() - 60 * 86400000).toISOString(), category: "marketing", amount: 220, description: "Mailchimp annual + studio cards", createdAt: today() },
-];
-
+/** Fire-and-forget write-through: keep the UI snappy, surface failures softly. */
+function track(p: Promise<unknown>) {
+  p.catch((e) => {
+    console.error("[sync] write failed", e);
+    toast.error("Couldn't save that change to the server. Check your connection.");
+  });
+}
 
 export const useStore = create<State>()(
   persist(
     (set, get) => ({
-      artworks: seedArtworks,
-      invoices: seedInvoices,
-      consignments: seedConsignments,
-      opportunities: seedOpportunities,
-      contacts: seedContacts,
-      leads: seedLeads,
-      expenses: seedExpenses,
+      hydrated: false,
+
+      artworks: [],
+      invoices: [],
+      consignments: [],
+      opportunities: [],
+      contacts: [],
+      leads: [],
+      expenses: [],
       vaultDocs: [],
       pressItems: [],
       vaultOnboarded: false,
@@ -211,8 +133,16 @@ export const useStore = create<State>()(
       captionDrafts: [],
       scheduledPosts: [],
       newsletters: [],
-
       customStatuses: [],
+
+      hydrateAll: (data) =>
+        set({
+          ...(data.collections as Partial<State>),
+          inboxConnection: (data.inboxConnection as InboxConnection | null) ?? null,
+          hydrated: true,
+        }),
+      resetHydrated: () => set({ hydrated: false }),
+
       addCustomStatus: (label) => {
         const v = label.trim();
         if (!v) return;
@@ -223,35 +153,49 @@ export const useStore = create<State>()(
       addArtwork: (a) => {
         const item: Artwork = { ...a, id: uid(), createdAt: today() };
         set({ artworks: [item, ...get().artworks] });
+        track(pushInsert("artworks", item));
         return item;
       },
-      updateArtwork: (id, patch) => set({ artworks: get().artworks.map(a => a.id === id ? { ...a, ...patch } : a) }),
-      deleteArtwork: (id) => set({ artworks: get().artworks.filter(a => a.id !== id) }),
+      updateArtwork: (id, patch) => {
+        set({ artworks: get().artworks.map(a => a.id === id ? { ...a, ...patch } : a) });
+        track(pushUpdate("artworks", id, patch));
+      },
+      deleteArtwork: (id) => {
+        set({ artworks: get().artworks.filter(a => a.id !== id) });
+        track(pushDelete("artworks", id));
+      },
 
       addInvoice: (i) => {
         const number = "AS-" + (1000 + get().invoices.length + 6).toString();
         const item: Invoice = { ...i, id: uid(), number, issuedAt: today() };
         set({ invoices: [item, ...get().invoices] });
+        track(pushInsert("invoices", item));
         return item;
       },
       updateInvoice: (id, patch) => {
         set({ invoices: get().invoices.map(v => v.id === id ? { ...v, ...patch } : v) });
+        track(pushUpdate("invoices", id, patch));
         // auto-update artwork status when invoice marked paid (skip custom works)
         if (patch.status === "paid") {
           const inv = get().invoices.find(v => v.id === id);
           if (inv && inv.artworkId) get().updateArtwork(inv.artworkId, { status: "sold" });
         }
       },
-      deleteInvoice: (id) => set({ invoices: get().invoices.filter(v => v.id !== id) }),
+      deleteInvoice: (id) => {
+        set({ invoices: get().invoices.filter(v => v.id !== id) });
+        track(pushDelete("invoices", id));
+      },
 
       addConsignment: (c) => {
         const item: Consignment = { ...c, id: uid() };
         set({ consignments: [item, ...get().consignments] });
+        track(pushInsert("consignments", item));
         if (c.status === "active") get().updateArtwork(c.artworkId, { status: "on_consignment", location: c.galleryName });
         return item;
       },
       updateConsignment: (id, patch) => {
         set({ consignments: get().consignments.map(c => c.id === id ? { ...c, ...patch } : c) });
+        track(pushUpdate("consignments", id, patch));
         if (patch.status === "active") {
           const c = get().consignments.find(x => x.id === id);
           if (c) get().updateArtwork(c.artworkId, { status: "on_consignment", location: c.galleryName });
@@ -261,34 +205,60 @@ export const useStore = create<State>()(
           if (c) get().updateArtwork(c.artworkId, { status: "in_studio", location: undefined });
         }
       },
-      deleteConsignment: (id) => set({ consignments: get().consignments.filter(c => c.id !== id) }),
+      deleteConsignment: (id) => {
+        set({ consignments: get().consignments.filter(c => c.id !== id) });
+        track(pushDelete("consignments", id));
+      },
 
       addOpportunity: (o) => {
         const item: Opportunity = { ...o, id: uid() };
         set({ opportunities: [item, ...get().opportunities] });
+        track(pushInsert("opportunities", item));
         return item;
       },
-      updateOpportunity: (id, patch) => set({ opportunities: get().opportunities.map(o => o.id === id ? { ...o, ...patch } : o) }),
-      deleteOpportunity: (id) => set({ opportunities: get().opportunities.filter(o => o.id !== id) }),
+      updateOpportunity: (id, patch) => {
+        set({ opportunities: get().opportunities.map(o => o.id === id ? { ...o, ...patch } : o) });
+        track(pushUpdate("opportunities", id, patch));
+      },
+      deleteOpportunity: (id) => {
+        set({ opportunities: get().opportunities.filter(o => o.id !== id) });
+        track(pushDelete("opportunities", id));
+      },
 
       addContact: (c) => {
         const item: Contact = { ...c, id: uid() };
         set({ contacts: [item, ...get().contacts] });
+        track(pushInsert("contacts", item));
         return item;
       },
-      updateContact: (id, patch) => set({ contacts: get().contacts.map(c => c.id === id ? { ...c, ...patch } : c) }),
-      deleteContact: (id) => set({ contacts: get().contacts.filter(c => c.id !== id) }),
+      updateContact: (id, patch) => {
+        set({ contacts: get().contacts.map(c => c.id === id ? { ...c, ...patch } : c) });
+        track(pushUpdate("contacts", id, patch));
+      },
+      deleteContact: (id) => {
+        set({ contacts: get().contacts.filter(c => c.id !== id) });
+        track(pushDelete("contacts", id));
+      },
       addInteraction: (contactId, i) => {
         const interaction: Interaction = { ...i, id: uid() };
+        let updated: Contact | undefined;
         set({
-          contacts: get().contacts.map(c => c.id === contactId ? {
-            ...c,
-            interactions: [interaction, ...(c.interactions ?? [])],
-            lastInteractionAt: interaction.date > (c.lastInteractionAt ?? "") ? interaction.date : c.lastInteractionAt,
-          } : c),
+          contacts: get().contacts.map(c => {
+            if (c.id !== contactId) return c;
+            updated = {
+              ...c,
+              interactions: [interaction, ...(c.interactions ?? [])],
+              lastInteractionAt: interaction.date > (c.lastInteractionAt ?? "") ? interaction.date : c.lastInteractionAt,
+            };
+            return updated;
+          }),
         });
+        if (updated) track(pushUpdate("contacts", contactId, {
+          interactions: updated.interactions, lastInteractionAt: updated.lastInteractionAt,
+        }));
       },
       deleteInteraction: (contactId, interactionId) => {
+        let updated: Contact | undefined;
         set({
           contacts: get().contacts.map(c => {
             if (c.id !== contactId) return c;
@@ -296,107 +266,160 @@ export const useStore = create<State>()(
             const lastInteractionAt = interactions.length
               ? interactions.reduce((m, x) => x.date > m ? x.date : m, interactions[0].date)
               : undefined;
-            return { ...c, interactions, lastInteractionAt };
+            updated = { ...c, interactions, lastInteractionAt };
+            return updated;
           }),
         });
+        if (updated) track(pushUpdate("contacts", contactId, {
+          interactions: updated.interactions, lastInteractionAt: updated.lastInteractionAt,
+        }));
       },
 
       addLead: (l) => {
         const item: Lead = { ...l, id: uid(), createdAt: today(), updatedAt: today() };
         set({ leads: [item, ...get().leads] });
+        track(pushInsert("leads", item));
         return item;
       },
-      updateLead: (id, patch) =>
-        set({ leads: get().leads.map(l => l.id === id ? { ...l, ...patch, updatedAt: today() } : l) }),
-      deleteLead: (id) => set({ leads: get().leads.filter(l => l.id !== id) }),
+      updateLead: (id, patch) => {
+        const next = { ...patch, updatedAt: today() };
+        set({ leads: get().leads.map(l => l.id === id ? { ...l, ...next } : l) });
+        track(pushUpdate("leads", id, next));
+      },
+      deleteLead: (id) => {
+        set({ leads: get().leads.filter(l => l.id !== id) });
+        track(pushDelete("leads", id));
+      },
 
       addExpense: (e) => {
         const item: Expense = { ...e, id: uid(), createdAt: today() };
         set({ expenses: [item, ...get().expenses] });
+        track(pushInsert("expenses", item));
         return item;
       },
-      updateExpense: (id, patch) =>
-        set({ expenses: get().expenses.map(e => e.id === id ? { ...e, ...patch } : e) }),
-      deleteExpense: (id) => set({ expenses: get().expenses.filter(e => e.id !== id) }),
+      updateExpense: (id, patch) => {
+        set({ expenses: get().expenses.map(e => e.id === id ? { ...e, ...patch } : e) });
+        track(pushUpdate("expenses", id, patch));
+      },
+      deleteExpense: (id) => {
+        set({ expenses: get().expenses.filter(e => e.id !== id) });
+        track(pushDelete("expenses", id));
+      },
 
       addVaultDoc: (d) => {
         const item: VaultDoc = { ...d, id: uid(), createdAt: today(), updatedAt: today() };
         set({ vaultDocs: [item, ...get().vaultDocs] });
+        track(pushInsert("vault_docs", item));
         return item;
       },
-      updateVaultDoc: (id, patch) =>
-        set({ vaultDocs: get().vaultDocs.map(d => d.id === id ? { ...d, ...patch, updatedAt: today() } : d) }),
-      deleteVaultDoc: (id) => set({ vaultDocs: get().vaultDocs.filter(d => d.id !== id) }),
+      updateVaultDoc: (id, patch) => {
+        const next = { ...patch, updatedAt: today() };
+        set({ vaultDocs: get().vaultDocs.map(d => d.id === id ? { ...d, ...next } : d) });
+        track(pushUpdate("vault_docs", id, next));
+      },
+      deleteVaultDoc: (id) => {
+        set({ vaultDocs: get().vaultDocs.filter(d => d.id !== id) });
+        track(pushDelete("vault_docs", id));
+      },
 
       addPressItem: (p) => {
         const item: PressItem = { ...p, id: uid(), createdAt: today() };
         set({ pressItems: [item, ...get().pressItems] });
+        track(pushInsert("press_items", item));
         return item;
       },
-      updatePressItem: (id, patch) =>
-        set({ pressItems: get().pressItems.map(p => p.id === id ? { ...p, ...patch } : p) }),
-      deletePressItem: (id) => set({ pressItems: get().pressItems.filter(p => p.id !== id) }),
+      updatePressItem: (id, patch) => {
+        set({ pressItems: get().pressItems.map(p => p.id === id ? { ...p, ...patch } : p) });
+        track(pushUpdate("press_items", id, patch));
+      },
+      deletePressItem: (id) => {
+        set({ pressItems: get().pressItems.filter(p => p.id !== id) });
+        track(pushDelete("press_items", id));
+      },
 
       markVaultOnboarded: () => set({ vaultOnboarded: true }),
 
       connectInbox: (c) => {
-        // seed mock flagged emails on first connect
         const seed: FlaggedEmail[] = get().flaggedEmails.length ? get().flaggedEmails : mockFlaggedEmails();
+        const isNewSeed = !get().flaggedEmails.length;
         set({ inboxConnection: c, flaggedEmails: seed });
+        track(pushInboxConnection(c));
+        if (isNewSeed) seed.forEach(e => track(pushInsert("flagged_emails", e)));
       },
-      disconnectInbox: () => set({ inboxConnection: null }),
-      updateFlaggedEmail: (id, patch) =>
-        set({ flaggedEmails: get().flaggedEmails.map(e => e.id === id ? { ...e, ...patch } : e) }),
+      disconnectInbox: () => {
+        set({ inboxConnection: null });
+        track(pushInboxConnection(null));
+      },
+      updateFlaggedEmail: (id, patch) => {
+        set({ flaggedEmails: get().flaggedEmails.map(e => e.id === id ? { ...e, ...patch } : e) });
+        track(pushUpdate("flagged_emails", id, patch));
+      },
 
       addContentIdea: (i) => {
         const item: ContentIdea = { ...i, id: uid(), createdAt: today() };
         set({ contentIdeas: [item, ...get().contentIdeas] });
+        track(pushInsert("content_ideas", item));
         return item;
       },
-      updateContentIdea: (id, patch) =>
-        set({ contentIdeas: get().contentIdeas.map(i => i.id === id ? { ...i, ...patch } : i) }),
-      deleteContentIdea: (id) => set({ contentIdeas: get().contentIdeas.filter(i => i.id !== id) }),
+      updateContentIdea: (id, patch) => {
+        set({ contentIdeas: get().contentIdeas.map(i => i.id === id ? { ...i, ...patch } : i) });
+        track(pushUpdate("content_ideas", id, patch));
+      },
+      deleteContentIdea: (id) => {
+        set({ contentIdeas: get().contentIdeas.filter(i => i.id !== id) });
+        track(pushDelete("content_ideas", id));
+      },
 
       addCaptionDraft: (c) => {
         const item: CaptionDraft = { ...c, id: uid(), createdAt: today() };
         set({ captionDrafts: [item, ...get().captionDrafts] });
+        track(pushInsert("caption_drafts", item));
         return item;
       },
-      updateCaptionDraft: (id, patch) =>
-        set({ captionDrafts: get().captionDrafts.map(c => c.id === id ? { ...c, ...patch } : c) }),
-      deleteCaptionDraft: (id) => set({ captionDrafts: get().captionDrafts.filter(c => c.id !== id) }),
+      updateCaptionDraft: (id, patch) => {
+        set({ captionDrafts: get().captionDrafts.map(c => c.id === id ? { ...c, ...patch } : c) });
+        track(pushUpdate("caption_drafts", id, patch));
+      },
+      deleteCaptionDraft: (id) => {
+        set({ captionDrafts: get().captionDrafts.filter(c => c.id !== id) });
+        track(pushDelete("caption_drafts", id));
+      },
 
       addScheduledPost: (p) => {
         const item: ScheduledPost = { ...p, id: uid() };
         set({ scheduledPosts: [item, ...get().scheduledPosts] });
+        track(pushInsert("scheduled_posts", item));
         return item;
       },
-      updateScheduledPost: (id, patch) =>
-        set({ scheduledPosts: get().scheduledPosts.map(p => p.id === id ? { ...p, ...patch } : p) }),
-      deleteScheduledPost: (id) => set({ scheduledPosts: get().scheduledPosts.filter(p => p.id !== id) }),
+      updateScheduledPost: (id, patch) => {
+        set({ scheduledPosts: get().scheduledPosts.map(p => p.id === id ? { ...p, ...patch } : p) });
+        track(pushUpdate("scheduled_posts", id, patch));
+      },
+      deleteScheduledPost: (id) => {
+        set({ scheduledPosts: get().scheduledPosts.filter(p => p.id !== id) });
+        track(pushDelete("scheduled_posts", id));
+      },
 
       addNewsletter: (n) => {
         const item: Newsletter = { ...n, id: uid() };
         set({ newsletters: [item, ...get().newsletters] });
+        track(pushInsert("newsletters", item));
         return item;
       },
-      updateNewsletter: (id, patch) =>
-        set({ newsletters: get().newsletters.map(n => n.id === id ? { ...n, ...patch } : n) }),
-      deleteNewsletter: (id) => set({ newsletters: get().newsletters.filter(n => n.id !== id) }),
-
-      seedDemo: () => set({
-        artworks: seedArtworks, invoices: seedInvoices, consignments: seedConsignments,
-        opportunities: seedOpportunities, contacts: seedContacts, leads: seedLeads,
-        expenses: seedExpenses,
-      }),
-      resetAll: () => set({
-        artworks: [], invoices: [], consignments: [], opportunities: [], contacts: [], leads: [],
-        expenses: [],
-        vaultDocs: [], inboxConnection: null, flaggedEmails: [],
-        contentIdeas: [], captionDrafts: [], scheduledPosts: [], newsletters: [],
-      }),
+      updateNewsletter: (id, patch) => {
+        set({ newsletters: get().newsletters.map(n => n.id === id ? { ...n, ...patch } : n) });
+        track(pushUpdate("newsletters", id, patch));
+      },
+      deleteNewsletter: (id) => {
+        set({ newsletters: get().newsletters.filter(n => n.id !== id) });
+        track(pushDelete("newsletters", id));
+      },
     }),
-    { name: "allegory-studio-v1" }
+    {
+      // Only UI preferences live in localStorage now; studio data is server-backed.
+      name: "allegory.studio.prefs.v1",
+      partialize: (s) => ({ customStatuses: s.customStatuses, vaultOnboarded: s.vaultOnboarded }),
+    }
   )
 );
 
