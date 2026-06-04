@@ -15,10 +15,12 @@ import Marketing from "./pages/Marketing.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import Settings from "./pages/Settings.tsx";
 import Login from "./pages/Login.tsx";
+import Reports from "./pages/Reports.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { TierGate } from "./components/TierGate";
 import { AuthProvider } from "./lib/auth";
 import { RequireAuth } from "./components/RequireAuth";
+import { UsageTracker } from "./lib/usage";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +31,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <UsageTracker />
           <Routes>
             {/* Public */}
             <Route path="/login" element={<Login />} />
@@ -45,6 +48,7 @@ const App = () => (
             <Route path="/marketing" element={<RequireAuth><TierGate><Marketing /></TierGate></RequireAuth>} />
             <Route path="/pricing" element={<RequireAuth><Pricing /></RequireAuth>} />
             <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
+            <Route path="/reports" element={<RequireAuth><Reports /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

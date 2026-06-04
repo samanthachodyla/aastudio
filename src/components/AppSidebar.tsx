@@ -1,5 +1,5 @@
 import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Boxes, Receipt, CalendarClock, Users, MessageCircle, FolderLock, Inbox, Megaphone, Lock, Settings as SettingsIcon, Sparkles, LogOut } from "lucide-react";
+import { LayoutDashboard, Boxes, Receipt, CalendarClock, Users, MessageCircle, FolderLock, Inbox, Megaphone, Lock, Settings as SettingsIcon, Sparkles, LogOut, BarChart3 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
@@ -7,6 +7,7 @@ import {
 import { useTier, isProPath } from "@/lib/tier";
 import { useUserProfile, getFirstName } from "@/lib/userProfile";
 import { useAuth } from "@/lib/auth";
+import { useIsAdmin } from "@/lib/admin";
 import { toast } from "sonner";
 
 const items = [
@@ -35,6 +36,7 @@ export function AppSidebar() {
   const { fullName } = useUserProfile();
   const firstName = getFirstName(fullName);
   const { signOut } = useAuth();
+  const { isAdmin } = useIsAdmin();
 
   const handleSignOut = async () => {
     await signOut();
@@ -123,6 +125,22 @@ export function AppSidebar() {
                   </SidebarMenuItem>
                 );
               })}
+              {isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/reports"
+                      className={`group relative flex items-center gap-3 px-4 py-2 text-sm transition-colors ${
+                        pathname.startsWith("/reports") ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {pathname.startsWith("/reports") && <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-px bg-foreground" />}
+                      <BarChart3 className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                      {!collapsed && <span>Reports</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <button
