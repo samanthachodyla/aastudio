@@ -338,3 +338,17 @@ begin
     execute format('create index if not exists %I on public.%I (user_id);', t||'_user_id_idx', t);
   end loop;
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- Backfill: create profile rows for any users that already existed before the
+-- signup trigger was installed (e.g. the first admin accounts), then grant
+-- admin to the studio owners.
+-- ---------------------------------------------------------------------------
+insert into public.profiles (id, email, full_name)
+select id, email, coalesce(raw_user_meta_data ->> 'full_name', '')
+from auth.users
+on conflict (id) do nothing;
+
+update public.profiles set is_admin = true
+where lower(email) in ('sam@moresilverlinings.com', 'cara@allegoryartconsulting.com');
+
