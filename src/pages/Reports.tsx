@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { useIsAdmin, fetchAdminDataset, type AdminDataset } from "@/lib/admin";
-import { fmtMoney, fmtDate } from "@/lib/store";
+import { fmtMoney } from "@/lib/store";
+import { labelForPath } from "@/lib/labels";
+import { BETA_ALL_PRO } from "@/lib/tier";
+
+interface PathTime {
+  path: string;
+  minutes: number;
+}
 
 interface UserAgg {
   id: string;
@@ -16,8 +23,10 @@ interface UserAgg {
   invoices: number;
   contacts: number;
   opportunities: number;
-  sales: number;
-  topPaths: { path: string; count: number }[];
+  age: number | null;
+  zip: string | null;
+  desiredFeature: string | null;
+  timeByPath: PathTime[];
 }
 
 const fmtMinutes = (m: number) => {
@@ -29,6 +38,8 @@ const fmtMinutes = (m: number) => {
 
 const fmtWhen = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "Never";
+
+const tierLabel = (tier: string) => (BETA_ALL_PRO ? "Pro · beta" : tier === "pro" ? "Pro" : "Starter");
 
 const Reports = () => {
   const { isAdmin, loading: adminLoading } = useIsAdmin();
@@ -63,24 +74,20 @@ const Reports = () => {
       .map((p): UserAgg => {
         const usage = usageBy.get(p.id) ?? [];
         const views = usage.filter((e) => e.event_type === "page_view");
-        const heartbeats = usage.filter((e) => e.event_type === "heartbeat").length;
+        const heartbeats = usage.filter((e) => e.event_type === "heartbeat");
         const lastFromUsage = usage.reduce<string | null>(
           (m, e) => (!m || e.occurred_at > m ? e.occurred_at : m),
           null
         );
-        const pathCounts = new Map<string, number>();
-        for (const v of views) {
-          const key = v.path ?? "—";
-          pathCounts.set(key, (pathCounts.get(key) ?? 0) + 1);
+        // Time-on-page: each heartbeat ≈ one active minute on its path.
+        const minutesByPath = new Map<string, number>();
+        for (const hb of heartbeats) {
+          const key = hb.path ?? "—";
+          minutesByPath.set(key, (minutesByPath.get(key) ?? 0) + 1);
         }
-        const topPaths = [...pathCounts.entries()]
-          .map(([path, count]) => ({ path, count }))
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 4);
-        const invoices = invBy.get(p.id) ?? [];
-        const sales = invoices
-          .filter((i) => i.status === "paid")
-          .reduce((s, i) => s + (Number(i.amount) || 0), 0);
+        const timeByPath = [...minutesByPath.entries()]
+          .map(([path, minutes]) => ({ path, minutes }))
+          .sort((a, b) => b.minutes - a.minutes);
 
         return {
           id: p.id,
@@ -90,17 +97,44 @@ const Reports = () => {
           tier: p.tier || "starter",
           lastActive: p.last_seen_at || lastFromUsage,
           pageViews: views.length,
-          activeMinutes: heartbeats,
+          activeMinutes: heartbeats.length,
           artworks: (artBy.get(p.id) ?? []).length,
-          invoices: invoices.length,
+          invoices: (invBy.get(p.id) ?? []).length,
           contacts: (conBy.get(p.id) ?? []).length,
           opportunities: (oppBy.get(p.id) ?? []).length,
-          sales,
-          topPaths,
+          age: p.age ?? null,
+          zip: p.zip_code ?? null,
+          desiredFeature: p.desired_feature ?? null,
+          timeByPath,
         };
       })
       .sort((a, b) => (b.lastActive ?? "").localeCompare(a.lastActive ?? ""));
   }, [data]);
+
+  // Studio-wide time spent per section (heartbeat minutes across all members).
+  const globalTimeByPath = useMemo<PathTime[]>(() => {
+    if (!data) return [];
+    const m = new Map<string, number>();
+    for (const e of data.usage) {
+      if (e.event_type !== "heartbeat") continue;
+      const key = e.path ?? "—";
+      m.set(key, (m.get(key) ?? 0) + 1);
+    }
+    return [...m.entries()].map(([path, minutes]) => ({ path, minutes })).sort((a, b) => b.minutes - a.minutes);
+  }, [data]);
+
+  // Distribution of the "feature you hope to use most" survey answer.
+  const featureCounts = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const r of rows) {
+      if (!r.desiredFeature) continue;
+      m.set(r.desiredFeature, (m.get(r.desiredFeature) ?? 0) + 1);
+    }
+    return [...m.entries()].map(([feature, count]) => ({ feature, count })).sort((a, b) => b.count - a.count);
+  }, [rows]);
+
+  const maxGlobalMinutes = globalTimeByPath[0]?.minutes ?? 0;
+  const maxFeatureCount = featureCounts[0]?.count ?? 0;
 
   const selectedUser = rows.find((r) => r.id === selected) || null;
   const selectedArtworks = data?.artworks.filter((a) => a.user_id === selected) ?? [];
@@ -131,7 +165,7 @@ const Reports = () => {
     members: rows.length,
     active7d: rows.filter((r) => r.lastActive && Date.now() - new Date(r.lastActive).getTime() < 7 * 86400000).length,
     artworks: rows.reduce((s, r) => s + r.artworks, 0),
-    sales: rows.reduce((s, r) => s + r.sales, 0),
+    responses: rows.filter((r) => r.desiredFeature).length,
   };
 
   return (
@@ -148,13 +182,64 @@ const Reports = () => {
           { label: "Members", value: totals.members },
           { label: "Active (7d)", value: totals.active7d },
           { label: "Artworks", value: totals.artworks },
-          { label: "Total sales", value: fmtMoney(totals.sales) },
+          { label: "Survey responses", value: totals.responses },
         ].map((t) => (
           <div key={t.label} className="hairline-card p-5">
             <div className="eyebrow mb-1">{t.label}</div>
             <div className="font-display text-3xl tracking-tight">{t.value}</div>
           </div>
         ))}
+      </div>
+
+      {/* Studio-wide engagement + survey aggregates */}
+      <div className="grid md:grid-cols-2 gap-6 mb-8">
+        <div className="hairline-card p-5">
+          <div className="eyebrow mb-4">Where time is spent</div>
+          {globalTimeByPath.length ? (
+            <ul className="space-y-2.5">
+              {globalTimeByPath.slice(0, 8).map((p) => (
+                <li key={p.path}>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>{labelForPath(p.path)}</span>
+                    <span className="text-muted-foreground tabular-nums">{fmtMinutes(p.minutes)}</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full bg-primary/70"
+                      style={{ width: `${maxGlobalMinutes ? (p.minutes / maxGlobalMinutes) * 100 : 0}%` }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-muted-foreground">No activity recorded yet.</p>
+          )}
+        </div>
+
+        <div className="hairline-card p-5">
+          <div className="eyebrow mb-4">Most-wanted features (survey)</div>
+          {featureCounts.length ? (
+            <ul className="space-y-2.5">
+              {featureCounts.map((f) => (
+                <li key={f.feature}>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>{f.feature}</span>
+                    <span className="text-muted-foreground tabular-nums">{f.count}</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full bg-primary/70"
+                      style={{ width: `${maxFeatureCount ? (f.count / maxFeatureCount) * 100 : 0}%` }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-muted-foreground">No survey responses yet.</p>
+          )}
+        </div>
       </div>
 
       {/* Members table */}
@@ -168,7 +253,6 @@ const Reports = () => {
               <th className="font-normal eyebrow px-4 py-3 text-right">Active time</th>
               <th className="font-normal eyebrow px-4 py-3 text-right">Artworks</th>
               <th className="font-normal eyebrow px-4 py-3 text-right">Invoices</th>
-              <th className="font-normal eyebrow px-4 py-3 text-right">Sales</th>
             </tr>
           </thead>
           <tbody>
@@ -192,11 +276,10 @@ const Reports = () => {
                 <td className="px-4 py-3 text-right tabular-nums">{fmtMinutes(r.activeMinutes)}</td>
                 <td className="px-4 py-3 text-right tabular-nums">{r.artworks}</td>
                 <td className="px-4 py-3 text-right tabular-nums">{r.invoices}</td>
-                <td className="px-4 py-3 text-right tabular-nums">{r.sales ? fmtMoney(r.sales) : "—"}</td>
               </tr>
             ))}
             {!rows.length && !error && (
-              <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground text-sm">Loading members…</td></tr>
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground text-sm">Loading members…</td></tr>
             )}
           </tbody>
         </table>
@@ -210,18 +293,38 @@ const Reports = () => {
             <div className="eyebrow mb-1">Member detail</div>
             <h2 className="font-display text-3xl tracking-tight">{selectedUser.name}</h2>
             <p className="text-sm text-muted-foreground">
-              {selectedUser.email} · Studio {selectedUser.tier === "pro" ? "Pro" : "Starter"} ·{" "}
+              {selectedUser.email} · Studio {tierLabel(selectedUser.tier)} ·{" "}
               {selectedUser.opportunities} opportunities · {selectedUser.contacts} contacts
             </p>
           </div>
 
-          {selectedUser.topPaths.length > 0 && (
+          {/* Survey responses */}
+          <div className="hairline-card p-5">
+            <div className="eyebrow mb-3">Survey responses</div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+              <div>
+                <div className="text-xs text-muted-foreground mb-0.5">Age</div>
+                <div>{selectedUser.age ?? "—"}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-0.5">ZIP code</div>
+                <div>{selectedUser.zip ?? "—"}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-0.5">Most-wanted feature</div>
+                <div>{selectedUser.desiredFeature ?? "—"}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Time by section */}
+          {selectedUser.timeByPath.length > 0 && (
             <div className="hairline-card p-5">
-              <div className="eyebrow mb-3">Most-visited sections</div>
+              <div className="eyebrow mb-3">Time by section</div>
               <div className="flex flex-wrap gap-2">
-                {selectedUser.topPaths.map((p) => (
+                {selectedUser.timeByPath.slice(0, 8).map((p) => (
                   <span key={p.path} className="text-xs border border-border rounded-sm px-2 py-1">
-                    {p.path === "/" ? "Today" : p.path} · {p.count}
+                    {labelForPath(p.path)} · {fmtMinutes(p.minutes)}
                   </span>
                 ))}
               </div>

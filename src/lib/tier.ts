@@ -3,6 +3,14 @@ import { persist } from "zustand/middleware";
 
 export type Tier = "starter" | "pro";
 
+// ---------------------------------------------------------------------------
+// BETA: every user gets full Studio Pro access for free while we're in beta.
+// Flip this to false to end the beta and return to per-user tiers. While true,
+// the effective tier is always "pro" regardless of what's persisted locally or
+// chosen in the Settings tier switcher.
+// ---------------------------------------------------------------------------
+export const BETA_ALL_PRO = true;
+
 interface TierState {
   tier: Tier;
   setTier: (t: Tier) => void;
@@ -11,10 +19,18 @@ interface TierState {
 export const useTier = create<TierState>()(
   persist(
     (set) => ({
-      tier: "starter",
-      setTier: (tier) => set({ tier }),
+      tier: BETA_ALL_PRO ? "pro" : "starter",
+      setTier: (tier) => set({ tier: BETA_ALL_PRO ? "pro" : tier }),
     }),
-    { name: "allegory.tier.v1" },
+    {
+      name: "allegory.tier.v1",
+      // During the beta, force "pro" even when an older "starter" value was
+      // already persisted to localStorage from a previous visit.
+      merge: (persisted, current) => {
+        const merged = { ...current, ...(persisted as Partial<TierState>) };
+        return BETA_ALL_PRO ? { ...merged, tier: "pro" } : merged;
+      },
+    },
   ),
 );
 

@@ -47,6 +47,10 @@ export interface ProfileRow {
   tier: string | null;
   last_seen_at: string | null;
   created_at: string | null;
+  // Beta demographics survey (may be absent until the migration is applied).
+  age?: number | null;
+  zip_code?: string | null;
+  desired_feature?: string | null;
 }
 
 export interface AdminDataset {
@@ -73,8 +77,24 @@ export async function fetchAdminDataset(): Promise<AdminDataset> {
     profiles.error || usage.error || artworks.error || invoices.error || contacts.error || opportunities.error;
   if (firstError) throw firstError;
 
+  // Demographics live behind a later migration; fetch separately and tolerate
+  // their absence so Reports keeps working before that migration is applied.
+  const demo = await db
+    .from("profiles")
+    .select("id,age,zip_code,desired_feature")
+    .then(
+      (r: { data: ProfileRow[] | null; error: unknown }) => (r.error ? [] : r.data ?? []),
+      () => [],
+    );
+  const demoById = new Map<string, ProfileRow>((demo as ProfileRow[]).map((d) => [d.id, d]));
+
+  const mergedProfiles = (profiles.data ?? []).map((p: ProfileRow) => {
+    const d = demoById.get(p.id);
+    return d ? { ...p, age: d.age, zip_code: d.zip_code, desired_feature: d.desired_feature } : p;
+  });
+
   return {
-    profiles: profiles.data ?? [],
+    profiles: mergedProfiles,
     usage: usage.data ?? [],
     artworks: artworks.data ?? [],
     invoices: invoices.data ?? [],

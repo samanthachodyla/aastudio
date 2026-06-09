@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { DataGate } from "@/components/DataGate";
+import { SurveyGate } from "@/components/SurveyGate";
 
 /** Gates its children behind a valid Supabase session, redirecting to /login otherwise. */
 export function RequireAuth({ children }: { children: ReactNode }) {
@@ -21,5 +22,9 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
   }
 
-  return <DataGate>{children}</DataGate>;
+  return (
+    <DataGate>
+      <SurveyGate>{children}</SurveyGate>
+    </DataGate>
+  );
 }
