@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FEATURE_OPTIONS } from "@/lib/labels";
 import { toast } from "sonner";
 
@@ -23,7 +23,10 @@ export function SurveyGate({ children }: { children: ReactNode }) {
   const [busy, setBusy] = useState(false);
   const [age, setAge] = useState("");
   const [zip, setZip] = useState("");
-  const [feature, setFeature] = useState("");
+  const [features, setFeatures] = useState<string[]>([]);
+
+  const toggleFeature = (opt: string) =>
+    setFeatures((prev) => (prev.includes(opt) ? prev.filter((f) => f !== opt) : [...prev, opt]));
 
   useEffect(() => {
     if (!user) return;
@@ -57,7 +60,8 @@ export function SurveyGate({ children }: { children: ReactNode }) {
         .update({
           age: Number.isFinite(ageNum) ? ageNum : null,
           zip_code: zip.trim() || null,
-          desired_feature: feature || null,
+          desired_features: features.length ? features : null,
+          desired_feature: features[0] ?? null,
           demographics_completed_at: new Date().toISOString(),
         })
         .eq("id", user.id);
@@ -121,22 +125,28 @@ export function SurveyGate({ children }: { children: ReactNode }) {
             </div>
 
             <div>
-              <Label className="mb-2 block">Which feature do you hope to use the most?</Label>
-              <RadioGroup value={feature} onValueChange={setFeature} className="gap-2.5">
-                {FEATURE_OPTIONS.map((opt) => (
-                  <label
-                    key={opt}
-                    htmlFor={`feat-${opt}`}
-                    className="flex items-center gap-3 text-sm cursor-pointer rounded-sm border border-border px-3 py-2 hover:bg-muted/40 transition-colors has-[:checked]:border-primary has-[:checked]:bg-muted/40"
-                  >
-                    <RadioGroupItem value={opt} id={`feat-${opt}`} />
-                    <span>{opt}</span>
-                  </label>
-                ))}
-              </RadioGroup>
+              <Label className="mb-1 block">Which features do you hope to use the most?</Label>
+              <p className="text-xs text-muted-foreground mb-2">Select all that apply.</p>
+              <div className="grid gap-2.5">
+                {FEATURE_OPTIONS.map((opt) => {
+                  const checked = features.includes(opt);
+                  return (
+                    <label
+                      key={opt}
+                      htmlFor={`feat-${opt}`}
+                      className={`flex items-center gap-3 text-sm cursor-pointer rounded-sm border px-3 py-2 transition-colors hover:bg-muted/40 ${
+                        checked ? "border-primary bg-muted/40" : "border-border"
+                      }`}
+                    >
+                      <Checkbox id={`feat-${opt}`} checked={checked} onCheckedChange={() => toggleFeature(opt)} />
+                      <span>{opt}</span>
+                    </label>
+                  );
+                })}
+              </div>
             </div>
 
-            <Button type="submit" className="rounded-sm mt-1" disabled={busy || !feature}>
+            <Button type="submit" className="rounded-sm mt-1" disabled={busy || features.length === 0}>
               {busy ? "Saving…" : "Enter the studio"}
             </Button>
           </form>

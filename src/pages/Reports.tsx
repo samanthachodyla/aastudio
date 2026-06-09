@@ -25,7 +25,7 @@ interface UserAgg {
   opportunities: number;
   age: number | null;
   zip: string | null;
-  desiredFeature: string | null;
+  desiredFeatures: string[];
   timeByPath: PathTime[];
 }
 
@@ -104,7 +104,7 @@ const Reports = () => {
           opportunities: (oppBy.get(p.id) ?? []).length,
           age: p.age ?? null,
           zip: p.zip_code ?? null,
-          desiredFeature: p.desired_feature ?? null,
+          desiredFeatures: p.desired_features ?? (p.desired_feature ? [p.desired_feature] : []),
           timeByPath,
         };
       })
@@ -127,8 +127,9 @@ const Reports = () => {
   const featureCounts = useMemo(() => {
     const m = new Map<string, number>();
     for (const r of rows) {
-      if (!r.desiredFeature) continue;
-      m.set(r.desiredFeature, (m.get(r.desiredFeature) ?? 0) + 1);
+      for (const feature of r.desiredFeatures) {
+        m.set(feature, (m.get(feature) ?? 0) + 1);
+      }
     }
     return [...m.entries()].map(([feature, count]) => ({ feature, count })).sort((a, b) => b.count - a.count);
   }, [rows]);
@@ -165,7 +166,7 @@ const Reports = () => {
     members: rows.length,
     active7d: rows.filter((r) => r.lastActive && Date.now() - new Date(r.lastActive).getTime() < 7 * 86400000).length,
     artworks: rows.reduce((s, r) => s + r.artworks, 0),
-    responses: rows.filter((r) => r.desiredFeature).length,
+    responses: rows.filter((r) => r.desiredFeatures.length > 0).length,
   };
 
   return (
@@ -311,8 +312,8 @@ const Reports = () => {
                 <div>{selectedUser.zip ?? "—"}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground mb-0.5">Most-wanted feature</div>
-                <div>{selectedUser.desiredFeature ?? "—"}</div>
+                <div className="text-xs text-muted-foreground mb-0.5">Most-wanted features</div>
+                <div>{selectedUser.desiredFeatures.length ? selectedUser.desiredFeatures.join(", ") : "—"}</div>
               </div>
             </div>
           </div>

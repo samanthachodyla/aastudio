@@ -51,6 +51,7 @@ export interface ProfileRow {
   age?: number | null;
   zip_code?: string | null;
   desired_feature?: string | null;
+  desired_features?: string[] | null;
 }
 
 export interface AdminDataset {
@@ -81,7 +82,7 @@ export async function fetchAdminDataset(): Promise<AdminDataset> {
   // their absence so Reports keeps working before that migration is applied.
   const demo = await db
     .from("profiles")
-    .select("id,age,zip_code,desired_feature")
+    .select("id,age,zip_code,desired_feature,desired_features")
     .then(
       (r: { data: ProfileRow[] | null; error: unknown }) => (r.error ? [] : r.data ?? []),
       () => [],
@@ -90,7 +91,9 @@ export async function fetchAdminDataset(): Promise<AdminDataset> {
 
   const mergedProfiles = (profiles.data ?? []).map((p: ProfileRow) => {
     const d = demoById.get(p.id);
-    return d ? { ...p, age: d.age, zip_code: d.zip_code, desired_feature: d.desired_feature } : p;
+    return d
+      ? { ...p, age: d.age, zip_code: d.zip_code, desired_feature: d.desired_feature, desired_features: d.desired_features }
+      : p;
   });
 
   return {

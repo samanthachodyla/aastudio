@@ -28,7 +28,7 @@ export const FEATURE_OPTIONS = [
   "Sales & invoicing",
   "Exhibitions & shows",
   "Contacts & collectors",
-  "Studio Manager (AI arts administrator)",
+  "Studio Manager",
   "Profile Vault",
   "Communications Hub",
   "Marketing Assistant",
