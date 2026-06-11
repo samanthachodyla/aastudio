@@ -20,20 +20,33 @@ const ResetPassword = () => {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+    let settled = false;
+    let graceTimer: ReturnType<typeof setTimeout> | undefined;
+    const finish = () => {
+      settled = true;
+      setChecking(false);
+    };
+    const sub = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY" || session) {
         setReady(true);
-        setChecking(false);
+        finish();
       }
     });
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setReady(true);
+      if (data.session) {
+        setReady(true);
+        finish();
+      } else {
+        // No session yet — give the recovery event a grace period to arrive
+        // (cold start / slow network) before declaring the link invalid.
+        graceTimer = setTimeout(() => {
+          if (!settled) finish();
+        }, 5000);
+      }
     });
-    // If no recovery session shows up shortly, treat the link as invalid/expired.
-    const t = setTimeout(() => setChecking(false), 2500);
     return () => {
-      sub.subscription.unsubscribe();
-      clearTimeout(t);
+      sub.data.subscription.unsubscribe();
+      if (graceTimer) clearTimeout(graceTimer);
     };
   }, []);
 

@@ -24,6 +24,7 @@ export function SurveyGate({ children }: { children: ReactNode }) {
   const [age, setAge] = useState("");
   const [zip, setZip] = useState("");
   const [features, setFeatures] = useState<string[]>([]);
+  const [failed, setFailed] = useState(false);
 
   const toggleFeature = (opt: string) =>
     setFeatures((prev) => (prev.includes(opt) ? prev.filter((f) => f !== opt) : [...prev, opt]));
@@ -69,6 +70,7 @@ export function SurveyGate({ children }: { children: ReactNode }) {
       setStatus("done");
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Couldn't save — please try again.");
+      setFailed(true); // reveal an escape hatch so a save error never traps the user
     } finally {
       setBusy(false);
     }
@@ -149,6 +151,16 @@ export function SurveyGate({ children }: { children: ReactNode }) {
             <Button type="submit" className="rounded-sm mt-1" disabled={busy || features.length === 0}>
               {busy ? "Saving…" : "Enter the studio"}
             </Button>
+
+            {failed && (
+              <button
+                type="button"
+                onClick={() => setStatus("done")}
+                className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 justify-self-center"
+              >
+                Skip for now and continue to the studio
+              </button>
+            )}
           </form>
         </div>
       </div>

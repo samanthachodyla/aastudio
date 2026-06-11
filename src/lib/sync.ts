@@ -155,6 +155,9 @@ export async function importLocalDataIfNeeded(userId: string): Promise<boolean> 
     }
   }
 
+  // Clear the legacy blob so a different account signing in on this same browser
+  // can never re-import (and thereby absorb) the first user's leftover data.
+  localStorage.removeItem(OLD_PERSIST_KEY);
   localStorage.setItem(migratedFlag(userId), new Date().toISOString());
   return true;
 }

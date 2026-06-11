@@ -108,7 +108,9 @@ const today = () => new Date().toISOString();
 function track(p: Promise<unknown>) {
   p.catch((e) => {
     console.error("[sync] write failed", e);
-    toast.error("Couldn't save that change to the server. Check your connection.");
+    toast.error("That change didn't save — check your connection and reload before closing this tab.", {
+      duration: 12000,
+    });
   });
 }
 

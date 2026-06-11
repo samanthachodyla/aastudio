@@ -24,17 +24,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       syncProfileEmail(next?.user ?? null);
     });
 
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      syncProfileEmail(data.session?.user ?? null);
-      setLoading(false);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        setSession(data.session);
+        syncProfileEmail(data.session?.user ?? null);
+      })
+      // Never hang the whole app on a failed session check — fall through to login.
+      .catch((e) => console.error("[auth] getSession failed", e))
+      .finally(() => setLoading(false));
 
     return () => sub.subscription.unsubscribe();
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.error("[auth] signOut failed", e);
+      // The auth listener clears session on success; nothing else to do on failure.
+    }
   };
 
   return (
