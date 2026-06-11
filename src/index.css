@@ -103,6 +103,14 @@
   .hairline-card {
     @apply bg-card border border-border rounded-sm;
   }
+  /* Horizontal scroll without a visible scrollbar (mobile tab bars, filters). */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
   /* Allegory wordmark: lowercase serif + tracked subline */
   .allegory-wordmark {
     @apply font-display lowercase leading-none;

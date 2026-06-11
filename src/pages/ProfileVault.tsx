@@ -59,12 +59,12 @@ const ProfileVault = () => {
       {showOnboarding && <OnboardingPanel onDone={markVaultOnboarded} />}
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as TextKind | "press")} className="w-full">
-        <TabsList className="bg-transparent border-b border-border rounded-none w-full justify-start h-auto p-0 mb-8">
+        <TabsList className="bg-transparent border-b border-border rounded-none w-full justify-start h-auto p-0 mb-8 overflow-x-auto no-scrollbar flex-nowrap">
           {(["statement", "bio", "cv"] as TextKind[]).map(k => (
             <TabsTrigger
               key={k}
               value={k}
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm"
+              className="shrink-0 whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm"
             >
               {KIND_LABEL[k]}
               <span className="ml-2 text-xs text-muted-foreground tabular-nums">
@@ -74,7 +74,7 @@ const ProfileVault = () => {
           ))}
           <TabsTrigger
             value="press"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm gap-2"
+            className="shrink-0 whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm gap-2"
           >
             Press &amp; Publications
             {!isPro && <Badge variant="outline" className="text-[9px] tracking-wider uppercase border-primary/40 text-primary">Pro</Badge>}
@@ -243,7 +243,7 @@ function PressLog({ items }: { items: PressItem[] }) {
                   </a>
                 )}
               </div>
-              <button onClick={() => deletePressItem(p.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive p-1.5">
+              <button onClick={() => deletePressItem(p.id)} className="opacity-100 md:opacity-0 md:group-hover:opacity-100 text-muted-foreground hover:text-destructive p-1.5">
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -301,7 +301,7 @@ function DocCard({ doc, isPro = true }: { doc: VaultDoc; isPro?: boolean }) {
             {doc.fileName && <span className="ml-2 normal-case tracking-normal">· {doc.fileName}</span>}
           </div>
         </div>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => (isPro ? setTailorOpen(true) : setUpsellOpen(true))}
             disabled={!doc.body}

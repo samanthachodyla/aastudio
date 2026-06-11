@@ -144,17 +144,17 @@ const Inventory = () => {
         </TabsList>
 
         <TabsContent value="inventory" className="m-0">
-          <div className="flex flex-wrap items-center gap-3 mb-6">
-            <div className="relative flex-1 min-w-[220px] max-w-sm">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 mb-6">
+            <div className="relative w-full sm:flex-1 sm:min-w-[220px] sm:max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search title, medium, year…" className="pl-9 bg-card" />
             </div>
-            <div className="flex items-center gap-1 text-xs">
+            <div className="flex items-center gap-1 text-xs overflow-x-auto no-scrollbar -mx-1 px-1">
               {statuses.map(s => (
                 <button
                   key={s.value}
                   onClick={() => setFilter(s.value)}
-                  className={`px-3 py-1.5 rounded-sm uppercase tracking-wider transition-colors ${
+                  className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-sm uppercase tracking-wider transition-colors ${
                     filter === s.value ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -162,10 +162,11 @@ const Inventory = () => {
                 </button>
               ))}
             </div>
-            <span className="ml-auto text-xs text-muted-foreground">{filtered.length} works</span>
+            <span className="text-xs text-muted-foreground sm:ml-auto">{filtered.length} works</span>
           </div>
 
-          <div className="hairline-card overflow-hidden">
+          {/* Desktop: full table */}
+          <div className="hairline-card overflow-x-auto hidden md:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left border-b border-border">
@@ -205,6 +206,46 @@ const Inventory = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile: readable cards */}
+          <div className="md:hidden grid gap-3">
+            {filtered.length === 0 && (
+              <div className="hairline-card p-10 text-center text-muted-foreground italic text-sm">No works match.</div>
+            )}
+            {filtered.map(a => (
+              <div key={a.id} className="hairline-card p-4 flex gap-3">
+                {a.imageUrl ? (
+                  <img src={a.imageUrl} alt={a.title} className="h-16 w-16 shrink-0 object-cover rounded-sm border border-border" />
+                ) : (
+                  <div className="h-16 w-16 shrink-0 flex items-center justify-center rounded-sm border border-border bg-surface text-muted-foreground">
+                    <ImageIcon className="h-5 w-5" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="font-display italic text-base leading-tight">{a.title}</span>
+                    <button
+                      onClick={() => deleteArtwork(a.id)}
+                      aria-label="Delete work"
+                      className="shrink-0 -mr-1 -mt-1 p-1.5 text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    {[a.medium, a.year, a.dimensions].filter(Boolean).join(" · ")}
+                  </div>
+                  <div className="flex items-center justify-between gap-2 mt-2.5">
+                    <StatusPill status={a.status} />
+                    <span className="tabular-nums text-sm">{fmtMoney(a.price)}</span>
+                  </div>
+                  {a.location && (
+                    <div className="text-[11px] text-muted-foreground mt-1.5">{a.location}</div>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </TabsContent>
 
@@ -263,7 +304,7 @@ function ArtworkForm({ onSubmit }: { onSubmit: (data: any) => void }) {
     <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
       <DialogHeader><DialogTitle className="font-display text-2xl font-normal">New work</DialogTitle></DialogHeader>
       <form
-        className="grid grid-cols-2 gap-4 mt-2"
+        className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2"
         onSubmit={(e) => { e.preventDefault(); onSubmit({ ...form, price: Number(form.price), year: Number(form.year), imageUrl: form.imageUrl || undefined }); }}
       >
         <div className="col-span-2">
