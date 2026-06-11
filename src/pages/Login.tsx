@@ -7,7 +7,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
-type Mode = "signin" | "signup";
+type Mode = "signin" | "signup" | "forgot";
+
+/** Turn raw Supabase auth errors into something a non-technical user understands. */
+const friendlyError = (message: string): string => {
+  if (/email not confirmed/i.test(message))
+    return "Your email isn't confirmed yet. Check your inbox for the confirmation link (or ask the studio to confirm you).";
+  if (/invalid login credentials/i.test(message))
+    return "That email or password isn't right. Try again, or use “Forgot password?”.";
+  if (/user already registered/i.test(message))
+    return "An account with this email already exists — try signing in instead.";
+  return message;
+};
 
 const Login = () => {
   const navigate = useNavigate();
@@ -27,9 +38,30 @@ const Login = () => {
     if (!loading && session) navigate(from, { replace: true });
   }, [loading, session, from, navigate]);
 
+  const sendReset = async () => {
+    if (!email.trim()) {
+      toast.error("Enter your email first.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success("If an account exists for that email, a reset link is on its way.");
+      setMode("signin");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? friendlyError(err.message) : "Couldn't send the reset email.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (busy) return;
+    if (mode === "forgot") return sendReset();
     setBusy(true);
     try {
       if (mode === "signin") {
@@ -50,12 +82,16 @@ const Login = () => {
         }
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
-      toast.error(message);
+      toast.error(err instanceof Error ? friendlyError(err.message) : "Something went wrong");
     } finally {
       setBusy(false);
     }
   };
+
+  const heading =
+    mode === "signin" ? "Sign in" : mode === "signup" ? "Sign up" : "Reset password";
+  const eyebrow =
+    mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your studio" : "We'll email you a link";
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -76,10 +112,8 @@ const Login = () => {
           />
 
           <div className="hairline-card p-7">
-            <div className="eyebrow mb-2">{mode === "signin" ? "Welcome back" : "Create your studio"}</div>
-            <h1 className="font-display text-3xl tracking-tight mb-6">
-              {mode === "signin" ? "Sign in" : "Sign up"}
-            </h1>
+            <div className="eyebrow mb-2">{eyebrow}</div>
+            <h1 className="font-display text-3xl tracking-tight mb-6">{heading}</h1>
 
             <form onSubmit={submit} className="grid gap-4">
               {mode === "signup" && (
@@ -106,26 +140,53 @@ const Login = () => {
                   autoComplete="email"
                 />
               </div>
-              <div>
-                <Label>Password</Label>
-                <Input
-                  type="password"
-                  required
-                  minLength={6}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                />
-              </div>
+              {mode !== "forgot" && (
+                <div>
+                  <div className="flex items-center justify-between">
+                    <Label>Password</Label>
+                    {mode === "signin" && (
+                      <button
+                        type="button"
+                        className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
+                        onClick={() => setMode("forgot")}
+                      >
+                        Forgot password?
+                      </button>
+                    )}
+                  </div>
+                  <Input
+                    type="password"
+                    required
+                    minLength={6}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                  />
+                </div>
+              )}
               <Button type="submit" className="rounded-sm mt-1" disabled={busy}>
-                {busy ? "One moment…" : mode === "signin" ? "Sign in" : "Create account"}
+                {busy
+                  ? "One moment…"
+                  : mode === "signin"
+                  ? "Sign in"
+                  : mode === "signup"
+                  ? "Create account"
+                  : "Send reset link"}
               </Button>
             </form>
           </div>
 
           <div className="mt-5 text-sm text-muted-foreground text-center">
-            {mode === "signin" ? (
+            {mode === "forgot" ? (
+              <button
+                type="button"
+                className="text-foreground underline underline-offset-4 hover:opacity-70"
+                onClick={() => setMode("signin")}
+              >
+                Back to sign in
+              </button>
+            ) : mode === "signin" ? (
               <>
                 New here?{" "}
                 <button

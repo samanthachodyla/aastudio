@@ -15,6 +15,7 @@ import Marketing from "./pages/Marketing.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import Settings from "./pages/Settings.tsx";
 import Login from "./pages/Login.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 import Reports from "./pages/Reports.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { TierGate } from "./components/TierGate";
@@ -35,6 +36,7 @@ const App = () => (
           <Routes>
             {/* Public */}
             <Route path="/login" element={<Login />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* Authenticated app */}
             <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
