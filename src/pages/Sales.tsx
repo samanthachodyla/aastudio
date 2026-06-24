@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Plus, Download, Trash2, FileText } from "lucide-react";
+import { Plus, Download, Trash2, FileText, Pencil } from "lucide-react";
 import { PnLStatement, EXPENSE_CATEGORIES, catLabel } from "@/components/PnLStatement";
 import { AppShell } from "@/components/AppShell";
 import { useStore, fmtMoney, fmtDate } from "@/lib/store";
@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
-import type { InvoiceStatus, Artwork, Invoice, ExpenseCategory, PaymentType, ExpenseFrequency } from "@/lib/types";
+import type { InvoiceStatus, Artwork, Invoice, Expense, ExpenseCategory, PaymentType, ExpenseFrequency } from "@/lib/types";
 import { toast } from "sonner";
 import { useUserProfile, getFirstName, getLastName } from "@/lib/userProfile";
 
@@ -26,9 +26,10 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 const Sales = () => {
   const {
     invoices, artworks, addInvoice, updateInvoice, deleteInvoice,
-    expenses, addExpense, deleteExpense,
+    expenses, addExpense, updateExpense, deleteExpense,
   } = useStore();
   const [open, setOpen] = useState(false);
+  const [editExpense, setEditExpense] = useState<Expense | null>(null);
   const { fullName } = useUserProfile();
   const artistLine = fullName ? `${getFirstName(fullName)}${getLastName(fullName) ? " " + getLastName(fullName) : ""} · Artist` : "";
   const [pnlOpen, setPnlOpen] = useState(false);
@@ -315,6 +316,17 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
           </div>
           <div className="rule mb-4" />
 
+          {/* Edit expense */}
+          <Dialog open={!!editExpense} onOpenChange={(o) => !o && setEditExpense(null)}>
+            {editExpense && (
+              <ExpenseForm
+                key={editExpense.id}
+                expense={editExpense}
+                onSubmit={(data) => { updateExpense(editExpense.id, data); setEditExpense(null); toast.success("Expense updated"); }}
+              />
+            )}
+          </Dialog>
+
           {sortedExpenses.length === 0 ? (
             <div className="hairline-card px-6 py-12 text-center">
               <p className="text-sm text-muted-foreground italic mb-4">
@@ -373,28 +385,41 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
                 <table className="w-full text-sm">
                   <thead><tr className="text-left border-b border-border">
                     {["Date", "Description", "Category", "Payment", "Amount", ""].map(h => (
-                      <th key={h} className="eyebrow px-4 py-3 font-medium">{h}</th>
+                      <th key={h} className={`eyebrow px-4 py-3 font-medium ${h === "Amount" ? "text-right" : ""}`}>{h}</th>
                     ))}
                   </tr></thead>
                   <tbody className="divide-y divide-border">
                     {sortedExpenses.map(e => (
-                      <tr key={e.id} className="hover:bg-surface/50 group">
-                        <td className="px-4 py-4 text-xs text-muted-foreground whitespace-nowrap">{fmtDate(e.date)}</td>
+                      <tr
+                        key={e.id}
+                        onClick={() => setEditExpense(e)}
+                        className="group cursor-pointer transition-colors hover:bg-surface/50"
+                      >
+                        <td className="px-4 py-4 text-xs text-muted-foreground whitespace-nowrap tabular-nums">{fmtDate(e.date)}</td>
                         <td className="px-4 py-4">
-                          {e.description ?? e.vendor ?? "—"}
-                          {e.recurring && (
-                            <span className="ml-2 text-[10px] uppercase tracking-wider text-muted-foreground border border-border rounded-sm px-1.5 py-0.5">
-                              {FREQUENCIES.find(f => f.value === e.frequency)?.label ?? "Recurring"}
-                            </span>
-                          )}
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{e.description ?? e.vendor ?? "—"}</span>
+                            {e.recurring && (
+                              <span className="text-[10px] uppercase tracking-wider text-muted-foreground border border-border rounded-full px-2 py-0.5">
+                                {FREQUENCIES.find(f => f.value === e.frequency)?.label ?? "Recurring"}
+                              </span>
+                            )}
+                          </div>
                         </td>
-                        <td className="px-4 py-4 text-muted-foreground">{catLabel(e.category)}</td>
-                        <td className="px-4 py-4 text-muted-foreground text-xs">
+                        <td className="px-4 py-4">
+                          <span className="inline-block text-[11px] tracking-wide text-muted-foreground bg-surface border border-border rounded-full px-2.5 py-0.5 whitespace-nowrap">
+                            {catLabel(e.category)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 text-muted-foreground text-xs whitespace-nowrap">
                           {e.paymentType ? PAYMENT_TYPES.find(p => p.value === e.paymentType)?.label ?? "—" : "—"}
                         </td>
-                        <td className="px-4 py-4 tabular-nums text-right">{fmtMoney(e.amount)}</td>
-                        <td className="px-4 py-4 text-right">
-                          <button onClick={() => deleteExpense(e.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive">
+                        <td className="px-4 py-4 tabular-nums text-right font-medium whitespace-nowrap">{fmtMoney(e.amount)}</td>
+                        <td className="px-4 py-4 text-right whitespace-nowrap" onClick={(ev) => ev.stopPropagation()}>
+                          <button onClick={() => setEditExpense(e)} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground mr-3 align-middle" title="Edit expense">
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                          <button onClick={() => deleteExpense(e.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive align-middle" title="Delete expense">
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         </td>
@@ -403,9 +428,12 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
                   </tbody>
                 </table>
               </div>
-              <p className="text-xs text-muted-foreground mt-3">
-                Total logged expenses: {fmtMoney(totals.expenses)}
-              </p>
+              <div className="flex items-center justify-between mt-3">
+                <p className="text-xs text-muted-foreground italic">Tap any row to edit.</p>
+                <p className="text-xs text-muted-foreground">
+                  Total logged expenses: <span className="tabular-nums text-foreground">{fmtMoney(totals.expenses)}</span>
+                </p>
+              </div>
             </>
           )}
         </TabsContent>
@@ -434,15 +462,16 @@ const FREQUENCIES: { value: ExpenseFrequency; label: string }[] = [
   { value: "annual", label: "Annual" },
 ];
 
-function ExpenseForm({ onSubmit }: { onSubmit: (data: any) => void }) {
+function ExpenseForm({ expense, onSubmit }: { expense?: Expense; onSubmit: (data: any) => void }) {
+  const isEdit = !!expense;
   const [form, setForm] = useState({
-    date: new Date().toISOString().slice(0, 10),
-    description: "",
-    category: "materials" as ExpenseCategory,
-    amount: "",
-    recurring: false,
-    frequency: "monthly" as ExpenseFrequency,
-    paymentType: "" as PaymentType | "",
+    date: (expense?.date ?? new Date().toISOString()).slice(0, 10),
+    description: expense?.description ?? expense?.vendor ?? "",
+    category: expense?.category ?? ("materials" as ExpenseCategory),
+    amount: expense ? String(expense.amount) : "",
+    recurring: expense?.recurring ?? false,
+    frequency: expense?.frequency ?? ("monthly" as ExpenseFrequency),
+    paymentType: expense?.paymentType ?? ("" as PaymentType | ""),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -452,16 +481,18 @@ function ExpenseForm({ onSubmit }: { onSubmit: (data: any) => void }) {
       description: form.description,
       category: form.category,
       amount: Number(form.amount),
-      // Send new fields only when set, so basic expenses don't depend on the new columns.
-      recurring: form.recurring ? true : undefined,
-      frequency: form.recurring ? form.frequency : undefined,
-      paymentType: form.paymentType || undefined,
+      // On create, omit unset fields so basic expenses don't depend on the new
+      // columns. On edit, send explicit values (incl. null) so unchecking a box
+      // or clearing a field actually clears it in the database.
+      recurring: form.recurring ? true : isEdit ? false : undefined,
+      frequency: form.recurring ? form.frequency : isEdit ? null : undefined,
+      paymentType: form.paymentType || (isEdit ? null : undefined),
     });
   };
 
   return (
     <DialogContent className="max-w-md">
-      <DialogHeader><DialogTitle className="font-display text-2xl font-normal">New expense</DialogTitle></DialogHeader>
+      <DialogHeader><DialogTitle className="font-display text-2xl font-normal">{isEdit ? "Edit expense" : "New expense"}</DialogTitle></DialogHeader>
       <form className="grid gap-4 mt-2" onSubmit={handleSubmit}>
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -524,7 +555,7 @@ function ExpenseForm({ onSubmit }: { onSubmit: (data: any) => void }) {
             </div>
           )}
         </div>
-        <div className="flex justify-end"><Button type="submit">Log expense</Button></div>
+        <div className="flex justify-end"><Button type="submit">{isEdit ? "Save changes" : "Log expense"}</Button></div>
       </form>
     </DialogContent>
   );
