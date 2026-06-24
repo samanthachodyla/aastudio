@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { StatusPill } from "@/components/StatusPill";
-import { IntegrationsPanel } from "@/components/IntegrationsPanel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -170,8 +169,6 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
 
         {/* Overview */}
         <TabsContent value="overview" className="mt-0">
-          <IntegrationsPanel />
-
           <section className="mb-10">
             <div className="eyebrow mb-3">Finance dashboard</div>
             <div className="rule mb-6" />
