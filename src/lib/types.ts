@@ -1,4 +1,4 @@
-export type ArtworkStatus = "in_studio" | "on_consignment" | "sold" | "loaned" | "nfs" | "in_transit" | "in_storage" | (string & {});
+export type ArtworkStatus = "in_studio" | "on_consignment" | "sold" | "donated" | "loaned" | "nfs" | "in_transit" | "in_storage" | (string & {});
 
 export interface Artwork {
   id: string;
@@ -89,7 +89,7 @@ export interface Opportunity {
   award?: string;
 }
 
-export type ContactType = "gallery" | "collector" | "consultant" | "press" | "curator" | "peer" | "other";
+export type ContactType = "gallery" | "collector" | "consultant" | "subcontractor" | "press" | "curator" | "peer" | "other";
 export type ContactStage = "prospect" | "warm" | "active" | "vip" | "dormant";
 export type InteractionKind = "visit" | "email" | "call" | "meeting" | "sale" | "exhibition" | "note";
 
@@ -137,6 +137,11 @@ export type ExpenseCategory =
   // legacy values retained for back-compat with older logged expenses
   | "shipping" | "travel";
 
+export type ExpenseFrequency = "monthly" | "quarterly" | "annual";
+
+// Tag only — never store actual card/account numbers.
+export type PaymentType = "debit_card" | "credit_card" | "cash" | "check" | "bank_transfer" | "other";
+
 export interface Expense {
   id: string;
   date: string;          // ISO
@@ -145,6 +150,9 @@ export interface Expense {
   description?: string;  // short label, e.g. "Framing materials"
   vendor?: string;       // legacy: who you paid
   notes?: string;
+  recurring?: boolean;
+  frequency?: ExpenseFrequency;   // set when recurring
+  paymentType?: PaymentType;
   createdAt: string;
 }
 

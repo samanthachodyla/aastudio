@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
-import type { InvoiceStatus, Artwork, Invoice, ExpenseCategory } from "@/lib/types";
+import type { InvoiceStatus, Artwork, Invoice, ExpenseCategory, PaymentType, ExpenseFrequency } from "@/lib/types";
 import { toast } from "sonner";
 import { useUserProfile, getFirstName, getLastName } from "@/lib/userProfile";
 
@@ -69,6 +69,30 @@ const Sales = () => {
     () => [...expenses].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
     [expenses],
   );
+
+  // Recurring spend, normalized to a monthly figure + annualized.
+  const recurring = useMemo(() => {
+    const perMonth = expenses
+      .filter(e => e.recurring)
+      .reduce((sum, e) => {
+        const f = e.frequency ?? "monthly";
+        const monthly = f === "quarterly" ? e.amount / 3 : f === "annual" ? e.amount / 12 : e.amount;
+        return sum + monthly;
+      }, 0);
+    return { perMonth, annual: perMonth * 12 };
+  }, [expenses]);
+
+  // Monthly burn for the current year + annual total.
+  const monthlySpend = useMemo(() => {
+    const arr = MONTHS.map((m, i) => ({ month: m, spend: 0, idx: i }));
+    expenses.forEach(e => {
+      const d = new Date(e.date);
+      if (d.getFullYear() === year) arr[d.getMonth()].spend += e.amount;
+    });
+    return arr;
+  }, [expenses, year]);
+  const hasSpend = monthlySpend.some(m => m.spend > 0);
+  const annualSpend = monthlySpend.reduce((s, m) => s + m.spend, 0);
 
   const workFor = (inv: Invoice) => {
     if (inv.artworkId) {
@@ -302,10 +326,53 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
             </div>
           ) : (
             <>
+              {/* Recurring snapshot (item 8) */}
+              {recurring.perMonth > 0 && (
+                <div className="grid grid-cols-2 gap-px bg-border border border-border mb-6">
+                  <div className="bg-background p-5">
+                    <div className="eyebrow mb-2">Recurring · monthly</div>
+                    <div className="font-display text-2xl">{fmtMoney(recurring.perMonth)}</div>
+                  </div>
+                  <div className="bg-background p-5">
+                    <div className="eyebrow mb-2">Recurring · annualized</div>
+                    <div className="font-display text-2xl">{fmtMoney(recurring.annual)}</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Monthly burn-rate chart (item 9) */}
+              <div className="hairline-card px-6 py-5 mb-6">
+                <div className="flex items-baseline justify-between mb-4">
+                  <div className="eyebrow">Monthly spend · {year}</div>
+                  <div className="text-xs text-muted-foreground">Annual total · {fmtMoney(annualSpend)}</div>
+                </div>
+                {hasSpend ? (
+                  <div className="h-56">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={monthlySpend} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                        <XAxis dataKey="month" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={{ stroke: "hsl(var(--border))" }} tickLine={false} />
+                        <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`} />
+                        <Tooltip
+                          cursor={{ fill: "hsl(var(--surface))" }}
+                          contentStyle={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))", borderRadius: 0, fontSize: 12 }}
+                          formatter={(v: number) => fmtMoney(v)}
+                        />
+                        <Bar dataKey="spend" fill="hsl(var(--foreground))" radius={[2, 2, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-32 flex items-center justify-center text-sm text-muted-foreground italic">
+                    Log expenses to see your monthly burn.
+                  </div>
+                )}
+              </div>
+
               <div className="hairline-card overflow-hidden">
                 <table className="w-full text-sm">
                   <thead><tr className="text-left border-b border-border">
-                    {["Date", "Description", "Category", "Amount", ""].map(h => (
+                    {["Date", "Description", "Category", "Payment", "Amount", ""].map(h => (
                       <th key={h} className="eyebrow px-4 py-3 font-medium">{h}</th>
                     ))}
                   </tr></thead>
@@ -313,8 +380,18 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
                     {sortedExpenses.map(e => (
                       <tr key={e.id} className="hover:bg-surface/50 group">
                         <td className="px-4 py-4 text-xs text-muted-foreground whitespace-nowrap">{fmtDate(e.date)}</td>
-                        <td className="px-4 py-4">{e.description ?? e.vendor ?? "—"}</td>
+                        <td className="px-4 py-4">
+                          {e.description ?? e.vendor ?? "—"}
+                          {e.recurring && (
+                            <span className="ml-2 text-[10px] uppercase tracking-wider text-muted-foreground border border-border rounded-sm px-1.5 py-0.5">
+                              {FREQUENCIES.find(f => f.value === e.frequency)?.label ?? "Recurring"}
+                            </span>
+                          )}
+                        </td>
                         <td className="px-4 py-4 text-muted-foreground">{catLabel(e.category)}</td>
+                        <td className="px-4 py-4 text-muted-foreground text-xs">
+                          {e.paymentType ? PAYMENT_TYPES.find(p => p.value === e.paymentType)?.label ?? "—" : "—"}
+                        </td>
                         <td className="px-4 py-4 tabular-nums text-right">{fmtMoney(e.amount)}</td>
                         <td className="px-4 py-4 text-right">
                           <button onClick={() => deleteExpense(e.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive">
@@ -342,12 +419,30 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
   );
 };
 
+const PAYMENT_TYPES: { value: PaymentType; label: string }[] = [
+  { value: "debit_card", label: "Debit card" },
+  { value: "credit_card", label: "Credit card" },
+  { value: "cash", label: "Cash" },
+  { value: "check", label: "Check" },
+  { value: "bank_transfer", label: "Bank transfer" },
+  { value: "other", label: "Other" },
+];
+
+const FREQUENCIES: { value: ExpenseFrequency; label: string }[] = [
+  { value: "monthly", label: "Monthly" },
+  { value: "quarterly", label: "Quarterly" },
+  { value: "annual", label: "Annual" },
+];
+
 function ExpenseForm({ onSubmit }: { onSubmit: (data: any) => void }) {
   const [form, setForm] = useState({
     date: new Date().toISOString().slice(0, 10),
     description: "",
     category: "materials" as ExpenseCategory,
     amount: "",
+    recurring: false,
+    frequency: "monthly" as ExpenseFrequency,
+    paymentType: "" as PaymentType | "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -357,6 +452,10 @@ function ExpenseForm({ onSubmit }: { onSubmit: (data: any) => void }) {
       description: form.description,
       category: form.category,
       amount: Number(form.amount),
+      // Send new fields only when set, so basic expenses don't depend on the new columns.
+      recurring: form.recurring ? true : undefined,
+      frequency: form.recurring ? form.frequency : undefined,
+      paymentType: form.paymentType || undefined,
     });
   };
 
@@ -388,6 +487,42 @@ function ExpenseForm({ onSubmit }: { onSubmit: (data: any) => void }) {
               </SelectContent>
             </Select>
           </div>
+          <div className="col-span-2">
+            <Label>Payment type</Label>
+            <Select value={form.paymentType} onValueChange={(v: PaymentType) => setForm({ ...form, paymentType: v })}>
+              <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
+              <SelectContent>
+                {PAYMENT_TYPES.map(p => (
+                  <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[11px] text-muted-foreground mt-1">A tag only — no card or account numbers are stored.</p>
+          </div>
+          <div className="col-span-2">
+            <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={form.recurring}
+                onChange={(e) => setForm({ ...form, recurring: e.target.checked })}
+                className="h-3.5 w-3.5 accent-foreground"
+              />
+              This is a recurring expense
+            </label>
+          </div>
+          {form.recurring && (
+            <div className="col-span-2">
+              <Label>Frequency</Label>
+              <Select value={form.frequency} onValueChange={(v: ExpenseFrequency) => setForm({ ...form, frequency: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {FREQUENCIES.map(f => (
+                    <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
         <div className="flex justify-end"><Button type="submit">Log expense</Button></div>
       </form>

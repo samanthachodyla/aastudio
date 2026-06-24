@@ -170,7 +170,7 @@ function OpportunityForm({ onSubmit }: { onSubmit: (d: any) => void }) {
     award: "",
   });
   return (
-    <DialogContent>
+    <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
       <DialogHeader><DialogTitle className="font-display text-2xl font-normal">New opportunity</DialogTitle></DialogHeader>
       <form className="grid gap-4 mt-2" onSubmit={(e) => {
         e.preventDefault();

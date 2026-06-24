@@ -1,7 +1,8 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Plus, Search, Download, Trash2, Upload, X, ImageIcon, Boxes, Handshake } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useStore, fmtMoney } from "@/lib/store";
+import type { Artwork } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusPill } from "@/components/StatusPill";
@@ -11,12 +12,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ConsignmentsView } from "@/components/ConsignmentsView";
+import { toast } from "sonner";
 import type { ArtworkStatus } from "@/lib/types";
 
 const exportableStatuses: { value: ArtworkStatus; label: string }[] = [
   { value: "in_studio", label: "In studio" },
   { value: "on_consignment", label: "On consignment" },
   { value: "sold", label: "Sold" },
+  { value: "donated", label: "Donated" },
   { value: "loaned", label: "Loaned" },
   { value: "nfs", label: "NFS" },
 ];
@@ -26,15 +29,55 @@ const statuses: { value: ArtworkStatus | "all"; label: string }[] = [
   { value: "in_studio", label: "In studio" },
   { value: "on_consignment", label: "On consignment" },
   { value: "sold", label: "Sold" },
+  { value: "donated", label: "Donated" },
   { value: "loaned", label: "Loaned" },
   { value: "nfs", label: "NFS" },
 ];
 
 const Inventory = () => {
-  const { artworks, addArtwork, deleteArtwork } = useStore();
+  const { artworks, addArtwork, updateArtwork, deleteArtwork, contacts, addContact } = useStore();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<ArtworkStatus | "all">("all");
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Artwork | null>(null);
+
+  // After a sale is recorded, offer to save the buyer to Contacts (de-duped by name).
+  const offerSaveBuyer = (buyer?: string) => {
+    const name = (buyer ?? "").trim();
+    if (!name) return;
+    if (contacts.some((c) => c.name.trim().toLowerCase() === name.toLowerCase())) return;
+    toast("Save this buyer to Contacts?", {
+      description: name,
+      action: {
+        label: "Save",
+        onClick: () => {
+          addContact({
+            name,
+            type: "collector",
+            stage: "active",
+            email: "",
+            phone: "",
+            location: "",
+            notes: "Added from a sale",
+            tags: [],
+            interactions: [],
+          });
+          toast.success(`${name} added to Contacts`);
+        },
+      },
+    });
+  };
+
+  const saveArtwork = (data: any) => {
+    if (editing) {
+      updateArtwork(editing.id, data);
+    } else {
+      addArtwork(data);
+    }
+    if (data.status === "sold") offerSaveBuyer(data.buyer);
+    setEditing(null);
+    setOpen(false);
+  };
   const [exportOpen, setExportOpen] = useState(false);
   const [exportStatuses, setExportStatuses] = useState<ArtworkStatus[]>(
     exportableStatuses.map(s => s.value)
@@ -127,8 +170,7 @@ const Inventory = () => {
             <DialogTrigger asChild>
               <Button size="sm" className="gap-2"><Plus className="h-3.5 w-3.5" /> New work</Button>
             </DialogTrigger>
-            <ArtworkForm onSubmit={(data) => { addArtwork(data); setOpen(false); }} />
-
+            <ArtworkForm key={open ? "new-open" : "new-closed"} onSubmit={saveArtwork} />
           </Dialog>
         </>
       }
@@ -180,7 +222,7 @@ const Inventory = () => {
                   <tr><td colSpan={9} className="px-4 py-12 text-center text-muted-foreground italic">No works match.</td></tr>
                 )}
                 {filtered.map(a => (
-                  <tr key={a.id} className="hover:bg-surface/50 transition-colors group">
+                  <tr key={a.id} onClick={() => setEditing(a)} className="hover:bg-surface/50 transition-colors group cursor-pointer">
                     <td className="px-4 py-3 w-16">
                       {a.imageUrl ? (
                         <img src={a.imageUrl} alt={a.title} className="h-12 w-12 object-cover rounded-sm border border-border" />
@@ -198,7 +240,7 @@ const Inventory = () => {
                     <td className="px-4 py-4 text-muted-foreground">{a.location ?? "—"}</td>
                     <td className="px-4 py-4 tabular-nums text-right">{fmtMoney(a.price)}</td>
                     <td className="px-4 py-4 text-right">
-                      <button onClick={() => deleteArtwork(a.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive">
+                      <button onClick={(e) => { e.stopPropagation(); deleteArtwork(a.id); }} className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive">
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </td>
@@ -214,7 +256,7 @@ const Inventory = () => {
               <div className="hairline-card p-10 text-center text-muted-foreground italic text-sm">No works match.</div>
             )}
             {filtered.map(a => (
-              <div key={a.id} className="hairline-card p-4 flex gap-3">
+              <div key={a.id} onClick={() => setEditing(a)} className="hairline-card p-4 flex gap-3 cursor-pointer">
                 {a.imageUrl ? (
                   <img src={a.imageUrl} alt={a.title} className="h-16 w-16 shrink-0 object-cover rounded-sm border border-border" />
                 ) : (
@@ -226,7 +268,7 @@ const Inventory = () => {
                   <div className="flex items-start justify-between gap-2">
                     <span className="font-display italic text-base leading-tight">{a.title}</span>
                     <button
-                      onClick={() => deleteArtwork(a.id)}
+                      onClick={(e) => { e.stopPropagation(); deleteArtwork(a.id); }}
                       aria-label="Delete work"
                       className="shrink-0 -mr-1 -mt-1 p-1.5 text-muted-foreground hover:text-destructive"
                     >
@@ -253,6 +295,11 @@ const Inventory = () => {
           <ConsignmentsView />
         </TabsContent>
       </Tabs>
+
+      {/* Edit existing work — same form, pre-filled */}
+      <Dialog open={!!editing} onOpenChange={(o) => { if (!o) setEditing(null); }}>
+        {editing && <ArtworkForm key={editing.id} initial={editing} onSubmit={saveArtwork} />}
+      </Dialog>
     </AppShell>
   );
 };
@@ -262,19 +309,50 @@ const BUILT_IN_STATUSES: { value: string; label: string }[] = [
   { value: "in_studio", label: "In studio" },
   { value: "on_consignment", label: "On consignment" },
   { value: "sold", label: "Sold" },
+  { value: "donated", label: "Donated" },
   { value: "loaned", label: "Loaned" },
   { value: "nfs", label: "NFS" },
 ];
 
 const ADD_NEW_STATUS = "__add_new_status__";
 
-function ArtworkForm({ onSubmit }: { onSubmit: (data: any) => void }) {
+/** USD input: shows $1,234.56 when blurred, raw number while editing; stores a clean number. */
+function CurrencyInput({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  const [focused, setFocused] = useState(false);
+  const [draft, setDraft] = useState(value ? String(value) : "");
+  useEffect(() => { if (!focused) setDraft(value ? String(value) : ""); }, [value, focused]);
+  const display = focused
+    ? draft
+    : value
+      ? value.toLocaleString("en-US", { style: "currency", currency: "USD" })
+      : "";
+  return (
+    <Input
+      inputMode="decimal"
+      placeholder="$0.00"
+      value={display}
+      onFocus={() => { setFocused(true); setDraft(value ? String(value) : ""); }}
+      onChange={(e) => {
+        const cleaned = e.target.value.replace(/[^0-9.]/g, "");
+        setDraft(cleaned);
+        const n = parseFloat(cleaned);
+        onChange(Number.isFinite(n) ? n : 0);
+      }}
+      onBlur={() => setFocused(false)}
+    />
+  );
+}
+
+function ArtworkForm({ initial, onSubmit }: { initial?: Artwork; onSubmit: (data: any) => void }) {
   const customStatuses = useStore(s => s.customStatuses);
   const addCustomStatus = useStore(s => s.addCustomStatus);
   const [form, setForm] = useState({
-    title: "", year: new Date().getFullYear(), medium: "", dimensions: "",
-    edition: "", price: 0, status: "in_studio" as ArtworkStatus, location: "",
-    imageUrl: "" as string,
+    title: initial?.title ?? "", year: initial?.year ?? new Date().getFullYear(),
+    medium: initial?.medium ?? "", dimensions: initial?.dimensions ?? "",
+    edition: initial?.edition ?? "", price: initial?.price ?? 0,
+    status: (initial?.status ?? "in_studio") as ArtworkStatus, location: initial?.location ?? "",
+    imageUrl: initial?.imageUrl ?? "",
+    buyer: (initial as { buyer?: string } | undefined)?.buyer ?? "",
   });
   const [addingStatus, setAddingStatus] = useState(false);
   const [newStatus, setNewStatus] = useState("");
@@ -302,10 +380,20 @@ function ArtworkForm({ onSubmit }: { onSubmit: (data: any) => void }) {
 
   return (
     <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-      <DialogHeader><DialogTitle className="font-display text-2xl font-normal">New work</DialogTitle></DialogHeader>
+      <DialogHeader><DialogTitle className="font-display text-2xl font-normal">{initial ? "Edit work" : "New work"}</DialogTitle></DialogHeader>
       <form
         className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2"
-        onSubmit={(e) => { e.preventDefault(); onSubmit({ ...form, price: Number(form.price), year: Number(form.year), imageUrl: form.imageUrl || undefined }); }}
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit({
+            ...form,
+            price: Number(form.price),
+            year: Number(form.year),
+            imageUrl: form.imageUrl || undefined,
+            // Only persist a buyer on a sold work; undefined is skipped by the sync layer.
+            buyer: form.status === "sold" ? (form.buyer.trim() || undefined) : undefined,
+          });
+        }}
       >
         <div className="col-span-2">
           <Label>Image</Label>
@@ -341,7 +429,7 @@ function ArtworkForm({ onSubmit }: { onSubmit: (data: any) => void }) {
         </div>
         <div className="col-span-2"><Label>Title</Label><Input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
         <div><Label>Year</Label><Input type="number" required value={form.year} onChange={(e) => setForm({ ...form, year: +e.target.value })} /></div>
-        <div><Label>Price (USD)</Label><Input type="number" required value={form.price} onChange={(e) => setForm({ ...form, price: +e.target.value })} /></div>
+        <div><Label>Price (USD)</Label><CurrencyInput value={form.price} onChange={(n) => setForm({ ...form, price: n })} /></div>
         <div className="col-span-2"><Label>Medium</Label><Input required value={form.medium} onChange={(e) => setForm({ ...form, medium: e.target.value })} /></div>
         <div><Label>Dimensions</Label><Input required value={form.dimensions} onChange={(e) => setForm({ ...form, dimensions: e.target.value })} placeholder="e.g. 24 × 30 in" /></div>
         <div><Label>Edition</Label><Input value={form.edition} onChange={(e) => setForm({ ...form, edition: e.target.value })} placeholder="e.g. 1/5" /></div>
@@ -386,8 +474,15 @@ function ArtworkForm({ onSubmit }: { onSubmit: (data: any) => void }) {
           )}
         </div>
         <div><Label>Location</Label><Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} /></div>
+        {form.status === "sold" && (
+          <div className="col-span-2">
+            <Label>Buyer</Label>
+            <Input value={form.buyer} onChange={(e) => setForm({ ...form, buyer: e.target.value })} placeholder="Who bought it?" />
+            <p className="text-[11px] text-muted-foreground mt-1">We'll offer to save this buyer to your Contacts.</p>
+          </div>
+        )}
         <div className="col-span-2 flex justify-end gap-2 mt-2">
-          <Button type="submit">Add to catalogue</Button>
+          <Button type="submit">{initial ? "Save changes" : "Add to catalogue"}</Button>
         </div>
       </form>
     </DialogContent>

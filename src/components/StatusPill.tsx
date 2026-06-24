@@ -4,6 +4,7 @@ const variants: Record<string, string> = {
   in_studio: "bg-surface text-foreground",
   on_consignment: "bg-foreground/5 text-foreground border-foreground/20",
   sold: "bg-foreground text-background",
+  donated: "bg-foreground/5 text-foreground border-foreground/20",
   loaned: "bg-surface text-foreground",
   nfs: "bg-muted text-muted-foreground",
 
@@ -56,6 +57,7 @@ const labels: Record<string, string> = {
   in_studio: "In studio",
   on_consignment: "On consignment",
   sold: "Sold",
+  donated: "Donated",
   loaned: "Loaned",
   nfs: "NFS",
   draft: "Draft",
@@ -79,6 +81,7 @@ const labels: Record<string, string> = {
   gallery: "Gallery",
   collector: "Collector",
   consultant: "Consultant",
+  subcontractor: "Subcontractor",
   press: "Press",
   other: "Other",
   needs_reply: "Needs reply",

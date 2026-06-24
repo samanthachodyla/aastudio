@@ -24,7 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import type { Contact, ContactType, InteractionKind, LeadStatus } from "@/lib/types";
 
-const TYPES: ContactType[] = ["gallery", "collector", "consultant", "press", "curator", "peer", "other"];
+const TYPES: ContactType[] = ["gallery", "collector", "consultant", "subcontractor", "press", "curator", "peer", "other"];
 const TAB_TRIGGER = "rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm gap-2";
 
 const Contacts = () => {
@@ -64,7 +64,7 @@ const Contacts = () => {
           <DialogTrigger asChild>
             <Button size="sm" className="gap-2"><Plus className="h-3.5 w-3.5" /> New contact</Button>
           </DialogTrigger>
-          <ContactForm onSubmit={(d) => { addContact(d); setOpenNew(false); }} />
+          <ContactForm key={openNew ? "open" : "closed"} onSubmit={(d) => { addContact(d); setOpenNew(false); }} />
         </Dialog>
       }
     >
