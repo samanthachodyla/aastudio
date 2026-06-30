@@ -33,21 +33,46 @@ higher is required for Code Blocks / Code Injection).
 
 ---
 
+## The launch-list email funnel (where the emails go)
+
+Both signup forms (hero + final CTA) write every email to **one place**: the
+`launch_waitlist` table in the Supabase project
+`lafkbawmkxgvmmlrblff` (sam@moresilverlinings.com's project).
+
+- **View / export the emails:** Supabase dashboard →
+  https://supabase.com/dashboard/project/lafkbawmkxgvmmlrblff/editor →
+  open `launch_waitlist`. Use *Export → CSV* to download them, then email
+  everyone their free-month code on August 1.
+- Each row stores: `email`, `source` (which form), `referrer`, `user_agent`,
+  `created_at`. Duplicate emails are treated as "already on the list" (success).
+- The key embedded in the page is the **publishable** key — safe to expose.
+  Row-level security only allows *inserts*, so no one can read the list back
+  through the public API. Reading/exporting happens in the dashboard only.
+- To point the funnel at a different Supabase table, edit `SUPABASE_URL`,
+  `SUPABASE_KEY`, and the table name in the `<script>` near the bottom of
+  `index.html`.
+
+> Squarespace also has a built-in form/newsletter block if you'd rather collect
+> emails there — but the Supabase table keeps them in one exportable place
+> regardless of where the site lives.
+
 ## Swap in your real content
 
-Search the file for these markers:
+The three platform screenshots (Dashboard, Inventory, Profile Vault) are **real
+captures of the app, embedded directly in the file** (base64) so they show up
+anywhere with no hosting. To replace one later, swap the `src="data:image/..."`
+on the matching `<img class="show-img">` in the `#showcase` section.
 
-- `▼▼ REPLACE` / `▼ REPLACE` — image placeholders. Replace the placeholder
-  `<div>` with `<img src="YOUR-IMAGE-URL" alt="...">`. Upload screenshots via
-  Squarespace (*add an Image block, copy its URL*) or host them on
-  `allegoryartstudio.com`. Ideal sizes:
-  - Hero device shot: ~1200×820
-  - Showcase screenshots: ~1280×880 (16:11)
+Other things you may want to edit:
+
 - **Testimonials** — search `real beta testimonials`. Names/quotes are
   placeholders; swap for real ones (and avatar initials in `<span class="av">`).
-- **Links** — every CTA points to `https://allegoryartstudio.com`. Change to
-  your trial / signup URL if different. Contact email: `hello@allegoryartstudio.com`.
-- **Launch date** — appears in the top bar, FAQ, and final CTA ("August 1, 2026").
+- **Links** — the nav/pricing CTAs scroll to the `#signup` form. The footer
+  "Sign in" still points to `https://allegoryartstudio.com`. Contact email:
+  `hello@allegoryartstudio.com`.
+- **Launch date** — appears in the top bar, hero, FAQ, and final CTA ("August 1, 2026").
+- **Launch offer** — currently "first month free." Edit in the top bar, hero,
+  pricing, and FAQ if it changes.
 - **Pricing** — Starter `$25/$20`, Pro `$55/$44`, annual totals `$240 / $528`,
   in the `#pricing` section and the compare table. Edit in place if they change.
 
