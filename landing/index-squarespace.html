@@ -1,0 +1,792 @@
+<!-- ============================================================= -->
+<!--  ALLEGORY STUDIO — one-page marketing site                    -->
+<!--  Self-contained. Paste the whole block into a Squarespace      -->
+<!--  Code Block (see landing/README-squarespace.md for steps).     -->
+<!--  Everything is scoped under .allegory-lp so it won't fight     -->
+<!--  Squarespace's own styles. No external JS, no build step.      -->
+<!-- ============================================================= -->
+
+<div class="allegory-lp" id="allegory-top">
+<style>
+/* ----------  Fonts  ---------- */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Work+Sans:wght@300;400;500;600&display=swap');
+
+/* ----------  Scoped reset + tokens  ---------- */
+.allegory-lp *{box-sizing:border-box;margin:0;padding:0}
+.allegory-lp{
+  --bg:#f5f3ee;          /* gallery white */
+  --bg-2:#efece4;
+  --surface:#e8e4dd;
+  --card:#ffffff;
+  --ink:#11281c;         /* forest ink */
+  --ink-2:#3a4a40;
+  --muted:#6b746d;
+  --forest:#11281c;
+  --sage:#2c533f;        /* sage-forest accent */
+  --sage-2:#3d6b52;
+  --line:#d8d2c6;
+  --gold:#9a7b3f;
+  --radius:2px;
+  --maxw:1140px;
+  --font-d:'Cormorant Garamond','Times New Roman',serif;
+  --font-b:'Work Sans',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font-b);
+  font-weight:300;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  font-size:17px;
+  overflow-x:hidden;
+}
+.allegory-lp img{max-width:100%;display:block}
+.allegory-lp a{color:inherit;text-decoration:none}
+.allegory-lp h1,.allegory-lp h2,.allegory-lp h3,.allegory-lp h4{
+  font-family:var(--font-d);font-weight:400;letter-spacing:-.01em;line-height:1.08;
+}
+.allegory-lp .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+.allegory-lp .eyebrow{
+  font-size:11px;text-transform:uppercase;letter-spacing:.3em;font-weight:500;
+  color:var(--muted);font-family:var(--font-b);
+}
+.allegory-lp .serif-i{font-family:var(--font-d);font-style:italic;font-weight:400}
+.allegory-lp .rule{height:1px;width:100%;background:var(--line)}
+
+/* ----------  Buttons  ---------- */
+.allegory-lp .btn{
+  display:inline-flex;align-items:center;gap:.5em;justify-content:center;
+  font-family:var(--font-b);font-size:13px;font-weight:500;letter-spacing:.04em;
+  padding:14px 26px;border-radius:var(--radius);cursor:pointer;
+  transition:all .25s ease;border:1px solid var(--forest);white-space:nowrap;
+}
+.allegory-lp .btn-solid{background:var(--forest);color:var(--bg)}
+.allegory-lp .btn-solid:hover{background:#0a1c13;transform:translateY(-1px)}
+.allegory-lp .btn-ghost{background:transparent;color:var(--forest)}
+.allegory-lp .btn-ghost:hover{background:var(--forest);color:var(--bg)}
+.allegory-lp .btn-light{background:var(--bg);color:var(--forest);border-color:var(--bg)}
+.allegory-lp .btn-light:hover{background:transparent;color:var(--bg);border-color:var(--bg)}
+.allegory-lp .btn-sm{padding:9px 18px;font-size:12px}
+
+/* ----------  Signup funnel form  ---------- */
+.allegory-lp .signup{display:flex;gap:10px;flex-wrap:wrap;max-width:480px;margin-top:8px}
+.allegory-lp .signup input[type=email]{
+  flex:1;min-width:220px;font-family:var(--font-b);font-size:15px;color:var(--ink);
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 16px;outline:none;transition:border-color .2s;
+}
+.allegory-lp .signup input[type=email]:focus{border-color:var(--forest)}
+.allegory-lp .signup input[type=email]::placeholder{color:var(--muted)}
+.allegory-lp .signup .btn{flex:none}
+.allegory-lp .signup-msg{flex-basis:100%;font-size:13px;margin-top:2px;min-height:18px;color:var(--sage)}
+.allegory-lp .signup-msg.err{color:#a8472f}
+.allegory-lp .signup.done input,.allegory-lp .signup.done .btn{display:none}
+.allegory-lp .final .signup{margin:0 auto 0;justify-content:center}
+.allegory-lp .final .signup-msg{text-align:center}
+/* on the forest CTA / footer backgrounds */
+.allegory-lp .final .signup input[type=email]{background:var(--bg)}
+
+/* ----------  Announcement bar  ---------- */
+.allegory-lp .topbar{
+  background:var(--forest);color:var(--bg);text-align:center;
+  font-size:12px;letter-spacing:.16em;text-transform:uppercase;padding:9px 20px;
+}
+.allegory-lp .topbar b{font-weight:600}
+.allegory-lp .topbar .dot{opacity:.5;margin:0 10px}
+
+/* ----------  Nav  ---------- */
+.allegory-lp .nav{
+  position:sticky;top:0;z-index:50;background:rgba(245,243,238,.86);
+  backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);
+}
+.allegory-lp .nav-in{display:flex;align-items:center;justify-content:space-between;height:70px}
+.allegory-lp .brand{display:flex;flex-direction:column;line-height:1}
+.allegory-lp .brand .mark{font-family:var(--font-d);font-size:25px;letter-spacing:-.01em;color:var(--forest);text-transform:lowercase}
+.allegory-lp .brand .sub{font-size:8.5px;letter-spacing:.34em;text-transform:uppercase;color:rgba(17,40,28,.7);font-weight:500;margin-top:3px}
+.allegory-lp .nav-links{display:flex;align-items:center;gap:34px}
+.allegory-lp .nav-links a.lnk{font-size:13px;letter-spacing:.02em;color:var(--ink-2);transition:color .2s}
+.allegory-lp .nav-links a.lnk:hover{color:var(--forest)}
+.allegory-lp .nav-toggle,.allegory-lp #navchk{display:none}
+
+/* ----------  Section scaffolding  ---------- */
+.allegory-lp section{padding:96px 0}
+.allegory-lp .sec-head{max-width:680px;margin:0 auto 56px;text-align:center}
+.allegory-lp .sec-head .eyebrow{display:block;margin-bottom:18px}
+.allegory-lp .sec-head h2{font-size:clamp(34px,5vw,52px)}
+.allegory-lp .sec-head p{color:var(--muted);margin-top:18px;font-size:18px}
+
+/* ----------  Hero  ---------- */
+.allegory-lp .hero{padding:80px 0 70px;position:relative}
+.allegory-lp .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:center}
+.allegory-lp .hero h1{font-size:clamp(42px,6.4vw,82px);letter-spacing:-.02em}
+.allegory-lp .hero h1 em{font-style:italic;color:var(--sage)}
+.allegory-lp .hero .lead{font-size:20px;color:var(--ink-2);margin:26px 0 34px;max-width:520px}
+.allegory-lp .hero .cta-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.allegory-lp .hero .trust{margin-top:22px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:10px}
+.allegory-lp .hero .trust .star{color:var(--gold);letter-spacing:2px}
+/* hero device mock */
+.allegory-lp .device{
+  background:var(--card);border:1px solid var(--line);border-radius:6px;
+  box-shadow:0 40px 80px -40px rgba(17,40,28,.35);overflow:hidden;
+}
+.allegory-lp .device .chrome{display:flex;gap:6px;padding:12px 14px;border-bottom:1px solid var(--line);background:var(--bg-2)}
+.allegory-lp .device .chrome i{width:9px;height:9px;border-radius:50%;background:var(--line);display:block}
+.allegory-lp .device .shot{display:block;width:100%}
+.allegory-lp .ph{position:relative;background:linear-gradient(135deg,#eceae3,#e2ddd2)}
+.allegory-lp .ph .ph-label{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;color:var(--muted);font-size:12px;letter-spacing:.18em;text-transform:uppercase;text-align:center;padding:20px;
+}
+.allegory-lp .ph .ph-label svg{width:30px;height:30px;opacity:.5}
+
+/* mock dashboard (pure CSS, used until you drop in a real screenshot) */
+.allegory-lp .mock{padding:22px;background:var(--bg)}
+.allegory-lp .mock .m-eyebrow{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+.allegory-lp .mock .m-title{font-family:var(--font-d);font-size:26px;margin:6px 0 16px}
+.allegory-lp .mock .m-card{background:var(--card);border:1px solid var(--line);border-radius:2px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.allegory-lp .mock .m-dot{width:7px;height:7px;border-radius:50%;background:var(--sage);flex:none}
+.allegory-lp .mock .m-dot.alert{background:#a8472f}
+.allegory-lp .mock .m-line{height:8px;border-radius:2px;background:var(--surface)}
+.allegory-lp .mock .m-line.s{width:46%}.allegory-lp .mock .m-line.m{width:70%}.allegory-lp .mock .m-line.l{width:88%}
+.allegory-lp .mock .m-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin-top:4px}
+.allegory-lp .mock .m-stat{background:var(--bg);padding:12px 14px}
+.allegory-lp .mock .m-stat .v{font-family:var(--font-d);font-size:24px}
+.allegory-lp .mock .m-stat .k{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+
+/* ----------  marquee / proof strip  ---------- */
+.allegory-lp .proof{background:var(--forest);color:var(--bg);padding:30px 0}
+.allegory-lp .proof .row{display:flex;justify-content:space-around;flex-wrap:wrap;gap:26px;text-align:center}
+.allegory-lp .proof .item .n{font-family:var(--font-d);font-size:40px;line-height:1}
+.allegory-lp .proof .item .l{font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.72;margin-top:8px}
+
+/* ----------  Features grid  ---------- */
+.allegory-lp .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.allegory-lp .feat{background:var(--bg);padding:34px 30px;transition:background .25s}
+.allegory-lp .feat:hover{background:var(--card)}
+.allegory-lp .feat .ic{width:34px;height:34px;color:var(--sage);margin-bottom:18px}
+.allegory-lp .feat .ic svg{width:100%;height:100%;stroke-width:1.4}
+.allegory-lp .feat h3{font-size:23px;margin-bottom:9px}
+.allegory-lp .feat p{font-size:14.5px;color:var(--muted);line-height:1.6}
+.allegory-lp .feat .pro-tag{display:inline-block;margin-top:14px;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--sage);border:1px solid var(--sage);border-radius:2px;padding:3px 8px}
+
+/* ----------  Comparison: old way vs Allegory  ---------- */
+.allegory-lp .vs{background:var(--bg-2)}
+.allegory-lp .vs-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:920px;margin:0 auto}
+.allegory-lp .vs-col{background:var(--card);border:1px solid var(--line);border-radius:3px;padding:36px 34px}
+.allegory-lp .vs-col.old{background:transparent;border-style:dashed}
+.allegory-lp .vs-col h3{font-size:26px;margin-bottom:6px}
+.allegory-lp .vs-col .tag{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:22px;display:block}
+.allegory-lp .vs-col.new .tag{color:var(--sage)}
+.allegory-lp .vs-col ul{list-style:none}
+.allegory-lp .vs-col li{display:flex;gap:13px;padding:11px 0;font-size:15px;border-top:1px solid var(--line)}
+.allegory-lp .vs-col li:first-child{border-top:0}
+.allegory-lp .vs-col li .mk{flex:none;width:18px;height:18px;margin-top:2px}
+.allegory-lp .vs-col.old li{color:var(--muted)}
+.allegory-lp .vs-col.old .mk{color:#b06a52}
+.allegory-lp .vs-col.new .mk{color:var(--sage)}
+
+/* ----------  Screenshot showcase  ---------- */
+.allegory-lp .show-row{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;margin-bottom:90px}
+.allegory-lp .show-row:last-child{margin-bottom:0}
+.allegory-lp .show-row.flip .show-text{order:2}
+.allegory-lp .show-text .eyebrow{display:block;margin-bottom:14px}
+.allegory-lp .show-text h3{font-size:clamp(28px,3.6vw,40px);margin-bottom:16px}
+.allegory-lp .show-text p{color:var(--muted);font-size:16px}
+.allegory-lp .show-text ul{list-style:none;margin-top:20px}
+.allegory-lp .show-text li{display:flex;gap:11px;padding:7px 0;font-size:15px}
+.allegory-lp .show-text li .mk{color:var(--sage);flex:none;width:17px;height:17px;margin-top:3px}
+.allegory-lp .show-img{border:1px solid var(--line);border-radius:5px;overflow:hidden;box-shadow:0 30px 60px -36px rgba(17,40,28,.3);min-height:300px}
+
+/* ----------  Pricing  ---------- */
+.allegory-lp .price-toggle{display:flex;justify-content:center;margin-bottom:44px}
+.allegory-lp .seg{display:inline-flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:3px;background:var(--card)}
+.allegory-lp .seg label{font-size:12px;letter-spacing:.16em;text-transform:uppercase;padding:9px 20px;border-radius:2px;cursor:pointer;color:var(--muted);transition:all .2s}
+.allegory-lp #bm,.allegory-lp #ba{position:absolute;opacity:0;pointer-events:none}
+.allegory-lp #bm:checked ~ .price-toggle label[for=bm],
+.allegory-lp #ba:checked ~ .price-toggle label[for=ba]{background:var(--forest);color:var(--bg)}
+.allegory-lp .price-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:860px;margin:0 auto}
+.allegory-lp .plan{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:40px 36px;display:flex;flex-direction:column;position:relative}
+.allegory-lp .plan.pro{border-color:var(--forest);box-shadow:0 30px 60px -40px rgba(17,40,28,.4)}
+.allegory-lp .plan .badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--forest);color:var(--bg);font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:5px 14px;border-radius:2px}
+.allegory-lp .plan .pname{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+.allegory-lp .plan.pro .pname{color:var(--sage)}
+.allegory-lp .plan .amt{display:flex;align-items:baseline;gap:8px}
+.allegory-lp .plan .amt .cur{font-family:var(--font-d);font-size:56px;line-height:1}
+.allegory-lp .plan .amt .per{font-size:13px;color:var(--muted)}
+.allegory-lp .plan .annual-note{font-size:12px;color:var(--sage);margin-top:8px;min-height:18px}
+.allegory-lp .price-m,.allegory-lp .price-a{display:none}
+.allegory-lp #bm:checked ~ * .price-m{display:inline}
+.allegory-lp #ba:checked ~ * .price-a{display:inline}
+.allegory-lp .plan .desc{font-family:var(--font-d);font-style:italic;font-size:17px;color:var(--ink-2);margin:18px 0 22px}
+.allegory-lp .plan ul{list-style:none;flex:1;margin-bottom:26px}
+.allegory-lp .plan li{display:flex;gap:11px;padding:8px 0;font-size:14.5px;border-top:1px solid var(--line)}
+.allegory-lp .plan li:first-child{border-top:0}
+.allegory-lp .plan li .mk{color:var(--sage);flex:none;width:16px;height:16px;margin-top:3px}
+.allegory-lp .plan li.emph{font-weight:500;color:var(--forest)}
+.allegory-lp .callout{border-left:2px solid var(--forest);background:rgba(44,83,63,.06);padding:13px 16px;margin-bottom:14px;border-radius:0 2px 2px 0}
+.allegory-lp .callout .ct{font-size:13.5px;font-weight:500;display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.allegory-lp .callout .ct svg{width:15px;height:15px;color:var(--sage)}
+.allegory-lp .callout p{font-size:12.5px;color:var(--muted);line-height:1.55}
+
+/* ----------  Compare table  ---------- */
+.allegory-lp .cmp{max-width:860px;margin:54px auto 0}
+.allegory-lp .cmp table{width:100%;border-collapse:collapse;border:1px solid var(--line);background:var(--card)}
+.allegory-lp .cmp th,.allegory-lp .cmp td{padding:13px 16px;text-align:left;font-size:14px;border-bottom:1px solid var(--line)}
+.allegory-lp .cmp thead th{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);background:var(--bg-2)}
+.allegory-lp .cmp thead th:nth-child(2),.allegory-lp .cmp thead th:nth-child(3){text-align:center;width:120px}
+.allegory-lp .cmp thead th:nth-child(3){color:var(--sage)}
+.allegory-lp .cmp td:nth-child(2),.allegory-lp .cmp td:nth-child(3){text-align:center;color:var(--muted);font-size:13px}
+.allegory-lp .cmp tr.grp td{background:var(--bg-2);font-weight:500;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2)}
+.allegory-lp .cmp .yes{color:var(--sage)}.allegory-lp .cmp .no{color:var(--line)}
+
+/* ----------  Testimonials  ---------- */
+.allegory-lp .quotes{background:var(--forest);color:var(--bg)}
+.allegory-lp .quotes .sec-head h2{color:var(--bg)}
+.allegory-lp .quotes .sec-head .eyebrow{color:rgba(245,243,238,.6)}
+.allegory-lp .q-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.allegory-lp .q{background:rgba(245,243,238,.05);border:1px solid rgba(245,243,238,.14);border-radius:3px;padding:30px 28px}
+.allegory-lp .q .stars{color:var(--gold);letter-spacing:3px;font-size:13px;margin-bottom:16px}
+.allegory-lp .q blockquote{font-family:var(--font-d);font-size:20px;line-height:1.4;font-weight:300}
+.allegory-lp .q .who{display:flex;align-items:center;gap:12px;margin-top:22px;padding-top:18px;border-top:1px solid rgba(245,243,238,.14)}
+.allegory-lp .q .av{width:38px;height:38px;border-radius:50%;background:rgba(245,243,238,.14);flex:none;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:16px}
+.allegory-lp .q .who .nm{font-size:13.5px;font-weight:500}
+.allegory-lp .q .who .ro{font-size:11px;opacity:.62;letter-spacing:.04em}
+
+/* ----------  FAQ  ---------- */
+.allegory-lp .faq{max-width:760px;margin:0 auto}
+.allegory-lp .faq details{border-bottom:1px solid var(--line)}
+.allegory-lp .faq summary{list-style:none;cursor:pointer;padding:22px 0;font-family:var(--font-d);font-size:22px;display:flex;justify-content:space-between;align-items:center;gap:20px}
+.allegory-lp .faq summary::-webkit-details-marker{display:none}
+.allegory-lp .faq summary .pl{font-family:var(--font-b);font-size:24px;color:var(--sage);transition:transform .25s;flex:none;font-weight:300}
+.allegory-lp .faq details[open] summary .pl{transform:rotate(45deg)}
+.allegory-lp .faq .ans{padding:0 0 24px;color:var(--muted);font-size:15.5px;max-width:640px}
+
+/* ----------  Final CTA  ---------- */
+.allegory-lp .final{text-align:center;background:var(--bg-2)}
+.allegory-lp .final h2{font-size:clamp(38px,6vw,68px);max-width:760px;margin:0 auto 8px}
+.allegory-lp .final h2 em{font-style:italic;color:var(--sage)}
+.allegory-lp .final p{color:var(--muted);font-size:19px;margin:18px auto 34px;max-width:520px}
+.allegory-lp .final .cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.allegory-lp .final .micro{margin-top:20px;font-size:12.5px;color:var(--muted);letter-spacing:.04em}
+
+/* ----------  Footer  ---------- */
+.allegory-lp .foot{background:var(--forest);color:var(--bg);padding:60px 0 36px}
+.allegory-lp .foot-grid{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap;align-items:flex-start}
+.allegory-lp .foot .mark{font-family:var(--font-d);font-size:30px;text-transform:lowercase}
+.allegory-lp .foot .sub{font-size:9px;letter-spacing:.34em;text-transform:uppercase;opacity:.6;margin-top:5px}
+.allegory-lp .foot .tagline{font-family:var(--font-d);font-style:italic;font-size:16px;opacity:.8;margin-top:16px;max-width:280px}
+.allegory-lp .foot-cols{display:flex;gap:64px;flex-wrap:wrap}
+.allegory-lp .foot-cols .col h4{font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.55;margin-bottom:16px;font-family:var(--font-b);font-weight:600}
+.allegory-lp .foot-cols .col a{display:block;font-size:14px;opacity:.85;padding:5px 0;transition:opacity .2s}
+.allegory-lp .foot-cols .col a:hover{opacity:1}
+.allegory-lp .foot-bottom{display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-top:48px;padding-top:24px;border-top:1px solid rgba(245,243,238,.16);font-size:12px;opacity:.6}
+
+/* ----------  reveal on scroll (progressive enhancement)  ---------- */
+.allegory-lp.js .reveal{opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease}
+.allegory-lp.js .reveal.in{opacity:1;transform:none}
+
+/* ----------  Responsive  ---------- */
+@media(max-width:900px){
+  .allegory-lp .hero-grid,.allegory-lp .vs-grid,.allegory-lp .price-grid,
+  .allegory-lp .show-row,.allegory-lp .show-row.flip .show-text{grid-template-columns:1fr;order:0}
+  .allegory-lp .feat-grid,.allegory-lp .q-grid{grid-template-columns:1fr 1fr}
+  .allegory-lp .show-row{gap:30px}
+  .allegory-lp .hero .device{margin-top:10px}
+  .allegory-lp .nav-links{
+    position:absolute;top:70px;left:0;right:0;background:var(--bg);border-bottom:1px solid var(--line);
+    flex-direction:column;gap:0;padding:10px 28px 24px;display:none;align-items:stretch
+  }
+  .allegory-lp .nav-links a.lnk{padding:14px 0;border-bottom:1px solid var(--line)}
+  .allegory-lp #navchk:checked ~ .nav-links{display:flex}
+  .allegory-lp .nav-toggle{display:flex;flex-direction:column;gap:5px;cursor:pointer;padding:6px}
+  .allegory-lp .nav-toggle span{width:24px;height:2px;background:var(--forest);display:block}
+}
+@media(max-width:560px){
+  .allegory-lp{font-size:16px}
+  .allegory-lp section{padding:64px 0}
+  .allegory-lp .feat-grid,.allegory-lp .q-grid{grid-template-columns:1fr}
+  .allegory-lp .proof .item .n{font-size:32px}
+  .allegory-lp .topbar{font-size:10.5px;letter-spacing:.1em}
+  .allegory-lp .wrap{padding:0 20px}
+}
+</style>
+
+<!-- radios for pricing toggle live at the top so siblings can react -->
+<input type="radio" name="bill" id="bm" checked>
+<input type="radio" name="bill" id="ba">
+
+<!-- ===== Announcement bar ===== -->
+<div class="topbar"><b>Launching August 1, 2026</b> <span class="dot">·</span> Join the list &amp; get your first month free</div>
+
+<!-- ===== Nav ===== -->
+<nav class="nav">
+  <div class="wrap nav-in">
+    <a href="#allegory-top" class="brand">
+      <span class="mark">allegory studio</span>
+      <span class="sub">for working artists</span>
+    </a>
+    <input type="checkbox" id="navchk">
+    <label class="nav-toggle" for="navchk"><span></span><span></span><span></span></label>
+    <div class="nav-links">
+      <a class="lnk" href="#features">Features</a>
+      <a class="lnk" href="#showcase">The platform</a>
+      <a class="lnk" href="#compare">Compare</a>
+      <a class="lnk" href="#pricing">Pricing</a>
+      <a class="lnk" href="#faq">FAQ</a>
+      <a class="btn btn-solid btn-sm" href="#signup">Get one month free</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== Hero ===== -->
+<header class="hero" id="signup">
+  <div class="wrap hero-grid">
+    <div class="reveal">
+      <span class="eyebrow">Launching August 1, 2026</span>
+      <h1 style="margin-top:18px">Run your practice like a <em>professional studio.</em></h1>
+      <p class="lead">Inventory, sales, consignments, exhibitions, and outreach — quietly organized in one place, with an arts administrator's intelligence working in the background.</p>
+      <form class="signup" data-allegory-signup data-source="hero">
+        <input type="email" name="email" required placeholder="you@studio.com" aria-label="Email address" autocomplete="email" />
+        <button type="submit" class="btn btn-solid">Get one month free</button>
+        <p class="signup-msg" role="status" aria-live="polite"></p>
+      </form>
+      <div class="trust"><span class="star">★★★★★</span> Join the launch list — first month free · No credit card</div>
+    </div>
+    <div class="reveal">
+      <div class="device">
+        <div class="chrome"><i></i><i></i><i></i></div>
+        <!-- ▼▼ REPLACE: drop a real dashboard screenshot here (1200×820 ideal) ▼▼ -->
+        <div class="mock">
+          <div class="m-eyebrow">Daily check-in · June 30</div>
+          <div class="m-title">Today, in the studio.</div>
+          <div class="m-card"><span class="m-dot alert"></span><div style="flex:1"><div class="m-line m" style="margin-bottom:6px"></div><div class="m-line s"></div></div></div>
+          <div class="m-card"><span class="m-dot"></span><div style="flex:1"><div class="m-line l" style="margin-bottom:6px"></div><div class="m-line s"></div></div></div>
+          <div class="m-stats">
+            <div class="m-stat"><div class="v">38</div><div class="k">Works in studio</div></div>
+            <div class="m-stat"><div class="v">$24.6k</div><div class="k">Revenue</div></div>
+            <div class="m-stat"><div class="v">5</div><div class="k">Deadlines</div></div>
+          </div>
+        </div>
+        <!-- ▲▲ end placeholder ▲▲ -->
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== Proof strip ===== -->
+<div class="proof">
+  <div class="wrap row">
+    <div class="item"><div class="n">10</div><div class="l">Modules, one studio</div></div>
+    <div class="item"><div class="n">1</div><div class="l">Daily morning brief</div></div>
+    <div class="item"><div class="n">$25</div><div class="l">To get started / mo</div></div>
+    <div class="item"><div class="n">1 month</div><div class="l">Free at launch</div></div>
+  </div>
+</div>
+
+<!-- ===== Features ===== -->
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Everything your practice needs</span>
+      <h2>One studio, quietly organized.</h2>
+      <p>Each part of the business of being an artist — handled in one calm, considered place.</p>
+    </div>
+    <div class="feat-grid reveal">
+      <div class="feat">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg></div>
+        <h3>Inventory Manager</h3>
+        <p>Every work tracked from studio to sold — images, dimensions, editions, status, and full provenance at a glance.</p>
+      </div>
+      <div class="feat">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+        <h3>Sales &amp; Finance</h3>
+        <p>Invoices, payments, expenses, and a live P&amp;L — know exactly what you earned, spent, and netted this month.</p>
+      </div>
+      <div class="feat">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+        <h3>Deadlines &amp; Opportunities</h3>
+        <p>Open calls, grants, and exhibitions in one tracker — with reminders before anything slips past you.</p>
+      </div>
+      <div class="feat">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/></svg></div>
+        <h3>Contacts — light CRM</h3>
+        <p>Collectors, galleries, and curators with follow-up nudges so the right relationships never go cold.</p>
+      </div>
+      <div class="feat">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v12H4z"/><path d="M2 20h20M8 16v4M16 16v4"/></svg></div>
+        <h3>Profile Vault <span class="pro-tag">Pro · Full</span></h3>
+        <p>Every bio, statement, CV, headshot, and work image — versioned and tailored, ready for any application.</p>
+      </div>
+      <div class="feat">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+        <h3>Consignments</h3>
+        <p>Track consigned works, store agreements, automate the sale split, and generate consignment statements.</p>
+      </div>
+      <div class="feat">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v16H4z"/><path d="M22 6l-10 7L2 6"/></svg></div>
+        <h3>Communications Hub <span class="pro-tag">Pro</span></h3>
+        <p>Flagged emails that need a reply, surfaced and triaged — so your inbox stops running your studio.</p>
+      </div>
+      <div class="feat">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg></div>
+        <h3>Marketing Assistant <span class="pro-tag">Pro</span></h3>
+        <p>Content ideas, scheduled posts, and social trend insight — your audience, tended without the burnout.</p>
+      </div>
+      <div class="feat">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2a7 7 0 00-7 7c0 3 2 4 2 7h10c0-3 2-4 2-7a7 7 0 00-7-7z"/><path d="M9 21h6"/></svg></div>
+        <h3>Your Studio Manager <span class="pro-tag">Pro</span></h3>
+        <p>Smarter pricing, tailored statements, and opportunity discovery — and direct access to a real arts administrator.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Old way vs Allegory ===== -->
+<section class="vs">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Why Allegory</span>
+      <h2>The studio, without the scramble.</h2>
+      <p>Trade a dozen half-finished systems for one that was built from inside the arts world.</p>
+    </div>
+    <div class="vs-grid reveal">
+      <div class="vs-col old">
+        <span class="tag">The usual setup</span>
+        <h3>Spreadsheets &amp; sticky notes</h3>
+        <ul>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg> Inventory in one sheet, sales in another, deadlines in your head</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg> Bios and statements scattered across a dozen documents</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg> Consignment splits worked out by hand, again</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg> Open calls missed because nothing reminded you</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg> Generic tools that don't understand the art world</li>
+        </ul>
+      </div>
+      <div class="vs-col new">
+        <span class="tag">With Allegory Studio</span>
+        <h3>One quiet, intelligent studio</h3>
+        <ul>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Every work, sale, and deadline connected in one place</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> A Profile Vault that tailors your materials to each opportunity</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Consignment agreements &amp; statements generated for you</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> A daily brief that tells you what needs attention first</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Designed by someone who's worked with artists for years</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Screenshot showcase ===== -->
+<section id="showcase">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Inside the platform</span>
+      <h2>Considered down to the last detail.</h2>
+      <p>A gallery-white interface that feels less like software and more like a well-run studio.</p>
+    </div>
+
+    <div class="show-row reveal">
+      <div class="show-text">
+        <span class="eyebrow">The morning brief</span>
+        <h3>Start each day knowing exactly what matters.</h3>
+        <p>Allegory reads across your whole practice and surfaces what needs you — advisory, not just organized.</p>
+        <ul>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Overdue invoices and deadlines, flagged first</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> A live financial snapshot of the month</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Contacts to nurture before they go cold</li>
+        </ul>
+      </div>
+      <img class="show-img" src="https://aastudio-git-claude-squarespac-fe5f28-samanthachodylas-projects.vercel.app/shots/dashboard.jpg" alt="Allegory Studio — Daily Check-In dashboard" loading="lazy" />
+    </div>
+
+    <div class="show-row flip reveal">
+      <div class="show-text">
+        <span class="eyebrow">Inventory &amp; sales</span>
+        <h3>From studio to sold, without losing the thread.</h3>
+        <p>Track every work and what it earned — with invoices, expenses, and a live profit-and-loss that finally makes sense.</p>
+        <ul>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Full provenance and status for every piece</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Sold, consigned, donated, and on-loan flows</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Pricing guidance informed by your own history</li>
+        </ul>
+      </div>
+      <img class="show-img" src="https://aastudio-git-claude-squarespac-fe5f28-samanthachodylas-projects.vercel.app/shots/inventory.jpg" alt="Allegory Studio — Inventory catalogue" loading="lazy" />
+    </div>
+
+    <div class="show-row reveal">
+      <div class="show-text">
+        <span class="eyebrow">Profile Vault</span>
+        <h3>Every bio, statement &amp; image — application-ready.</h3>
+        <p>Stop rewriting your statement at midnight. Keep tailored versions of everything, ready for the next opportunity.</p>
+        <ul>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Unlimited bio and statement variants by context</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> CV builder, headshot library, and press log</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Statements shaped to fit each open call</li>
+        </ul>
+      </div>
+      <img class="show-img" src="https://aastudio-git-claude-squarespac-fe5f28-samanthachodylas-projects.vercel.app/shots/vault.jpg" alt="Allegory Studio — Profile Vault" loading="lazy" />
+    </div>
+  </div>
+</section>
+
+<!-- ===== Pricing ===== -->
+<section id="pricing">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Pricing</span>
+      <h2>Built for working artists.</h2>
+      <p>Two plans, no clutter. Join the launch list and your <strong>first month is on us</strong> — no credit card required.</p>
+    </div>
+
+    <div class="price-toggle reveal">
+      <div class="seg">
+        <label for="bm">Monthly</label>
+        <label for="ba">Annual · 2 months free</label>
+      </div>
+    </div>
+
+    <div class="price-grid reveal">
+      <!-- Starter -->
+      <div class="plan">
+        <div class="pname">Studio Starter</div>
+        <div class="amt">
+          <span class="cur">$<span class="price-m">25</span><span class="price-a">20</span></span>
+          <span class="per">/ month</span>
+        </div>
+        <div class="annual-note"><span class="price-a">$240 billed annually — save $60</span></div>
+        <p class="desc">Get organized and take control of your practice.</p>
+        <ul>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Inventory Manager</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Sales &amp; Finance</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Deadline &amp; Opportunity Tracker</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Contacts — light CRM</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Finance Dashboard</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Daily Check-In dashboard</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> First month free for launch-list members</li>
+        </ul>
+        <a class="btn btn-ghost" href="#signup">Reserve your spot</a>
+      </div>
+
+      <!-- Pro -->
+      <div class="plan pro">
+        <span class="badge">Most popular</span>
+        <div class="pname">Studio Pro</div>
+        <div class="amt">
+          <span class="cur">$<span class="price-m">55</span><span class="price-a">44</span></span>
+          <span class="per">/ month</span>
+        </div>
+        <div class="annual-note"><span class="price-a">$528 billed annually — save $132</span></div>
+        <p class="desc">Your practice, supported by someone who understands it.</p>
+        <div class="callout">
+          <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2L12 16.6 5.7 21l2.3-7.2-6-4.4h7.6z"/></svg> Built by a working arts administrator</div>
+          <p>Direct access to ask questions and get real guidance from inside the arts world.</p>
+        </div>
+        <ul>
+          <li class="emph"><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Everything in Studio Starter</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Profile Vault — full</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Communications Hub</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Marketing Assistant</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Smarter pricing from your sales history</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Tailored statements for every opportunity</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Personalized opportunity discovery</li>
+        </ul>
+        <a class="btn btn-solid" href="#signup">Reserve your spot</a>
+      </div>
+    </div>
+
+    <!-- Compare table -->
+    <div class="cmp reveal" id="compare">
+      <table>
+        <thead><tr><th>Compare plans</th><th>Starter</th><th>Pro</th></tr></thead>
+        <tbody>
+          <tr><td>Inventory, Sales &amp; Finance</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Deadline &amp; Opportunity Tracker</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Contacts — light CRM</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Daily Check-In dashboard</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr class="grp"><td colspan="3">Profile Vault</td></tr>
+          <tr><td>Artist bio &amp; statement</td><td>1 version</td><td>Unlimited variants</td></tr>
+          <tr><td>CV / résumé</td><td>Upload &amp; parse</td><td>Full builder + export</td></tr>
+          <tr><td>Work images</td><td>Up to 10</td><td>Unlimited + metadata</td></tr>
+          <tr><td>Press &amp; publications log</td><td class="no">—</td><td class="yes">✓</td></tr>
+          <tr class="grp"><td colspan="3">Consignments</td></tr>
+          <tr><td>Tracking, agreements &amp; reminders</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Sale flow with auto-split</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Statement &amp; agreement generator</td><td class="no">—</td><td class="yes">✓</td></tr>
+          <tr class="grp"><td colspan="3">Intelligence &amp; support</td></tr>
+          <tr><td>Communications Hub</td><td class="no">—</td><td class="yes">✓</td></tr>
+          <tr><td>Marketing Assistant</td><td class="no">—</td><td class="yes">✓</td></tr>
+          <tr><td>Smart pricing &amp; opportunity discovery</td><td class="no">—</td><td class="yes">✓</td></tr>
+          <tr><td>Direct access to an arts administrator</td><td class="no">—</td><td class="yes">✓</td></tr>
+          <tr><td>Priority support</td><td class="no">—</td><td class="yes">✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Testimonials ===== -->
+<section class="quotes">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">From the studio</span>
+      <h2>Artists, finally out of the spreadsheet.</h2>
+    </div>
+    <!-- ▼ Replace names/quotes with your real beta testimonials ▼ -->
+    <div class="q-grid reveal">
+      <div class="q">
+        <div class="stars">★★★★★</div>
+        <blockquote>"For the first time I can see my whole practice in one place. The morning brief alone has paid for itself."</blockquote>
+        <div class="who"><span class="av">M</span><div><div class="nm">Maya R.</div><div class="ro">Painter · Brooklyn, NY</div></div></div>
+      </div>
+      <div class="q">
+        <div class="stars">★★★★★</div>
+        <blockquote>"It feels like it was made by someone who actually knows the art world — because it was. The consignment tools are a lifesaver."</blockquote>
+        <div class="who"><span class="av">J</span><div><div class="nm">Jonah J.</div><div class="ro">Sculptor · Los Angeles, CA</div></div></div>
+      </div>
+      <div class="q">
+        <div class="stars">★★★★★</div>
+        <blockquote>"I stopped missing open calls. The Profile Vault means my statement is always ready to go. Quietly indispensable."</blockquote>
+        <div class="who"><span class="av">A</span><div><div class="nm">Amara O.</div><div class="ro">Mixed media · Chicago, IL</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Questions</span>
+      <h2>Good to know.</h2>
+    </div>
+    <div class="faq reveal">
+      <details open><summary>When does Allegory Studio launch? <span class="pl">+</span></summary><div class="ans">We launch publicly on <b>August 1, 2026</b>. We're in beta now — start your free trial and you'll be set up and ready the moment we go live.</div></details>
+      <details><summary>What's the launch offer? <span class="pl">+</span></summary><div class="ans">Join the launch list now and your <b>first month is completely free</b> when we go live on August 1 — no credit card required. We'll email you a code to redeem it the moment the studio opens.</div></details>
+      <details><summary>What's the difference between Starter and Pro? <span class="pl">+</span></summary><div class="ans">Starter gives you the core studio: inventory, sales &amp; finance, deadlines, contacts, and the daily dashboard. Pro adds the full Profile Vault, Communications Hub, Marketing Assistant, smart pricing and opportunity discovery — plus direct access to a working arts administrator.</div></details>
+      <details><summary>Who is Allegory Studio for? <span class="pl">+</span></summary><div class="ans">Working and emerging artists who are managing the business of their practice — inventory, sales, consignments, exhibitions, and outreach — and want one calm place to do it.</div></details>
+      <details><summary>Can I cancel anytime? <span class="pl">+</span></summary><div class="ans">Absolutely. Plans are month-to-month (or annual if you prefer the savings). Cancel anytime, no questions asked.</div></details>
+      <details><summary>Is my data private and secure? <span class="pl">+</span></summary><div class="ans">Your studio data is yours. It's stored securely and never sold. You can export or delete it whenever you like.</div></details>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Final CTA ===== -->
+<section class="final">
+  <div class="wrap reveal">
+    <span class="eyebrow">Launching August 1, 2026</span>
+    <h2 style="margin-top:18px">A good day to <em>make work.</em></h2>
+    <p>Join the launch list and claim your first month free. We'll send your code the day the studio opens.</p>
+    <form class="signup" data-allegory-signup data-source="footer-cta">
+      <input type="email" name="email" required placeholder="you@studio.com" aria-label="Email address" autocomplete="email" />
+      <button type="submit" class="btn btn-solid">Claim one month free</button>
+      <p class="signup-msg" role="status" aria-live="polite"></p>
+    </form>
+    <div class="micro">First month free · No credit card required · Cancel anytime</div>
+  </div>
+</section>
+
+<!-- ===== Footer ===== -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="mark">allegory studio</div>
+        <div class="sub">for working artists</div>
+        <div class="tagline">An intelligent studio management platform — running quietly in the background.</div>
+      </div>
+      <div class="foot-cols">
+        <div class="col">
+          <h4>Product</h4>
+          <a href="#features">Features</a>
+          <a href="#showcase">The platform</a>
+          <a href="#compare">Compare plans</a>
+          <a href="#pricing">Pricing</a>
+        </div>
+        <div class="col">
+          <h4>Company</h4>
+          <a href="#faq">FAQ</a>
+          <a href="mailto:hello@allegoryartstudio.com">Contact</a>
+          <a href="https://allegoryartstudio.com">Sign in</a>
+        </div>
+        <div class="col">
+          <h4>Get started</h4>
+          <a href="https://allegoryartstudio.com">Start free trial</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Allegory Studio. All rights reserved.</span>
+      <span>allegoryartstudio.com</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ===== Launch-list signup → Supabase ============================
+   Every submitted email is stored in one place: the `launch_waitlist`
+   table in the Supabase project below. View / export them anytime at
+   https://supabase.com/dashboard/project/lafkbawmkxgvmmlrblff/editor
+   (Table editor → launch_waitlist). The publishable key is safe to
+   expose in the browser; row-level security only allows inserts. */
+(function(){
+  var SUPABASE_URL = "https://lafkbawmkxgvmmlrblff.supabase.co";
+  var SUPABASE_KEY = "sb_publishable_hpsrRBmMf5QfN8hlpxGNYQ_gNVBfJvk";
+  var forms = document.querySelectorAll('[data-allegory-signup]');
+  forms.forEach(function(form){
+    var msg = form.querySelector('.signup-msg');
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var input = form.querySelector('input[type=email]');
+      var email = (input.value || '').trim();
+      if(!email) return;
+      var btn = form.querySelector('button');
+      if(btn){ btn.disabled = true; btn.textContent = 'Joining…'; }
+      if(msg){ msg.className = 'signup-msg'; msg.textContent = ''; }
+      fetch(SUPABASE_URL + '/rest/v1/launch_waitlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          email: email,
+          source: form.getAttribute('data-source') || 'landing',
+          referrer: document.referrer || null,
+          user_agent: navigator.userAgent
+        })
+      }).then(function(res){
+        // 201 = added; 409 = already on the list — both are a success to the visitor.
+        if(res.ok || res.status === 409){
+          form.classList.add('done');
+          if(msg){ msg.className = 'signup-msg'; msg.textContent = "You're on the list — we'll email your free-month code on August 1. ✦"; }
+        } else {
+          throw new Error('Request failed: ' + res.status);
+        }
+      }).catch(function(){
+        if(btn){ btn.disabled = false; btn.textContent = 'Try again'; }
+        if(msg){ msg.className = 'signup-msg err'; msg.textContent = "Something went wrong — please try again, or email hello@allegoryartstudio.com."; }
+      });
+    });
+  });
+})();
+
+/* Progressive enhancement only — the page is fully functional without it.
+   (Squarespace runs inline scripts on the live site.) */
+(function(){
+  var root=document.querySelector('.allegory-lp');
+  if(!root)return;
+  root.classList.add('js');
+  var els=root.querySelectorAll('.reveal');
+  if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in')});return;}
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target);}});
+  },{threshold:.12});
+  els.forEach(function(e){io.observe(e)});
+  /* close mobile menu after tapping a link */
+  var chk=document.getElementById('navchk');
+  root.querySelectorAll('.nav-links a').forEach(function(a){a.addEventListener('click',function(){if(chk)chk.checked=false;});});
+})();
+</script>
+</div>
+<!-- ============== END ALLEGORY STUDIO LANDING ============== -->
