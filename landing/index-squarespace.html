@@ -106,6 +106,7 @@
 .allegory-lp .nav-links a.lnk{font-size:13px;letter-spacing:.02em;color:var(--ink-2);transition:color .2s}
 .allegory-lp .nav-links a.lnk:hover{color:var(--forest)}
 .allegory-lp .nav-toggle,.allegory-lp #navchk{display:none}
+.allegory-lp .brand-logo{height:44px;width:auto;display:block}
 
 /* ----------  Section scaffolding  ---------- */
 .allegory-lp section{padding:96px 0}
@@ -167,6 +168,11 @@
 .allegory-lp .feat h3{font-size:23px;margin-bottom:9px}
 .allegory-lp .feat p{font-size:14.5px;color:var(--muted);line-height:1.6}
 .allegory-lp .feat .pro-tag{display:inline-block;margin-top:14px;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--sage);border:1px solid var(--sage);border-radius:2px;padding:3px 8px}
+.allegory-lp .feat-group + .feat-group{margin-top:44px}
+.allegory-lp .feat-group-label{display:flex;align-items:center;gap:18px;margin-bottom:20px}
+.allegory-lp .feat-group-label .eyebrow{white-space:nowrap}
+.allegory-lp .feat-group-label:after{content:"";flex:1;height:1px;background:var(--line)}
+.allegory-lp .feat-grid.pro-grid{grid-template-columns:1fr 1fr;max-width:760px;margin:0 auto}
 
 /* ----------  Comparison: old way vs Allegory  ---------- */
 .allegory-lp .vs{background:var(--bg-2)}
@@ -272,6 +278,7 @@
 .allegory-lp .foot{background:var(--forest);color:var(--bg);padding:60px 0 36px}
 .allegory-lp .foot-grid{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap;align-items:flex-start}
 .allegory-lp .foot .mark{font-family:var(--font-d);font-size:30px;text-transform:lowercase}
+.allegory-lp .foot-logo{height:46px;width:auto;filter:brightness(0) invert(1);opacity:.92;margin-bottom:8px}
 .allegory-lp .foot .sub{font-size:9px;letter-spacing:.34em;text-transform:uppercase;opacity:.6;margin-top:5px}
 .allegory-lp .foot .tagline{font-family:var(--font-d);font-style:italic;font-size:16px;opacity:.8;margin-top:16px;max-width:280px}
 .allegory-lp .foot-cols{display:flex;gap:64px;flex-wrap:wrap}
@@ -304,6 +311,8 @@
   .allegory-lp{font-size:16px}
   .allegory-lp section{padding:64px 0}
   .allegory-lp .feat-grid,.allegory-lp .q-grid{grid-template-columns:1fr}
+  .allegory-lp .feat-grid.pro-grid{grid-template-columns:1fr;max-width:none}
+  .allegory-lp .brand-logo{height:36px}
   .allegory-lp .proof .item .n{font-size:32px}
   .allegory-lp .topbar{font-size:10.5px;letter-spacing:.1em}
   .allegory-lp .wrap{padding:0 20px}
@@ -320,9 +329,8 @@
 <!-- ===== Nav ===== -->
 <nav class="nav">
   <div class="wrap nav-in">
-    <a href="#allegory-top" class="brand">
-      <span class="mark">allegory studio</span>
-      <span class="sub">for working artists</span>
+    <a href="#allegory-top" class="brand" aria-label="Allegory Art Studio">
+      <img class="brand-logo" src="https://aastudio-git-claude-squarespac-fe5f28-samanthachodylas-projects.vercel.app/Allegory_Studio_Logo.png" alt="Allegory Art Studio" />
     </a>
     <input type="checkbox" id="navchk">
     <label class="nav-toggle" for="navchk"><span></span><span></span><span></span></label>
@@ -343,7 +351,7 @@
     <div class="reveal">
       <span class="eyebrow">Launching August 1, 2026</span>
       <h1 style="margin-top:18px">Run your practice like a <em>professional studio.</em></h1>
-      <p class="lead">Inventory, sales, consignments, exhibitions, and outreach — quietly organized in one place, with an arts administrator's intelligence working in the background.</p>
+      <p class="lead">Inventory, sales, consignments, exhibitions, outreach and more — all thoughtfully organized in one place.</p>
       <form class="signup" data-allegory-signup data-source="hero">
         <input type="email" name="email" required placeholder="you@studio.com" aria-label="Email address" autocomplete="email" />
         <button type="submit" class="btn btn-solid">Get one month free</button>
@@ -386,55 +394,69 @@
 <section id="features">
   <div class="wrap">
     <div class="sec-head reveal">
-      <span class="eyebrow">Everything your practice needs</span>
-      <h2>One studio, quietly organized.</h2>
-      <p>Each part of the business of being an artist — handled in one calm, considered place.</p>
+      <span class="eyebrow">Everything in one place</span>
+      <h2>One platform to keep your studio organized</h2>
+      <p>Streamline the business of being an artist so you can do what you do best: create.</p>
     </div>
-    <div class="feat-grid reveal">
-      <div class="feat">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg></div>
-        <h3>Inventory Manager</h3>
-        <p>Every work tracked from studio to sold — images, dimensions, editions, status, and full provenance at a glance.</p>
+    <div class="feat-group reveal">
+      <div class="feat-group-label"><span class="eyebrow">Included for every artist</span></div>
+      <div class="feat-grid">
+        <div class="feat">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg></div>
+          <h3>Inventory Manager</h3>
+          <p>Every work tracked from studio to sold, with full provenance.</p>
+        </div>
+        <div class="feat">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+          <h3>Sales &amp; Finance</h3>
+          <p>Invoices, expenses, and a live profit-and-loss at a glance.</p>
+        </div>
+        <div class="feat">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+          <h3>Deadlines &amp; Opportunities</h3>
+          <p>Open calls, grants, and shows in one tracker — with reminders.</p>
+        </div>
+        <div class="feat">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/></svg></div>
+          <h3>Contacts</h3>
+          <p>A light CRM for collectors, galleries, and curators.</p>
+        </div>
+        <div class="feat">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4"/><path d="M9 13h6M9 17h6"/></svg></div>
+          <h3>Consignments</h3>
+          <p>Track consigned works, agreements, and payment reminders.</p>
+        </div>
+        <div class="feat">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+          <h3>Daily Check-In</h3>
+          <p>A morning brief of what needs you first, across your studio.</p>
+        </div>
       </div>
-      <div class="feat">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
-        <h3>Sales &amp; Finance</h3>
-        <p>Invoices, payments, expenses, and a live P&amp;L — know exactly what you earned, spent, and netted this month.</p>
-      </div>
-      <div class="feat">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
-        <h3>Deadlines &amp; Opportunities</h3>
-        <p>Open calls, grants, and exhibitions in one tracker — with reminders before anything slips past you.</p>
-      </div>
-      <div class="feat">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/></svg></div>
-        <h3>Contacts — light CRM</h3>
-        <p>Collectors, galleries, and curators with follow-up nudges so the right relationships never go cold.</p>
-      </div>
-      <div class="feat">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v12H4z"/><path d="M2 20h20M8 16v4M16 16v4"/></svg></div>
-        <h3>Profile Vault <span class="pro-tag">Pro · Full</span></h3>
-        <p>Every bio, statement, CV, headshot, and work image — versioned and tailored, ready for any application.</p>
-      </div>
-      <div class="feat">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
-        <h3>Consignments</h3>
-        <p>Track consigned works, store agreements, automate the sale split, and generate consignment statements.</p>
-      </div>
-      <div class="feat">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v16H4z"/><path d="M22 6l-10 7L2 6"/></svg></div>
-        <h3>Communications Hub <span class="pro-tag">Pro</span></h3>
-        <p>Flagged emails that need a reply, surfaced and triaged — so your inbox stops running your studio.</p>
-      </div>
-      <div class="feat">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg></div>
-        <h3>Marketing Assistant <span class="pro-tag">Pro</span></h3>
-        <p>Content ideas, scheduled posts, and social trend insight — your audience, tended without the burnout.</p>
-      </div>
-      <div class="feat">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2a7 7 0 00-7 7c0 3 2 4 2 7h10c0-3 2-4 2-7a7 7 0 00-7-7z"/><path d="M9 21h6"/></svg></div>
-        <h3>Your Studio Manager <span class="pro-tag">Pro</span></h3>
-        <p>Smarter pricing, tailored statements, and opportunity discovery — and direct access to a real arts administrator.</p>
+    </div>
+
+    <div class="feat-group reveal">
+      <div class="feat-group-label"><span class="eyebrow">With Studio Pro</span></div>
+      <div class="feat-grid pro-grid">
+        <div class="feat">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v12H4z"/><path d="M2 20h20M8 16v4M16 16v4"/></svg></div>
+          <h3>Profile Vault</h3>
+          <p>Bios, statements, CVs, and images — versioned and application-ready.</p>
+        </div>
+        <div class="feat">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v16H4z"/><path d="M22 6l-10 7L2 6"/></svg></div>
+          <h3>Communications Hub</h3>
+          <p>Flagged emails that need a reply, surfaced and triaged.</p>
+        </div>
+        <div class="feat">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg></div>
+          <h3>Marketing Assistant</h3>
+          <p>Content ideas, scheduled posts, and social trend insight.</p>
+        </div>
+        <div class="feat">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2a7 7 0 00-7 7c0 3 2 4 2 7h10c0-3 2-4 2-7a7 7 0 00-7-7z"/><path d="M9 21h6"/></svg></div>
+          <h3>Your Studio Manager</h3>
+          <p>Smart pricing, tailored statements, and a real arts administrator.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -461,7 +483,7 @@
         </ul>
       </div>
       <div class="vs-col new">
-        <span class="tag">With Allegory Studio</span>
+        <span class="tag">With Allegory Art Studio</span>
         <h3>One quiet, intelligent studio</h3>
         <ul>
           <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Every work, sale, and deadline connected in one place</li>
@@ -479,16 +501,16 @@
 <section id="showcase">
   <div class="wrap">
     <div class="sec-head reveal">
-      <span class="eyebrow">Inside the platform</span>
+      <span class="eyebrow">A few highlights</span>
       <h2>Considered down to the last detail.</h2>
-      <p>A gallery-white interface that feels less like software and more like a well-run studio.</p>
+      <p>Just a few of the tools inside — a gallery-white interface that feels less like software and more like a well-run studio.</p>
     </div>
 
     <div class="show-row reveal">
       <div class="show-text">
         <span class="eyebrow">The morning brief</span>
         <h3>Start each day knowing exactly what matters.</h3>
-        <p>Allegory reads across your whole practice and surfaces what needs you — advisory, not just organized.</p>
+        <p>Allegory Art Studio reads across your whole practice and surfaces what needs you — advisory, not just organized.</p>
         <ul>
           <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Overdue invoices and deadlines, flagged first</li>
           <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> A live financial snapshot of the month</li>
@@ -598,25 +620,15 @@
       <table>
         <thead><tr><th>Compare plans</th><th>Starter</th><th>Pro</th></tr></thead>
         <tbody>
-          <tr><td>Inventory, Sales &amp; Finance</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>Deadline &amp; Opportunity Tracker</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>Contacts — light CRM</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Inventory, sales, deadlines &amp; contacts</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Consignment tracking &amp; reminders</td><td class="yes">✓</td><td class="yes">✓</td></tr>
           <tr><td>Daily Check-In dashboard</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr class="grp"><td colspan="3">Profile Vault</td></tr>
-          <tr><td>Artist bio &amp; statement</td><td>1 version</td><td>Unlimited variants</td></tr>
-          <tr><td>CV / résumé</td><td>Upload &amp; parse</td><td>Full builder + export</td></tr>
-          <tr><td>Work images</td><td>Up to 10</td><td>Unlimited + metadata</td></tr>
-          <tr><td>Press &amp; publications log</td><td class="no">—</td><td class="yes">✓</td></tr>
-          <tr class="grp"><td colspan="3">Consignments</td></tr>
-          <tr><td>Tracking, agreements &amp; reminders</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>Sale flow with auto-split</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>Statement &amp; agreement generator</td><td class="no">—</td><td class="yes">✓</td></tr>
-          <tr class="grp"><td colspan="3">Intelligence &amp; support</td></tr>
+          <tr><td>Profile Vault</td><td>1 of each</td><td>Unlimited &amp; tailored</td></tr>
+          <tr><td>Consignment agreements &amp; statements</td><td class="no">—</td><td class="yes">✓</td></tr>
           <tr><td>Communications Hub</td><td class="no">—</td><td class="yes">✓</td></tr>
           <tr><td>Marketing Assistant</td><td class="no">—</td><td class="yes">✓</td></tr>
           <tr><td>Smart pricing &amp; opportunity discovery</td><td class="no">—</td><td class="yes">✓</td></tr>
-          <tr><td>Direct access to an arts administrator</td><td class="no">—</td><td class="yes">✓</td></tr>
-          <tr><td>Priority support</td><td class="no">—</td><td class="yes">✓</td></tr>
+          <tr><td>Direct access to a real arts administrator</td><td class="no">—</td><td class="yes">✓</td></tr>
         </tbody>
       </table>
     </div>
@@ -627,8 +639,8 @@
 <section class="quotes">
   <div class="wrap">
     <div class="sec-head reveal">
-      <span class="eyebrow">From the studio</span>
-      <h2>Artists, finally out of the spreadsheet.</h2>
+      <span class="eyebrow">Testimonials</span>
+      <h2>Trusted by working artists.</h2>
     </div>
     <!-- ▼ Replace names/quotes with your real beta testimonials ▼ -->
     <div class="q-grid reveal">
@@ -656,13 +668,13 @@
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">Questions</span>
-      <h2>Good to know.</h2>
+      <h2>FAQ</h2>
     </div>
     <div class="faq reveal">
-      <details open><summary>When does Allegory Studio launch? <span class="pl">+</span></summary><div class="ans">We launch publicly on <b>August 1, 2026</b>. We're in beta now — start your free trial and you'll be set up and ready the moment we go live.</div></details>
+      <details open><summary>When does Allegory Art Studio launch? <span class="pl">+</span></summary><div class="ans">We launch publicly on <b>August 1, 2026</b>. Join the launch list now and we'll email your free-month code the moment we go live.</div></details>
       <details><summary>What's the launch offer? <span class="pl">+</span></summary><div class="ans">Join the launch list now and your <b>first month is completely free</b> when we go live on August 1 — no credit card required. We'll email you a code to redeem it the moment the studio opens.</div></details>
       <details><summary>What's the difference between Starter and Pro? <span class="pl">+</span></summary><div class="ans">Starter gives you the core studio: inventory, sales &amp; finance, deadlines, contacts, and the daily dashboard. Pro adds the full Profile Vault, Communications Hub, Marketing Assistant, smart pricing and opportunity discovery — plus direct access to a working arts administrator.</div></details>
-      <details><summary>Who is Allegory Studio for? <span class="pl">+</span></summary><div class="ans">Working and emerging artists who are managing the business of their practice — inventory, sales, consignments, exhibitions, and outreach — and want one calm place to do it.</div></details>
+      <details><summary>Who is Allegory Art Studio for? <span class="pl">+</span></summary><div class="ans">Working and emerging artists who are managing the business of their practice — inventory, sales, consignments, exhibitions, and outreach — and want one calm place to do it.</div></details>
       <details><summary>Can I cancel anytime? <span class="pl">+</span></summary><div class="ans">Absolutely. Plans are month-to-month (or annual if you prefer the savings). Cancel anytime, no questions asked.</div></details>
       <details><summary>Is my data private and secure? <span class="pl">+</span></summary><div class="ans">Your studio data is yours. It's stored securely and never sold. You can export or delete it whenever you like.</div></details>
     </div>
@@ -689,8 +701,7 @@
   <div class="wrap">
     <div class="foot-grid">
       <div>
-        <div class="mark">allegory studio</div>
-        <div class="sub">for working artists</div>
+        <img class="foot-logo" src="https://aastudio-git-claude-squarespac-fe5f28-samanthachodylas-projects.vercel.app/Allegory_Studio_Logo.png" alt="Allegory Art Studio" />
         <div class="tagline">An intelligent studio management platform — running quietly in the background.</div>
       </div>
       <div class="foot-cols">
@@ -709,12 +720,12 @@
         </div>
         <div class="col">
           <h4>Get started</h4>
-          <a href="https://allegoryartstudio.com">Start free trial</a>
+          <a href="#signup">Join the launch list</a>
         </div>
       </div>
     </div>
     <div class="foot-bottom">
-      <span>© 2026 Allegory Studio. All rights reserved.</span>
+      <span>© 2026 Allegory Art Studio. All rights reserved.</span>
       <span>allegoryartstudio.com</span>
     </div>
   </div>
