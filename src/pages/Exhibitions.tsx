@@ -305,7 +305,16 @@ function OpportunityFinder({ existingTitles }: { existingTitles: string[] }) {
       const { data, error } = await supabase.functions.invoke("opportunity-finder", {
         body: { region, discipline, types, feePreference, existingTitles },
       });
-      if (error) throw error;
+      if (error) {
+        // Surface the function's real error body (e.g. "ANTHROPIC_API_KEY not
+        // configured") instead of the generic "non-2xx status code" wrapper.
+        let msg = error.message || "Couldn't reach the opportunity finder.";
+        try {
+          const body = await (error as { context?: Response }).context?.json?.();
+          if (body?.error) msg = body.error;
+        } catch { /* keep default */ }
+        throw new Error(msg);
+      }
       if (data?.error) throw new Error(data.error);
       setSuggestions(data?.suggestions || []);
     } catch (err) {
