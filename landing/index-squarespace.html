@@ -351,7 +351,7 @@
       <a class="lnk" href="#compare">Compare</a>
       <a class="lnk" href="#pricing">Pricing</a>
       <a class="lnk" href="#faq">FAQ</a>
-      <a class="btn btn-solid btn-sm" href="#signup">Join the list</a>
+      <a class="btn btn-solid btn-sm" href="#signup">Get first access</a>
     </div>
   </div>
 </nav>
@@ -361,14 +361,14 @@
   <div class="wrap hero-grid">
     <div class="reveal">
       <span class="hero-tag">Launching August 1</span>
-      <h1 style="margin-top:16px">Run your practice like a <em>professional studio.</em></h1>
+      <h1 style="margin-top:16px">Run your art practice like a <em>professional studio.</em></h1>
       <p class="lead">Inventory, sales, consignments, exhibitions, outreach and more, all thoughtfully organized in one place.</p>
       <form class="signup" data-allegory-signup data-source="hero">
         <input type="email" name="email" required placeholder="you@studio.com" aria-label="Email address" autocomplete="email" />
-        <button type="submit" class="btn btn-solid">Join the launch list</button>
+        <button type="submit" class="btn btn-solid">Get first access</button>
         <p class="signup-msg" role="status" aria-live="polite"></p>
       </form>
-      <div class="trust"><span class="star">★★★★★</span> From working artists</div>
+      <div class="trust">Developed by an arts admin, for artists.</div>
     </div>
     <div class="reveal">
       <div class="device">
@@ -685,8 +685,8 @@
       <h2>FAQ</h2>
     </div>
     <div class="faq reveal">
-      <details open><summary>When does Allegory Art Studio launch? <span class="pl">+</span></summary><div class="ans">We launch publicly on <b>August 1, 2026</b>. Join the launch list now and we'll let you know the moment we go live.</div></details>
-      <details><summary>How do I get early access? <span class="pl">+</span></summary><div class="ans">Join the launch list with your email and you'll be one of the first artists invited in when we open on August 1.</div></details>
+      <details open><summary>When does Allegory Art Studio launch? <span class="pl">+</span></summary><div class="ans">We launch publicly on <b>August 1, 2026</b>. Get first access now and we'll let you know the moment we go live.</div></details>
+      <details><summary>How do I get early access? <span class="pl">+</span></summary><div class="ans">Add your email to get first access, and you'll be one of the first artists invited in when we open on August 1.</div></details>
       <details><summary>What's the difference between Starter and Pro? <span class="pl">+</span></summary><div class="ans">Starter gives you the core studio: inventory, sales &amp; finance, deadlines, contacts, and the daily dashboard. Pro adds the full Profile Vault, Communications Hub, Marketing Assistant, smart pricing and opportunity discovery, plus direct access to a working arts administrator.</div></details>
       <details><summary>Who is Allegory Art Studio for? <span class="pl">+</span></summary><div class="ans">Working and emerging artists who are managing the business of their practice (inventory, sales, consignments, exhibitions, and outreach) and want one calm place to do it.</div></details>
       <details><summary>Can I cancel anytime? <span class="pl">+</span></summary><div class="ans">Absolutely. Plans are month-to-month (or annual if you prefer the savings). Cancel anytime, no questions asked.</div></details>
@@ -700,10 +700,10 @@
   <div class="wrap reveal">
     <span class="eyebrow">Launching August 1, 2026</span>
     <h2 style="margin-top:18px">A good day to <em>make work.</em></h2>
-    <p>Join the launch list and be one of the first artists in when we open on August 1.</p>
+    <p>Get first access and be among the first artists in when we open on August 1.</p>
     <form class="signup" data-allegory-signup data-source="footer-cta">
       <input type="email" name="email" required placeholder="you@studio.com" aria-label="Email address" autocomplete="email" />
-      <button type="submit" class="btn btn-solid">Join the launch list</button>
+      <button type="submit" class="btn btn-solid">Get first access</button>
       <p class="signup-msg" role="status" aria-live="polite"></p>
     </form>
     <div class="micro">Launching August 1 · We'll only email you when we open</div>
@@ -735,7 +735,7 @@
         </div>
         <div class="col">
           <h4>Get started</h4>
-          <a href="#signup">Join the launch list</a>
+          <a href="#signup">Get first access</a>
         </div>
       </div>
     </div>
@@ -765,7 +765,7 @@
       var email = (input.value || '').trim();
       if(!email) return;
       var btn = form.querySelector('button');
-      if(btn){ btn.disabled = true; btn.textContent = 'Joining…'; }
+      if(btn){ btn.disabled = true; btn.textContent = 'Sending…'; }
       if(msg){ msg.className = 'signup-msg'; msg.textContent = ''; }
       fetch(SUPABASE_URL + '/rest/v1/launch_waitlist', {
         method: 'POST',
@@ -785,7 +785,7 @@
         // 201 = added; 409 = already on the list — both are a success to the visitor.
         if(res.ok || res.status === 409){
           form.classList.add('done');
-          if(msg){ msg.className = 'signup-msg'; msg.textContent = "You're on the list. We'll email you the moment we open on August 1. ✦"; }
+          if(msg){ msg.className = 'signup-msg'; msg.textContent = "You've got first access. We'll email you the moment we open on August 1. ✦"; }
         } else {
           throw new Error('Request failed: ' + res.status);
         }
