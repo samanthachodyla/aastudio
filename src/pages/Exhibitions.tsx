@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Plus, Trash2, Sparkles, Loader2, ChevronDown, CalendarClock, Search } from "lucide-react";
+import { Plus, Trash2, Sparkles, Loader2, ChevronDown, CalendarClock, Search, ExternalLink, Check } from "lucide-react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { useStore, fmtDate, daysUntil } from "@/lib/store";
 import { Button } from "@/components/ui/button";
@@ -180,7 +181,7 @@ const Exhibitions = () => {
         </TabsContent>
 
         <TabsContent value="finder" className="m-0">
-          <OpportunityFinder existingTitles={opportunities.map(o => o.title)} />
+          <OpportunityFinder existingTitles={opportunities.map(o => o.title)} onAdd={addOpportunity} />
         </TabsContent>
       </Tabs>
     </AppShell>
@@ -272,7 +273,31 @@ const SUGGESTION_SEARCH_FIELDS: (keyof Suggestion)[] = [
   "name", "organization", "type", "description", "where_to_find",
 ];
 
-function OpportunityFinder({ existingTitles }: { existingTitles: string[] }) {
+// A "where to find" value is a clickable link only if it's an http(s) URL.
+const asUrl = (v?: string): string | null => {
+  const s = (v ?? "").trim();
+  return /^https?:\/\/\S+$/i.test(s) ? s : null;
+};
+
+// Map the finder's free-text type onto the app's opportunity types.
+const SUGGESTION_TYPE_MAP: Record<string, OpportunityType> = {
+  "open call": "open_call", residency: "residency", grant: "grant",
+  prize: "prize", show: "show", commission: "commission", platform: "open_call",
+};
+const mapSuggestionType = (t?: string): OpportunityType =>
+  SUGGESTION_TYPE_MAP[(t ?? "").trim().toLowerCase()] ?? "open_call";
+
+// Statuses offered in the "Track this" dropdown on each suggestion.
+const TRACK_STATUSES: { value: OpportunityStatus; label: string }[] = [
+  { value: "researching", label: "Researching" },
+  { value: "applying", label: "Applying" },
+  { value: "submitted", label: "Submitted" },
+];
+
+function OpportunityFinder({ existingTitles, onAdd }: {
+  existingTitles: string[];
+  onAdd: (o: Omit<Opportunity, "id">) => void;
+}) {
   const [region, setRegion] = useState("");
   const [discipline, setDiscipline] = useState("");
   const [types, setTypes] = useState<string[]>([]);
@@ -281,6 +306,27 @@ function OpportunityFinder({ existingTitles }: { existingTitles: string[] }) {
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
   const [query, setQuery] = useState("");
+  const [added, setAdded] = useState<Set<string>>(new Set());
+
+  const trackSuggestion = (s: Suggestion, status: OpportunityStatus) => {
+    onAdd({
+      title: s.name,
+      organization: s.organization ?? "",
+      deadline: new Date(Date.now() + 60 * 86400000).toISOString(), // placeholder — refine in Deadlines
+      type: mapSuggestionType(s.type),
+      status,
+      notes: [
+        s.description,
+        s.deadline_season ? `Suggested timing: ${s.deadline_season}` : "",
+        "Saved from Opportunity Finder",
+      ].filter(Boolean).join("\n\n"),
+      link: asUrl(s.where_to_find) ?? undefined,
+    });
+    setAdded(prev => new Set(prev).add(s.name));
+    toast.success(`Added “${s.name}” to your deadlines`, {
+      description: "Set its exact deadline in the Deadlines tab.",
+    });
+  };
 
   const filteredSuggestions = useMemo(() => {
     if (!suggestions) return null;
@@ -393,21 +439,65 @@ function OpportunityFinder({ existingTitles }: { existingTitles: string[] }) {
 
           {filteredSuggestions && filteredSuggestions.length > 0 ? (
             <div className="mt-4 hairline-card divide-y divide-border">
-              {filteredSuggestions.map((s, i) => (
-                <div key={i} className="p-5">
-                  <div className="flex items-baseline justify-between gap-4 flex-wrap">
-                    <h3 className="font-display text-xl">{s.name}</h3>
-                    {s.deadline_season && <span className="eyebrow">{s.deadline_season}</span>}
+              {filteredSuggestions.map((s, i) => {
+                const url = asUrl(s.where_to_find);
+                const isAdded = added.has(s.name);
+                return (
+                  <div key={i} className="p-5">
+                    <div className="flex items-baseline justify-between gap-4 flex-wrap">
+                      <h3 className="font-display text-xl">
+                        {url ? (
+                          <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:underline">
+                            {s.name}
+                            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                          </a>
+                        ) : s.name}
+                      </h3>
+                      {s.deadline_season && <span className="eyebrow">{s.deadline_season}</span>}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {[s.organization, s.type].filter(Boolean).join(" · ")}
+                    </div>
+                    {s.description && <p className="text-sm text-muted-foreground mt-2">{s.description}</p>}
+
+                    <div className="flex items-center flex-wrap gap-3 mt-4">
+                      {url ? (
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-medium hover:underline"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" /> Visit site
+                        </a>
+                      ) : s.where_to_find ? (
+                        <span className="text-xs text-muted-foreground italic">Where to find: {s.where_to_find}</span>
+                      ) : null}
+
+                      <div className="ml-auto">
+                        {isAdded ? (
+                          <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Check className="h-3.5 w-3.5" /> Added to deadlines
+                          </span>
+                        ) : (
+                          <Select onValueChange={(v: OpportunityStatus) => trackSuggestion(s, v)}>
+                            <SelectTrigger className="h-8 w-40 text-xs">
+                              <SelectValue placeholder="Track this…" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {TRACK_STATUSES.map(st => (
+                                <SelectItem key={st.value} value={st.value} className="text-xs">
+                                  {st.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {[s.organization, s.type].filter(Boolean).join(" · ")}
-                  </div>
-                  {s.description && <p className="text-sm text-muted-foreground mt-2">{s.description}</p>}
-                  {s.where_to_find && (
-                    <p className="text-xs text-muted-foreground italic mt-2">Where to find: {s.where_to_find}</p>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="mt-4 text-sm text-muted-foreground italic">No suggestions match "{query.trim()}".</div>
