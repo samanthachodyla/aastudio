@@ -86,7 +86,7 @@ Return ONLY a JSON array (no prose, no markdown fences) of objects with this exa
       },
       body: JSON.stringify({
         model: "claude-sonnet-5",
-        max_tokens: 1000,
+        max_tokens: 2048,
         messages: [{ role: "user", content: prompt }],
       }),
     });
@@ -105,8 +105,16 @@ Return ONLY a JSON array (no prose, no markdown fences) of objects with this exa
 
     let suggestions: any[] = [];
     try {
-      const match = text.match(/\[[\s\S]*\]/);
-      suggestions = match ? JSON.parse(match[0]) : [];
+      // Strip markdown fences, then pull out the JSON array.
+      const cleaned = text.replace(/```(?:json)?/gi, "").trim();
+      const match = cleaned.match(/\[[\s\S]*\]/);
+      if (match) {
+        suggestions = JSON.parse(match[0]);
+      } else {
+        // If the array was truncated (no closing ]), recover whole objects.
+        const objs = cleaned.match(/\{[\s\S]*?\}(?=\s*[,\]])/g) ?? [];
+        suggestions = objs.map((o) => { try { return JSON.parse(o); } catch { return null; } }).filter(Boolean);
+      }
     } catch {
       suggestions = [];
     }
