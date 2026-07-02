@@ -118,7 +118,7 @@ The "body" should be plain text with paragraph breaks as \\n\\n. Do not include 
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-5",
         max_tokens: 1000,
         messages: [{ role: "user", content: prompt }],
       }),
