@@ -267,6 +267,11 @@ interface Suggestion {
   where_to_find?: string;
 }
 
+// Fields the suggestion search reads. Add one here to include it in search.
+const SUGGESTION_SEARCH_FIELDS: (keyof Suggestion)[] = [
+  "name", "organization", "type", "description", "where_to_find",
+];
+
 function OpportunityFinder({ existingTitles }: { existingTitles: string[] }) {
   const [region, setRegion] = useState("");
   const [discipline, setDiscipline] = useState("");
@@ -275,6 +280,16 @@ function OpportunityFinder({ existingTitles }: { existingTitles: string[] }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
+  const [query, setQuery] = useState("");
+
+  const filteredSuggestions = useMemo(() => {
+    if (!suggestions) return null;
+    const q = query.trim().toLowerCase();
+    if (!q) return suggestions;
+    return suggestions.filter(s =>
+      SUGGESTION_SEARCH_FIELDS.some(f => String(s[f] ?? "").toLowerCase().includes(q)),
+    );
+  }, [suggestions, query]);
 
   const toggleType = (t: string) => {
     setTypes(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
@@ -285,6 +300,7 @@ function OpportunityFinder({ existingTitles }: { existingTitles: string[] }) {
     setLoading(true);
     setError(null);
     setSuggestions(null);
+    setQuery("");
     try {
       const { data, error } = await supabase.functions.invoke("opportunity-finder", {
         body: { region, discipline, types, feePreference, existingTitles },
@@ -355,23 +371,39 @@ function OpportunityFinder({ existingTitles }: { existingTitles: string[] }) {
       )}
 
       {suggestions && suggestions.length > 0 && (
-        <div className="mt-8 hairline-card divide-y divide-border">
-          {suggestions.map((s, i) => (
-            <div key={i} className="p-5">
-              <div className="flex items-baseline justify-between gap-4 flex-wrap">
-                <h3 className="font-display text-xl">{s.name}</h3>
-                {s.deadline_season && <span className="eyebrow">{s.deadline_season}</span>}
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {[s.organization, s.type].filter(Boolean).join(" · ")}
-              </div>
-              {s.description && <p className="text-sm text-muted-foreground mt-2">{s.description}</p>}
-              {s.where_to_find && (
-                <p className="text-xs text-muted-foreground italic mt-2">Where to find: {s.where_to_find}</p>
-              )}
+        <>
+          <div className="relative mt-8 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Filter these suggestions…"
+              className="pl-9"
+            />
+          </div>
+
+          {filteredSuggestions && filteredSuggestions.length > 0 ? (
+            <div className="mt-4 hairline-card divide-y divide-border">
+              {filteredSuggestions.map((s, i) => (
+                <div key={i} className="p-5">
+                  <div className="flex items-baseline justify-between gap-4 flex-wrap">
+                    <h3 className="font-display text-xl">{s.name}</h3>
+                    {s.deadline_season && <span className="eyebrow">{s.deadline_season}</span>}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {[s.organization, s.type].filter(Boolean).join(" · ")}
+                  </div>
+                  {s.description && <p className="text-sm text-muted-foreground mt-2">{s.description}</p>}
+                  {s.where_to_find && (
+                    <p className="text-xs text-muted-foreground italic mt-2">Where to find: {s.where_to_find}</p>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          ) : (
+            <div className="mt-4 text-sm text-muted-foreground italic">No suggestions match "{query.trim()}".</div>
+          )}
+        </>
       )}
 
       {suggestions && suggestions.length === 0 && (
