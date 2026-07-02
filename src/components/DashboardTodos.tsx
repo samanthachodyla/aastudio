@@ -7,11 +7,19 @@ import { Input } from "@/components/ui/input";
 export function DashboardTodos() {
   const { todos, addTodo, toggleTodo, deleteTodo, clearCompletedTodos } = useStore();
   const [text, setText] = useState("");
+  // Track the item just checked so the pop animation fires only on the
+  // check action — not on every dashboard load for already-done items.
+  const [poppedId, setPoppedId] = useState<string | null>(null);
 
   const submit = () => {
     if (!text.trim()) return;
     addTodo(text);
     setText("");
+  };
+
+  const handleToggle = (id: string, done: boolean) => {
+    if (!done) setPoppedId(id); // becoming done → play the pop
+    toggleTodo(id);
   };
 
   const completedCount = todos.filter(t => t.done).length;
@@ -54,12 +62,13 @@ export function DashboardTodos() {
             {todos.map(t => (
               <li key={t.id} className="group px-6 py-4 flex items-center gap-4">
                 <button
-                  onClick={() => toggleTodo(t.id)}
+                  onClick={() => handleToggle(t.id, t.done)}
+                  onAnimationEnd={() => poppedId === t.id && setPoppedId(null)}
                   aria-pressed={t.done}
                   aria-label={t.done ? "Mark as not done" : "Mark as done"}
                   className={`shrink-0 h-5 w-5 rounded-sm border flex items-center justify-center transition-all duration-200 ${
                     t.done
-                      ? "bg-foreground border-foreground text-background animate-check-pop"
+                      ? `bg-foreground border-foreground text-background${poppedId === t.id ? " animate-check-pop" : ""}`
                       : "border-muted-foreground/50 text-transparent hover:border-foreground"
                   }`}
                 >
