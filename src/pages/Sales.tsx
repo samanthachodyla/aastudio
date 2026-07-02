@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Plus, Download, Trash2, FileText, Pencil } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { Plus, Download, Trash2, FileText, Pencil, ScanLine } from "lucide-react";
 import { PnLStatement, EXPENSE_CATEGORIES, catLabel } from "@/components/PnLStatement";
 import { AppShell } from "@/components/AppShell";
 import { useStore, fmtMoney, fmtDate } from "@/lib/store";
@@ -33,6 +33,48 @@ const Sales = () => {
   const artistLine = fullName ? `${getFirstName(fullName)}${getLastName(fullName) ? " " + getLastName(fullName) : ""} · Artist` : "";
   const [pnlOpen, setPnlOpen] = useState(false);
   const [expenseOpen, setExpenseOpen] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [scanPrefill, setScanPrefill] = useState<ReceiptPrefill | null>(null);
+  const receiptInputRef = useRef<HTMLInputElement>(null);
+
+  const handleReceipt = async (file?: File) => {
+    if (!file) return;
+    setScanning(true);
+    try {
+      const dataUrl: string = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result ?? ""));
+        reader.onerror = () => reject(new Error("Couldn't read that file."));
+        reader.readAsDataURL(file);
+      });
+      const base64 = dataUrl.split(",")[1] ?? "";
+      const { data, error } = await supabase.functions.invoke("receipt-scan", {
+        body: { imageBase64: base64, mediaType: file.type },
+      });
+      if (error) {
+        let msg = "Couldn't read that receipt. Try a clearer photo, or add it manually.";
+        try {
+          const body = await (error as { context?: Response }).context?.json?.();
+          if (body?.error) msg = body.error;
+        } catch { /* keep default */ }
+        throw new Error(msg);
+      }
+      if (data?.error) throw new Error(data.error);
+      setScanPrefill({
+        date: data.date || undefined,
+        amount: data.amount ?? undefined,
+        description: data.description || data.vendor || "",
+        category: (data.category || "materials") as ExpenseCategory,
+        paymentType: (data.paymentType || "") as PaymentType | "",
+      });
+      toast.success("Receipt scanned — review and save.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't read that receipt.");
+    } finally {
+      setScanning(false);
+      if (receiptInputRef.current) receiptInputRef.current.value = "";
+    }
+  };
 
   const totals = {
     paid: invoices.filter(i => i.status === "paid").reduce((s, i) => s + i.amount, 0),
@@ -302,16 +344,45 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
               <div className="eyebrow mb-2">Expenses</div>
               <h2 className="font-display text-2xl">What the practice costs.</h2>
             </div>
-            <Dialog open={expenseOpen} onOpenChange={setExpenseOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" variant="outline" className="gap-2">
-                  <Plus className="h-3.5 w-3.5" /> New expense
-                </Button>
-              </DialogTrigger>
-              <ExpenseForm onSubmit={(data) => { addExpense(data); setExpenseOpen(false); toast.success("Expense logged"); }} />
-            </Dialog>
+            <div className="flex items-center gap-2">
+              <input
+                ref={receiptInputRef}
+                type="file"
+                accept="image/*,application/pdf"
+                className="hidden"
+                onChange={(e) => handleReceipt(e.target.files?.[0])}
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-2"
+                onClick={() => receiptInputRef.current?.click()}
+                disabled={scanning}
+              >
+                {scanning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ScanLine className="h-3.5 w-3.5" />}
+                {scanning ? "Reading…" : "Scan receipt"}
+              </Button>
+              <Dialog open={expenseOpen} onOpenChange={setExpenseOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline" className="gap-2">
+                    <Plus className="h-3.5 w-3.5" /> New expense
+                  </Button>
+                </DialogTrigger>
+                <ExpenseForm onSubmit={(data) => { addExpense(data); setExpenseOpen(false); toast.success("Expense logged"); }} />
+              </Dialog>
+            </div>
           </div>
           <div className="rule mb-4" />
+
+          {/* Review a scanned receipt before saving */}
+          <Dialog open={scanPrefill !== null} onOpenChange={(o) => !o && setScanPrefill(null)}>
+            {scanPrefill && (
+              <ExpenseForm
+                prefill={scanPrefill}
+                onSubmit={(data) => { addExpense(data); setScanPrefill(null); toast.success("Expense saved"); }}
+              />
+            )}
+          </Dialog>
 
           {/* Edit expense */}
           <Dialog open={!!editExpense} onOpenChange={(o) => !o && setEditExpense(null)}>
@@ -456,16 +527,28 @@ const FREQUENCIES: { value: ExpenseFrequency; label: string }[] = [
   { value: "annual", label: "Annual" },
 ];
 
-function ExpenseForm({ expense, onSubmit }: { expense?: Expense; onSubmit: (data: any) => void }) {
+type ReceiptPrefill = {
+  date?: string;
+  amount?: number;
+  description?: string;
+  category?: ExpenseCategory;
+  paymentType?: PaymentType | "";
+};
+
+function ExpenseForm({ expense, prefill, onSubmit }: {
+  expense?: Expense;
+  prefill?: ReceiptPrefill;
+  onSubmit: (data: any) => void;
+}) {
   const isEdit = !!expense;
   const [form, setForm] = useState({
-    date: (expense?.date ?? new Date().toISOString()).slice(0, 10),
-    description: expense?.description ?? expense?.vendor ?? "",
-    category: expense?.category ?? ("materials" as ExpenseCategory),
-    amount: expense ? String(expense.amount) : "",
+    date: (expense?.date ?? prefill?.date ?? new Date().toISOString()).slice(0, 10),
+    description: expense?.description ?? expense?.vendor ?? prefill?.description ?? "",
+    category: expense?.category ?? prefill?.category ?? ("materials" as ExpenseCategory),
+    amount: expense ? String(expense.amount) : prefill?.amount != null ? String(prefill.amount) : "",
     recurring: expense?.recurring ?? false,
     frequency: expense?.frequency ?? ("monthly" as ExpenseFrequency),
-    paymentType: expense?.paymentType ?? ("" as PaymentType | ""),
+    paymentType: expense?.paymentType ?? prefill?.paymentType ?? ("" as PaymentType | ""),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -486,7 +569,7 @@ function ExpenseForm({ expense, onSubmit }: { expense?: Expense; onSubmit: (data
 
   return (
     <DialogContent className="max-w-md">
-      <DialogHeader><DialogTitle className="font-display text-2xl font-normal">{isEdit ? "Edit expense" : "New expense"}</DialogTitle></DialogHeader>
+      <DialogHeader><DialogTitle className="font-display text-2xl font-normal">{isEdit ? "Edit expense" : prefill ? "New expense · from receipt" : "New expense"}</DialogTitle></DialogHeader>
       <form className="grid gap-4 mt-2" onSubmit={handleSubmit}>
         <div className="grid grid-cols-2 gap-3">
           <div>
