@@ -119,7 +119,7 @@ The "body" should be plain text with paragraph breaks as \\n\\n. Do not include 
       },
       body: JSON.stringify({
         model: "claude-sonnet-5",
-        max_tokens: 1000,
+        max_tokens: 2048,
         messages: [{ role: "user", content: prompt }],
       }),
     });
@@ -136,10 +136,11 @@ The "body" should be plain text with paragraph breaks as \\n\\n. Do not include 
       ? data.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("\n\n")
       : "";
 
-    // Try to extract JSON
+    // Try to extract JSON (strip any markdown fences first).
     let parsed: any = null;
     try {
-      const match = text.match(/\{[\s\S]*\}/);
+      const cleaned = text.replace(/```(?:json)?/gi, "").trim();
+      const match = cleaned.match(/\{[\s\S]*\}/);
       parsed = match ? JSON.parse(match[0]) : null;
     } catch (_) {
       parsed = null;
