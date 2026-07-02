@@ -34,7 +34,7 @@ const Marketing = () => {
     <AppShell
       eyebrow="Module · Marketing Assistant"
       title="A consistent presence, without the constant juggle."
-      description="Ideas, captions, schedule, newsletter — one calm workspace for everything that goes out into the world."
+      description="Ideas and captions — one calm workspace for everything that goes out into the world."
     >
       <Tabs defaultValue="ideas" className="w-full">
         <TabsList className="bg-transparent border-b border-border rounded-none w-full justify-start h-auto p-0 mb-8 overflow-x-auto">
@@ -44,22 +44,12 @@ const Marketing = () => {
           <TabsTrigger value="captions" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm gap-2">
             <MessageSquare className="h-3.5 w-3.5" /> Caption drafts
           </TabsTrigger>
-          <TabsTrigger value="schedule" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm gap-2">
-            <CalIcon className="h-3.5 w-3.5" /> Schedule
-          </TabsTrigger>
-          <TabsTrigger value="trends" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm gap-2">
-            <TrendingUp className="h-3.5 w-3.5" /> Trends
-          </TabsTrigger>
-          <TabsTrigger value="newsletter" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm gap-2">
-            <Mail className="h-3.5 w-3.5" /> Newsletter
-          </TabsTrigger>
+          {/* Schedule, Trends, and Newsletter are hidden until those features are built out.
+              The tab components below remain in place so re-enabling is a one-line restore. */}
         </TabsList>
 
         <TabsContent value="ideas" className="m-0"><IdeasTab /></TabsContent>
         <TabsContent value="captions" className="m-0"><CaptionsTab /></TabsContent>
-        <TabsContent value="schedule" className="m-0"><ScheduleTab /></TabsContent>
-        <TabsContent value="trends" className="m-0"><TrendsTab /></TabsContent>
-        <TabsContent value="newsletter" className="m-0"><NewsletterTab /></TabsContent>
       </Tabs>
     </AppShell>
   );

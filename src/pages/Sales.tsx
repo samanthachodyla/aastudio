@@ -164,7 +164,7 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
           <TabsTrigger value="overview" className={TAB_TRIGGER}>Overview</TabsTrigger>
           <TabsTrigger value="invoices" className={TAB_TRIGGER}>Invoices</TabsTrigger>
           <TabsTrigger value="expenses" className={TAB_TRIGGER}>Expenses</TabsTrigger>
-          <TabsTrigger value="pricing" className={TAB_TRIGGER}>Pricing</TabsTrigger>
+          {/* Pricing tab hidden for the time being (PricingIntelligence remains defined below). */}
         </TabsList>
 
         {/* Overview */}
@@ -435,10 +435,7 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
           )}
         </TabsContent>
 
-        {/* Pricing */}
-        <TabsContent value="pricing" className="mt-0">
-          <PricingIntelligence />
-        </TabsContent>
+        {/* Pricing tab hidden for the time being. */}
       </Tabs>
     </AppShell>
   );

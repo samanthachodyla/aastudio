@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Plus, Trash2, Mail, Phone, MapPin, Search, ArrowUpRight, Calendar as CalendarIcon, X, UserPlus,
+  Plus, Trash2, Mail, Phone, MapPin, Search, ArrowUpRight, Calendar as CalendarIcon, X, UserPlus, Upload,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useStore, fmtMoney, fmtDate, daysSince, daysUntil } from "@/lib/store";
@@ -30,7 +30,14 @@ const TAB_TRIGGER = "rounded-none border-b-2 border-transparent data-[state=acti
 const Contacts = () => {
   const { contacts, addContact, deleteContact, updateContact, invoices, artworks, leads, addLead, updateLead, deleteLead } = useStore();
   const [openNew, setOpenNew] = useState(false);
+  const [openImport, setOpenImport] = useState(false);
   const [leadOpen, setLeadOpen] = useState(false);
+
+  const importContacts = (rows: Omit<Contact, "id">[]) => {
+    rows.forEach(r => addContact(r));
+    setOpenImport(false);
+    toast.success(`Imported ${rows.length} contact${rows.length === 1 ? "" : "s"}`);
+  };
   const [activeId, setActiveId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   
@@ -60,12 +67,20 @@ const Contacts = () => {
       title="The people behind the practice."
       description="A working CRM for your studio. Log every interaction and know who to reach out to next."
       actions={
-        <Dialog open={openNew} onOpenChange={setOpenNew}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="gap-2"><Plus className="h-3.5 w-3.5" /> New contact</Button>
-          </DialogTrigger>
-          <ContactForm key={openNew ? "open" : "closed"} onSubmit={(d) => { addContact(d); setOpenNew(false); }} />
-        </Dialog>
+        <div className="flex items-center gap-2">
+          <Dialog open={openImport} onOpenChange={setOpenImport}>
+            <DialogTrigger asChild>
+              <Button size="sm" variant="outline" className="gap-2"><Upload className="h-3.5 w-3.5" /> Import</Button>
+            </DialogTrigger>
+            <ImportContactsDialog key={openImport ? "open" : "closed"} onImport={importContacts} />
+          </Dialog>
+          <Dialog open={openNew} onOpenChange={setOpenNew}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-2"><Plus className="h-3.5 w-3.5" /> New contact</Button>
+            </DialogTrigger>
+            <ContactForm key={openNew ? "open" : "closed"} onSubmit={(d) => { addContact(d); setOpenNew(false); }} />
+          </Dialog>
+        </div>
       }
     >
       {/* Filters */}
@@ -616,6 +631,142 @@ function LeadForm({ onSubmit }: { onSubmit: (data: any) => void }) {
         </div>
         <div className="flex justify-end"><Button type="submit">Add lead</Button></div>
       </form>
+    </DialogContent>
+  );
+}
+
+// =================== Mass Import ===================
+// Minimal CSV parser: handles quoted fields, escaped quotes (""), and
+// commas/newlines inside quotes. Returns rows of string cells.
+function parseCsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = "";
+  let inQuotes = false;
+  const t = text.replace(/\r\n?/g, "\n");
+  for (let i = 0; i < t.length; i++) {
+    const ch = t[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (t[i + 1] === '"') { cell += '"'; i++; }
+        else inQuotes = false;
+      } else cell += ch;
+    } else if (ch === '"') {
+      inQuotes = true;
+    } else if (ch === ",") {
+      row.push(cell); cell = "";
+    } else if (ch === "\n") {
+      row.push(cell); rows.push(row); row = []; cell = "";
+    } else cell += ch;
+  }
+  row.push(cell);
+  rows.push(row);
+  // Drop fully-empty rows.
+  return rows.filter(r => r.some(c => c.trim() !== ""));
+}
+
+// Header aliases → Contact field. Anything unrecognized is ignored.
+const HEADER_ALIASES: Record<string, keyof Omit<Contact, "id">> = {
+  name: "name", "full name": "name", contact: "name",
+  email: "email", "e-mail": "email", "email address": "email",
+  phone: "phone", "phone number": "phone", tel: "phone", mobile: "phone",
+  location: "location", city: "location", address: "location",
+  type: "type", category: "type",
+  notes: "notes", note: "notes", comment: "notes", comments: "notes",
+};
+const POSITIONAL: (keyof Omit<Contact, "id">)[] = ["name", "email", "phone", "location", "type", "notes"];
+
+function rowsToContacts(cells: string[][]): Omit<Contact, "id">[] {
+  if (cells.length === 0) return [];
+  // Detect a header row: first row contains a recognizable column name.
+  const first = cells[0].map(c => c.trim().toLowerCase());
+  const hasHeader = first.some(c => c in HEADER_ALIASES);
+  const map = hasHeader ? first.map(h => HEADER_ALIASES[h]) : POSITIONAL;
+  const body = hasHeader ? cells.slice(1) : cells;
+
+  const out: Omit<Contact, "id">[] = [];
+  for (const r of body) {
+    const rec: Record<string, string> = {};
+    r.forEach((val, i) => {
+      const field = map[i];
+      if (field) rec[field] = (rec[field] ? rec[field] + " " : "") + val.trim();
+    });
+    const name = (rec.name ?? "").trim();
+    if (!name) continue; // name is required
+    const rawType = (rec.type ?? "").trim().toLowerCase();
+    const type = (TYPES as string[]).includes(rawType) ? (rawType as ContactType) : "other";
+    out.push({
+      name,
+      type,
+      stage: "prospect",
+      email: rec.email?.trim() || "",
+      phone: rec.phone?.trim() || "",
+      location: rec.location?.trim() || "",
+      notes: rec.notes?.trim() || "",
+      tags: [],
+      interactions: [],
+    });
+  }
+  return out;
+}
+
+function ImportContactsDialog({ onImport }: { onImport: (rows: Omit<Contact, "id">[]) => void }) {
+  const [raw, setRaw] = useState("");
+  const parsed = useMemo(() => (raw.trim() ? rowsToContacts(parseCsv(raw)) : []), [raw]);
+
+  const onFile = (file: File | undefined) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setRaw(String(reader.result ?? ""));
+    reader.readAsText(file);
+  };
+
+  return (
+    <DialogContent className="max-w-xl">
+      <DialogHeader><DialogTitle className="font-display text-2xl font-normal">Import contacts</DialogTitle></DialogHeader>
+      <div className="grid gap-4 mt-2">
+        <p className="text-sm text-muted-foreground">
+          Upload a <span className="font-medium">.csv</span> file or paste rows below. Columns are matched by header
+          (<span className="font-mono text-xs">name, email, phone, location, type, notes</span>) — or, with no header,
+          read in that order. Only <span className="font-medium">name</span> is required.
+        </p>
+
+        <div>
+          <input
+            id="csv-file"
+            type="file"
+            accept=".csv,text/csv,text/plain"
+            onChange={(e) => onFile(e.target.files?.[0])}
+            className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-border file:bg-background file:px-3 file:py-1.5 file:text-sm file:cursor-pointer hover:file:bg-surface"
+          />
+        </div>
+
+        <div>
+          <Label className="eyebrow text-[10px]">Or paste CSV</Label>
+          <Textarea
+            value={raw}
+            onChange={(e) => setRaw(e.target.value)}
+            rows={7}
+            placeholder={"name,email,phone,location,type,notes\nJane Rivera,jane@gallery.com,,New York,gallery,Met at Basel\nMarco Vale,marco@studio.co,,,collector,"}
+            className="font-mono text-xs mt-1"
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">
+            {raw.trim()
+              ? `${parsed.length} valid contact${parsed.length === 1 ? "" : "s"} detected${parsed.length === 0 ? " — check that each row has a name." : "."}`
+              : "Nothing to import yet."}
+          </span>
+          <Button disabled={parsed.length === 0} onClick={() => onImport(parsed)} className="gap-2">
+            <Upload className="h-3.5 w-3.5" /> Import {parsed.length > 0 ? parsed.length : ""}
+          </Button>
+        </div>
+
+        <p className="text-[11px] text-muted-foreground italic">
+          Recognized types: {TYPES.join(", ")}. Anything else is saved as “other.”
+        </p>
+      </div>
     </DialogContent>
   );
 }
