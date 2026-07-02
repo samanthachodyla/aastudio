@@ -6,6 +6,7 @@ import { useStore, fmtMoney, fmtDate, daysUntil, daysSince } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/StatusPill";
 import { StudioManagerBubble } from "@/components/StudioManagerBubble";
+import { DashboardTodos } from "@/components/DashboardTodos";
 import { useUserProfile, getFirstName } from "@/lib/userProfile";
 
 const Dashboard = () => {
@@ -172,6 +173,9 @@ const Dashboard = () => {
           </ul>
         </div>
       </section>
+
+      {/* To-do */}
+      <DashboardTodos />
 
       {/* Stats */}
       <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-px bg-border mb-12 border border-border">

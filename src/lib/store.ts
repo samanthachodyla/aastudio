@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import type {
   Artwork, Invoice, Consignment, Opportunity, Contact, Lead, Interaction, Expense,
   VaultDoc, PressItem, InboxConnection, FlaggedEmail,
-  ContentIdea, CaptionDraft, ScheduledPost, Newsletter,
+  ContentIdea, CaptionDraft, ScheduledPost, Newsletter, Todo,
 } from "./types";
 import {
   pushInsert, pushUpdate, pushDelete, pushInboxConnection, type HydratedData,
@@ -35,6 +35,12 @@ interface State {
 
   customStatuses: string[];          // UI pref — persisted locally
   addCustomStatus: (label: string) => void;
+
+  todos: Todo[];                     // dashboard to-dos — persisted locally, not server-backed
+  addTodo: (text: string) => void;
+  toggleTodo: (id: string) => void;
+  deleteTodo: (id: string) => void;
+  clearCompletedTodos: () => void;
 
   // Replace all server-backed collections at once (called after hydration).
   hydrateAll: (data: HydratedData) => void;
@@ -136,6 +142,7 @@ export const useStore = create<State>()(
       scheduledPosts: [],
       newsletters: [],
       customStatuses: [],
+      todos: [],
 
       hydrateAll: (data) =>
         set({
@@ -150,6 +157,23 @@ export const useStore = create<State>()(
         if (!v) return;
         if (get().customStatuses.includes(v)) return;
         set({ customStatuses: [...get().customStatuses, v] });
+      },
+
+      // To-dos are local-only (localStorage) — no write-through to Supabase.
+      addTodo: (text) => {
+        const v = text.trim();
+        if (!v) return;
+        const item: Todo = { id: uid(), text: v, done: false, createdAt: today() };
+        set({ todos: [...get().todos, item] });
+      },
+      toggleTodo: (id) => {
+        set({ todos: get().todos.map(t => t.id === id ? { ...t, done: !t.done } : t) });
+      },
+      deleteTodo: (id) => {
+        set({ todos: get().todos.filter(t => t.id !== id) });
+      },
+      clearCompletedTodos: () => {
+        set({ todos: get().todos.filter(t => !t.done) });
       },
 
       addArtwork: (a) => {
@@ -420,7 +444,7 @@ export const useStore = create<State>()(
     {
       // Only UI preferences live in localStorage now; studio data is server-backed.
       name: "allegory.studio.prefs.v1",
-      partialize: (s) => ({ customStatuses: s.customStatuses, vaultOnboarded: s.vaultOnboarded }),
+      partialize: (s) => ({ customStatuses: s.customStatuses, vaultOnboarded: s.vaultOnboarded, todos: s.todos }),
     }
   )
 );

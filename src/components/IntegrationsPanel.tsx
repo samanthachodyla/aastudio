@@ -134,14 +134,14 @@ export function IntegrationsPanel() {
           </p>
         </div>
 
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button size="sm" variant="outline" className="gap-2 h-9">
               <Plug className="h-3.5 w-3.5" /> Manage integrations
               <ChevronDown className="h-3.5 w-3.5 opacity-60" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80 p-0">
+          <DropdownMenuContent align="end" className="w-80 p-0 max-h-[70vh] overflow-y-auto">
             <DropdownMenuLabel className="px-3 py-2 eyebrow">Available platforms</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {PROVIDERS.map((p, i) => {

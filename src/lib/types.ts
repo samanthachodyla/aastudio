@@ -156,6 +156,15 @@ export interface Expense {
   createdAt: string;
 }
 
+// ============== Dashboard To-Dos ==============
+// Local-only (persisted to localStorage, not server-backed).
+export interface Todo {
+  id: string;
+  text: string;
+  done: boolean;
+  createdAt: string;
+}
+
 // ============== Profile Vault ==============
 export type VaultDocKind = "statement" | "bio" | "cv" | "headshot" | "work_image";
 export type BioContext = "general" | "gallery" | "grant" | "press" | "social";

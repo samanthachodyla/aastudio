@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus, Trash2, Sparkles, Loader2, ChevronDown, CalendarClock } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Plus, Trash2, Sparkles, Loader2, ChevronDown, CalendarClock, Search } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useStore, fmtDate, daysUntil } from "@/lib/store";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import type { OpportunityStatus, OpportunityType } from "@/lib/types";
+import type { Opportunity, OpportunityStatus, OpportunityType } from "@/lib/types";
 
 const typeLabels: Record<OpportunityType, string> = {
   open_call: "Open call",
@@ -24,11 +24,26 @@ const typeLabels: Record<OpportunityType, string> = {
   delivery: "Delivery deadline",
 };
 
+// Text fields the opportunity search reads. Add a new field here (e.g. "location")
+// to include it in search — that's the only change required.
+const OPPORTUNITY_SEARCH_FIELDS: (keyof Opportunity)[] = [
+  "title", "organization", "notes", "requirements", "award",
+];
+
 const Exhibitions = () => {
   const { opportunities, addOpportunity, updateOpportunity, deleteOpportunity } = useStore();
   const [open, setOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
   const sorted = [...opportunities].sort((a, b) => +new Date(a.deadline) - +new Date(b.deadline));
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return sorted;
+    return sorted.filter(o =>
+      OPPORTUNITY_SEARCH_FIELDS.some(f => String(o[f] ?? "").toLowerCase().includes(q)),
+    );
+  }, [sorted, query]);
 
   return (
     <AppShell
@@ -47,14 +62,23 @@ const Exhibitions = () => {
         </TabsList>
 
         <TabsContent value="deadlines" className="m-0">
-          <div className="flex items-center justify-end mb-4">
+          <div className="flex items-center gap-3 mb-4 flex-wrap">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search opportunities…"
+                className="pl-9"
+              />
+            </div>
             <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild><Button size="sm" className="gap-2"><Plus className="h-3.5 w-3.5" /> New opportunity</Button></DialogTrigger>
+              <DialogTrigger asChild><Button size="sm" className="gap-2 shrink-0"><Plus className="h-3.5 w-3.5" /> New opportunity</Button></DialogTrigger>
               <OpportunityForm onSubmit={(d) => { addOpportunity(d); setOpen(false); }} />
             </Dialog>
           </div>
           <ul className="divide-y divide-border border-b border-border">
-            {sorted.map(o => {
+            {filtered.map(o => {
               const d = daysUntil(o.deadline);
               const overdue = d < 0 && ["researching", "applying"].includes(o.status);
               const isExpanded = expandedId === o.id;
@@ -145,7 +169,13 @@ const Exhibitions = () => {
                 </li>
               );
             })}
-            {sorted.length === 0 && <li className="py-12 text-center text-muted-foreground italic">No opportunities tracked yet.</li>}
+            {filtered.length === 0 && (
+              <li className="py-12 text-center text-muted-foreground italic">
+                {opportunities.length === 0
+                  ? "No opportunities tracked yet."
+                  : `No opportunities match "${query.trim()}".`}
+              </li>
+            )}
           </ul>
         </TabsContent>
 
