@@ -174,6 +174,9 @@ const Dashboard = () => {
         </div>
       </section>
 
+      {/* To-do */}
+      <DashboardTodos />
+
       {/* Stats */}
       <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-px bg-border mb-12 border border-border">
         {stats.map((s) => (
@@ -184,9 +187,6 @@ const Dashboard = () => {
           </Link>
         ))}
       </section>
-
-      {/* To-do */}
-      <DashboardTodos />
 
       {/* Two column: deadlines + recent works */}
       <section className="grid md:grid-cols-2 gap-10">
