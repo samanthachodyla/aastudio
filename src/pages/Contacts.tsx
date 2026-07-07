@@ -63,7 +63,7 @@ const Contacts = () => {
 
   return (
     <AppShell
-      eyebrow="Module · Relationships"
+      eyebrow="Relationships"
       title="The people behind the practice."
       description="A working CRM for your studio. Log every interaction and know who to reach out to next."
       actions={

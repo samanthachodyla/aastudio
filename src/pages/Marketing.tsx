@@ -32,7 +32,7 @@ const CHAR_LIMIT: Record<SocialPlatform, number | null> = {
 const Marketing = () => {
   return (
     <AppShell
-      eyebrow="Module · Marketing Assistant"
+      eyebrow="Marketing Assistant"
       title="A consistent presence, without the constant juggle."
       description="Ideas and captions — one calm workspace for everything that goes out into the world."
     >

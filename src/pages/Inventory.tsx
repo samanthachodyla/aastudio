@@ -111,7 +111,7 @@ const Inventory = () => {
 
   return (
     <AppShell
-      eyebrow="Module · Inventory"
+      eyebrow="Inventory"
       title="The catalogue."
       description="Every work, every state, every location. Your single source of truth for what exists in the studio and what's out in the world."
       actions={

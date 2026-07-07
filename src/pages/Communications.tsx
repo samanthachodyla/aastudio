@@ -65,7 +65,7 @@ const Communications = () => {
 
   return (
     <AppShell
-      eyebrow="Module · Communications Hub"
+      eyebrow="Communications Hub"
       title="An email triage layer, not another inbox."
       description="A signal layer, not another inbox. Allegory surfaces the emails and messages that actually need your attention — inquiries, leads, deadlines, and opportunities — and leaves everything else alone."
       actions={

@@ -37,7 +37,7 @@ hr{border:none;border-top:1px solid #ccc;margin:24px 0}.sig{margin-top:60px;disp
 
   return (
     <AppShell
-      eyebrow="Module · Consignments"
+      eyebrow="Consignments"
       title="Paper trails, on purpose."
       description="Agreements drawn from inventory, signed and tracked. No more handshake consignments quietly disappearing for years."
       actions={

@@ -48,7 +48,7 @@ const Exhibitions = () => {
 
   return (
     <AppShell
-      eyebrow="Module · Deadlines & applications"
+      eyebrow="Deadlines & applications"
       title="Everything with a deadline."
       description="Submissions, grants, commissions, deliverables. Sorted by what's next — one place for anything the calendar needs to know about."
     >

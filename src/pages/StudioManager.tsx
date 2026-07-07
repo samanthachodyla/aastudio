@@ -106,7 +106,7 @@ const StudioManager = () => {
 
   return (
     <AppShell
-      eyebrow="Module · Studio Support"
+      eyebrow="Studio Support"
       title="We're in your corner."
       description="Send a question to a real arts administrator — about a sale, a deadline, a grant application, or anything else on your plate. We'll reply by email, usually within 2 business days. Your privacy is protected — our email addresses are never shared or visible."
     >

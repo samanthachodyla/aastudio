@@ -51,7 +51,7 @@ const ProfileVault = () => {
 
   return (
     <AppShell
-      eyebrow={`Module · Profile Vault${isPro ? "" : " · Lite"}`}
+      eyebrow={`Profile Vault${isPro ? "" : " · Lite"}`}
       title="The materials you reach for, always current."
       description="Statements, bios, and CVs — versioned, labelled, export-ready. One source of truth across every application."
       actions={tab !== "press" && canAdd(tab as TextKind) ? <NewDocButton kind={tab as TextKind} /> : undefined}

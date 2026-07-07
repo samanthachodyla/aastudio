@@ -197,7 +197,7 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
 
   return (
     <AppShell
-      eyebrow="Module · Sales & Finance"
+      eyebrow="Sales & Finance"
       title="The financial life of your practice."
       description="Invoices, income, outstanding balances, and a clear view of how money is moving — everything in one place."
     >
