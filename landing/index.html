@@ -829,6 +829,20 @@
   var root=document.querySelector('.allegory-lp');
   if(!root)return;
   root.classList.add('js');
+  /* Size the opening so the green stat banner fills down to the bottom of the
+     viewport. Measures the opening's real position, so it works no matter what
+     sits above it (e.g. a Squarespace header), not just as a standalone page. */
+  var aasFit=function(){
+    var op=root.querySelector('.opening'); if(!op) return;
+    var top=op.getBoundingClientRect().top + (window.pageYOffset||0);
+    var avail=window.innerHeight - top;
+    op.style.minHeight = avail>340 ? avail+'px' : '';
+  };
+  aasFit();
+  window.addEventListener('resize',aasFit);
+  window.addEventListener('load',aasFit);
+  if(document.fonts&&document.fonts.ready){document.fonts.ready.then(aasFit);}
+  setTimeout(aasFit,400);
   var els=root.querySelectorAll('.reveal');
   if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in')});return;}
   var io=new IntersectionObserver(function(entries){
