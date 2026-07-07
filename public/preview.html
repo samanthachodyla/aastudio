@@ -77,7 +77,8 @@
 .allegory-lp .signup input[type=email]:focus{border-color:var(--forest)}
 .allegory-lp .signup input[type=email]::placeholder{color:var(--muted)}
 .allegory-lp .signup .btn{flex:none}
-.allegory-lp .signup-msg{flex-basis:100%;font-size:13px;margin-top:2px;min-height:8px;color:var(--sage)}
+.allegory-lp .signup-msg{flex-basis:100%;font-size:13px;margin-top:2px;min-height:0;color:var(--sage)}
+.allegory-lp .signup-msg:empty{display:none}
 .allegory-lp .signup-msg.err{color:#a8472f}
 .allegory-lp .signup.done input,.allegory-lp .signup.done .btn{display:none}
 .allegory-lp .final .signup{margin:0 auto 0;justify-content:center}
@@ -283,7 +284,7 @@
 .allegory-lp .faq .ans{padding:0 0 24px;color:var(--muted);font-size:15.5px;max-width:640px}
 
 /* ----------  Final CTA  ---------- */
-.allegory-lp .final{text-align:center;background:var(--bg-2)}
+.allegory-lp .final{text-align:center;background:var(--bg-2);padding-bottom:52px}
 .allegory-lp .final h2{font-size:clamp(38px,6vw,68px);max-width:760px;margin:0 auto 8px}
 .allegory-lp .final h2 em{font-style:italic;color:var(--sage)}
 .allegory-lp .final p{color:var(--muted);font-size:19px;margin:18px auto 34px;max-width:520px}
@@ -291,7 +292,10 @@
 .allegory-lp .final .micro{margin-top:8px;font-size:12.5px;color:var(--muted);letter-spacing:.04em}
 
 /* ----------  Footer  ---------- */
-.allegory-lp .foot{background:var(--forest);color:var(--bg);padding:60px 0 36px}
+.allegory-lp .foot{background:var(--forest);color:var(--bg);padding:44px 0 26px}
+.allegory-lp .foot-links{display:flex;flex-wrap:wrap;gap:12px 26px;max-width:440px;justify-content:flex-end;align-content:flex-start}
+.allegory-lp .foot-links a{font-size:14px;opacity:.85;transition:opacity .2s}
+.allegory-lp .foot-links a:hover{opacity:1}
 .allegory-lp .foot-grid{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap;align-items:flex-start}
 .allegory-lp .foot .mark{font-family:var(--font-d);font-size:30px;text-transform:lowercase}
 .allegory-lp .foot-logo{height:84px;width:auto;filter:brightness(0) invert(1);opacity:.94}
@@ -743,27 +747,16 @@
       <div>
         <img class="foot-logo" src="https://aastudio-git-claude-squarespac-fe5f28-samanthachodylas-projects.vercel.app/Allegory_Studio_Logo.png" alt="Allegory Art Studio" />
         <div class="foot-note">The studio manager tool for working artists.</div>
-        <a class="btn btn-light btn-sm" href="https://allegoryartconsulting.com" target="_blank" rel="noopener" style="margin-top:18px">About the founder</a>
+        <a class="btn btn-light btn-sm" href="https://allegoryartconsulting.com" target="_blank" rel="noopener" style="margin-top:16px">About the founder</a>
       </div>
-      <div class="foot-cols">
-        <div class="col">
-          <h4>Product</h4>
-          <a href="#features">Features</a>
-          <a href="#showcase">The platform</a>
-          <a href="#compare">Compare plans</a>
-          <a href="#pricing">Pricing</a>
-        </div>
-        <div class="col">
-          <h4>Company</h4>
-          <a href="#faq">FAQ</a>
-          <a href="mailto:hello@allegoryartstudio.com">Contact</a>
-          <a href="https://allegoryartstudio.com">Sign in</a>
-        </div>
-        <div class="col">
-          <h4>Get started</h4>
-          <a href="#signup">Get first access</a>
-        </div>
-      </div>
+      <nav class="foot-links">
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+        <a href="#signup">Get first access</a>
+        <a href="mailto:hello@allegoryartstudio.com">Contact</a>
+        <a href="https://allegoryartstudio.com">Sign in</a>
+      </nav>
     </div>
     <div class="foot-bottom">
       <span>© 2026 Allegory Art Studio. All rights reserved.</span>
