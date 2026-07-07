@@ -117,7 +117,10 @@
 .allegory-lp .sec-head p{color:var(--muted);margin-top:18px;font-size:18px}
 
 /* ----------  Hero  ---------- */
-.allegory-lp .hero{padding:80px 0 70px;position:relative}
+.allegory-lp .hero{padding:80px 0 70px;position:relative;overflow:hidden}
+.allegory-lp .hero-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:0}
+.allegory-lp .hero-bg img{width:min(1500px,150%);max-width:none;opacity:.06}
+.allegory-lp .hero > .wrap{position:relative;z-index:1}
 .allegory-lp .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:center}
 .allegory-lp .hero h1{font-size:clamp(42px,6.4vw,82px);letter-spacing:-.02em}
 .allegory-lp .hero h1 em{font-style:italic;color:var(--sage)}
@@ -159,7 +162,7 @@
 /* ----------  marquee / proof strip  ---------- */
 .allegory-lp .proof{background:var(--forest);color:var(--bg);padding:30px 0}
 .allegory-lp .proof .row{display:flex;justify-content:space-around;flex-wrap:wrap;gap:26px;text-align:center}
-.allegory-lp .proof .item .n{font-family:var(--font-d);font-size:40px;line-height:1}
+.allegory-lp .proof .item .n{font-family:var(--font-d);font-size:40px;line-height:1;display:flex;align-items:flex-end;justify-content:center;min-height:40px}
 .allegory-lp .proof .item .l{font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.72;margin-top:8px}
 
 /* ----------  Features grid  ---------- */
@@ -359,6 +362,7 @@
 
 <!-- ===== Hero ===== -->
 <header class="hero" id="signup">
+  <div class="hero-bg" aria-hidden="true"><img src="https://aastudio-git-claude-squarespac-fe5f28-samanthachodylas-projects.vercel.app/Allegory_Studio_Logo.png" alt="" /></div>
   <div class="wrap hero-grid">
     <div class="reveal">
       <span class="hero-tag">Launching August 1</span>
@@ -398,7 +402,7 @@
     <div class="item"><div class="n">10</div><div class="l">Professional artist tools</div></div>
     <div class="item"><div class="n">1</div><div class="l">Customized dashboard</div></div>
     <div class="item"><div class="n">$25</div><div class="l">To get started</div></div>
-    <div class="item"><div class="n" style="color:var(--gold);font-size:28px;letter-spacing:2px">★★★★★</div><div class="l">Reviews from all our users</div></div>
+    <div class="item"><div class="n" style="color:var(--gold);font-size:23px;letter-spacing:2px">★★★★★</div><div class="l">Reviews from all our users</div></div>
   </div>
 </div>
 
