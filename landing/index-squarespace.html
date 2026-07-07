@@ -100,7 +100,7 @@
   position:sticky;top:0;z-index:50;background:rgba(245,243,238,.86);
   backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);
 }
-.allegory-lp .nav-in{display:flex;align-items:center;justify-content:space-between;height:70px}
+.allegory-lp .nav-in{display:flex;align-items:center;justify-content:space-between;height:178px}
 .allegory-lp .brand{display:flex;flex-direction:column;line-height:1}
 .allegory-lp .brand .mark{font-family:var(--font-d);font-size:25px;letter-spacing:-.01em;color:var(--forest);text-transform:lowercase}
 .allegory-lp .brand .sub{font-size:8.5px;letter-spacing:.34em;text-transform:uppercase;color:rgba(17,40,28,.7);font-weight:500;margin-top:3px}
@@ -108,7 +108,7 @@
 .allegory-lp .nav-links a.lnk{font-size:13px;letter-spacing:.02em;color:var(--ink-2);transition:color .2s}
 .allegory-lp .nav-links a.lnk:hover{color:var(--forest)}
 .allegory-lp .nav-toggle,.allegory-lp #navchk{display:none}
-.allegory-lp .brand-logo{height:56px;width:auto;display:block}
+.allegory-lp .brand-logo{height:150px;width:auto;display:block}
 
 /* ----------  Section scaffolding  ---------- */
 .allegory-lp section{padding:96px 0}
@@ -119,15 +119,11 @@
 .allegory-lp .sec-head p{color:var(--muted);margin-top:18px;font-size:18px}
 
 /* ----------  Hero  ---------- */
-.allegory-lp .hero{padding:80px 0 70px;position:relative;overflow:hidden}
-.allegory-lp .hero-bg{position:absolute;inset:0;pointer-events:none;z-index:3}
-.allegory-lp .hero-bg-in{max-width:var(--maxw);height:100%;margin:0 auto;padding:0 28px;display:flex;align-items:center;justify-content:flex-end}
-.allegory-lp .hero-bg-in img{width:min(540px,44vw);max-width:none;opacity:.13;mix-blend-mode:multiply}
-.allegory-lp .hero > .wrap{position:relative;z-index:1}
-.allegory-lp .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:center}
-.allegory-lp .hero h1{font-size:clamp(42px,6.4vw,82px);letter-spacing:-.02em}
+.allegory-lp .hero{padding:34px 0 38px;position:relative}
+.allegory-lp .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+.allegory-lp .hero h1{font-size:clamp(32px,4.4vw,52px);letter-spacing:-.02em}
 .allegory-lp .hero h1 em{font-style:italic;color:var(--sage)}
-.allegory-lp .hero .lead{font-size:20px;color:var(--ink-2);margin:26px 0 34px;max-width:520px}
+.allegory-lp .hero .lead{font-size:17px;color:var(--ink-2);margin:16px 0 22px;max-width:520px}
 .allegory-lp .hero .cta-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
 .allegory-lp .hero .trust{margin-top:22px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:10px}
 .allegory-lp .hero .trust .star{color:var(--gold);letter-spacing:2px}
@@ -149,7 +145,7 @@
 .allegory-lp .ph .ph-label svg{width:30px;height:30px;opacity:.5}
 
 /* mock dashboard (pure CSS, used until you drop in a real screenshot) */
-.allegory-lp .mock{padding:22px;background:var(--bg)}
+.allegory-lp .mock{padding:16px 18px;background:var(--bg)}
 .allegory-lp .mock .m-eyebrow{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
 .allegory-lp .mock .m-title{font-family:var(--font-d);font-size:26px;margin:6px 0 16px}
 .allegory-lp .mock .m-card{background:var(--card);border:1px solid var(--line);border-radius:2px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
@@ -163,7 +159,7 @@
 .allegory-lp .mock .m-stat .k{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:3px}
 
 /* ----------  marquee / proof strip  ---------- */
-.allegory-lp .proof{background:var(--forest);color:var(--bg);padding:30px 0}
+.allegory-lp .proof{background:var(--forest);color:var(--bg);padding:22px 0}
 .allegory-lp .proof .row{display:flex;justify-content:space-around;flex-wrap:wrap;gap:26px;text-align:center}
 .allegory-lp .proof .item .n{font-family:var(--font-d);font-size:40px;line-height:1;display:flex;align-items:flex-end;justify-content:center;min-height:40px}
 .allegory-lp .proof .item .l{font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.72;margin-top:8px}
@@ -316,9 +312,10 @@
   .allegory-lp .feat-grid,.allegory-lp .q-grid{grid-template-columns:1fr 1fr}
   .allegory-lp .show-row{gap:30px}
   .allegory-lp .hero .device{margin-top:10px}
-  .allegory-lp .hero-bg{display:none}
+  .allegory-lp .nav-in{height:80px}
+  .allegory-lp .brand-logo{height:52px}
   .allegory-lp .nav-links{
-    position:absolute;top:70px;left:0;right:0;background:var(--bg);border-bottom:1px solid var(--line);
+    position:absolute;top:80px;left:0;right:0;background:var(--bg);border-bottom:1px solid var(--line);
     flex-direction:column;gap:0;padding:10px 28px 24px;display:none;align-items:stretch
   }
   .allegory-lp .nav-links a.lnk{padding:14px 0;border-bottom:1px solid var(--line)}
@@ -381,11 +378,10 @@
 
 <!-- ===== Hero ===== -->
 <header class="hero" id="signup">
-  <div class="hero-bg" aria-hidden="true"><div class="hero-bg-in"><img src="https://aastudio-git-claude-squarespac-fe5f28-samanthachodylas-projects.vercel.app/Allegory_Studio_Logo.png" alt="" /></div></div>
   <div class="wrap hero-grid">
     <div class="reveal">
       <span class="hero-tag">Launching August 1</span>
-      <h1 style="margin-top:16px">Run your art practice like a <em>professional studio.</em></h1>
+      <h1 style="margin-top:10px">Run your art practice like a <em>professional studio.</em></h1>
       <p class="lead">Inventory, sales, consignments, exhibitions, outreach and more, all thoughtfully organized in one place.</p>
       <form class="signup" data-allegory-signup data-source="hero">
         <input type="email" name="email" required placeholder="you@studio.com" aria-label="Email address" autocomplete="email" />
