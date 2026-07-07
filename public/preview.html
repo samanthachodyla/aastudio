@@ -119,7 +119,11 @@
 .allegory-lp .sec-head p{color:var(--muted);margin-top:18px;font-size:18px}
 
 /* ----------  Hero  ---------- */
-.allegory-lp .hero{padding:34px 0 38px;position:relative}
+.allegory-lp .hero{padding:32px 0 18px;position:relative}
+.allegory-lp .opening{display:flex;flex-direction:column;min-height:calc(100vh - 226px)}
+.allegory-lp .opening .hero{flex:none}
+.allegory-lp .opening .proof{flex:1 1 auto;display:flex;align-items:center}
+.allegory-lp .opening .proof > .wrap{width:100%}
 .allegory-lp .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
 .allegory-lp .hero h1{font-size:clamp(32px,4.4vw,52px);letter-spacing:-.02em}
 .allegory-lp .hero h1 em{font-style:italic;color:var(--sage)}
@@ -312,6 +316,7 @@
   .allegory-lp .feat-grid,.allegory-lp .q-grid{grid-template-columns:1fr 1fr}
   .allegory-lp .show-row{gap:30px}
   .allegory-lp .hero .device{margin-top:10px}
+  .allegory-lp .opening{min-height:0}
   .allegory-lp .nav-in{height:80px}
   .allegory-lp .brand-logo{height:52px}
   .allegory-lp .nav-links{
@@ -377,6 +382,7 @@
 </nav>
 
 <!-- ===== Hero ===== -->
+<div class="opening">
 <header class="hero" id="signup">
   <div class="wrap hero-grid">
     <div class="reveal">
@@ -420,6 +426,8 @@
     <div class="item"><div class="n" style="color:var(--gold);font-size:23px;letter-spacing:2px">★★★★★</div><div class="l">Reviews from all our users</div></div>
   </div>
 </div>
+</div>
+<!-- /opening -->
 
 <!-- ===== Features ===== -->
 <section id="features">
