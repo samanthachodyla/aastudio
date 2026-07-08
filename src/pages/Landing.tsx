@@ -1,0 +1,123 @@
+import { useEffect, useRef } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/lib/auth";
+import landingHtml from "./landing.html?raw";
+
+/**
+ * Public marketing landing page at "/".
+ *
+ * The markup is a fully self-contained block (scoped `.allegory-lp` CSS +
+ * its own launch-waitlist form). It's injected as-is; the two original inline
+ * <script> blocks are ported into the effect below, since scripts inserted via
+ * innerHTML don't execute.
+ *
+ * The waitlist form posts to a SEPARATE Supabase project (launch list only) via
+ * a raw fetch — it never touches this app's auth Supabase client.
+ */
+export default function Landing() {
+  const { session, loading } = useAuth();
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const host = ref.current;
+    if (!host) return;
+    const root = host.querySelector<HTMLElement>(".allegory-lp");
+    if (!root) return;
+
+    // ---- Launch-list signup → separate Supabase project (launch list only) ----
+    const SUPABASE_URL = "https://lafkbawmkxgvmmlrblff.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_hpsrRBmMf5QfN8hlpxGNYQ_gNVBfJvk";
+    const forms = Array.from(root.querySelectorAll<HTMLFormElement>("[data-allegory-signup]"));
+    const submitBindings: Array<[HTMLFormElement, (e: Event) => void]> = [];
+    forms.forEach((form) => {
+      const msg = form.querySelector<HTMLElement>(".signup-msg");
+      const handler = (e: Event) => {
+        e.preventDefault();
+        const input = form.querySelector<HTMLInputElement>("input[type=email]");
+        const email = (input?.value || "").trim();
+        if (!email) return;
+        const btn = form.querySelector<HTMLButtonElement>("button");
+        if (btn) { btn.disabled = true; btn.textContent = "Sending…"; }
+        if (msg) { msg.className = "signup-msg"; msg.textContent = ""; }
+        fetch(SUPABASE_URL + "/rest/v1/launch_waitlist", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: SUPABASE_KEY,
+            Authorization: "Bearer " + SUPABASE_KEY,
+            Prefer: "return=minimal",
+          },
+          body: JSON.stringify({
+            email,
+            source: form.getAttribute("data-source") || "landing",
+            referrer: document.referrer || null,
+            user_agent: navigator.userAgent,
+          }),
+        })
+          .then((res) => {
+            // 201 = added; 409 = already on the list — both a success to the visitor.
+            if (res.ok || res.status === 409) {
+              form.classList.add("done");
+              if (msg) { msg.className = "signup-msg"; msg.textContent = "You've got first access. We'll email you the moment we open on August 1. ✦"; }
+            } else {
+              throw new Error("Request failed: " + res.status);
+            }
+          })
+          .catch(() => {
+            if (btn) { btn.disabled = false; btn.textContent = "Try again"; }
+            if (msg) { msg.className = "signup-msg err"; msg.textContent = "Something went wrong. Please try again, or email hello@allegoryartstudio.com."; }
+          });
+      };
+      form.addEventListener("submit", handler);
+      submitBindings.push([form, handler]);
+    });
+
+    // ---- Progressive enhancement: reveal-on-scroll, hero sizing, mobile menu ----
+    root.classList.add("js");
+
+    const aasFit = () => {
+      const op = root.querySelector<HTMLElement>(".opening");
+      if (!op) return;
+      const top = op.getBoundingClientRect().top + (window.pageYOffset || 0);
+      const avail = window.innerHeight - top;
+      op.style.minHeight = avail > 340 ? avail + "px" : "";
+    };
+    aasFit();
+    window.addEventListener("resize", aasFit);
+    window.addEventListener("load", aasFit);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(aasFit);
+    const fitTimer = window.setTimeout(aasFit, 400);
+
+    const els = Array.from(root.querySelectorAll<HTMLElement>(".reveal"));
+    let io: IntersectionObserver | null = null;
+    if (!("IntersectionObserver" in window)) {
+      els.forEach((el) => el.classList.add("in"));
+    } else {
+      io = new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) { en.target.classList.add("in"); io?.unobserve(en.target); }
+        });
+      }, { threshold: 0.12 });
+      els.forEach((el) => io?.observe(el));
+    }
+
+    const chk = root.querySelector<HTMLInputElement>("#navchk");
+    const navLinks = Array.from(root.querySelectorAll<HTMLAnchorElement>(".nav-links a"));
+    const closeMenu = () => { if (chk) chk.checked = false; };
+    navLinks.forEach((a) => a.addEventListener("click", closeMenu));
+
+    return () => {
+      submitBindings.forEach(([form, h]) => form.removeEventListener("submit", h));
+      window.removeEventListener("resize", aasFit);
+      window.removeEventListener("load", aasFit);
+      window.clearTimeout(fitTimer);
+      io?.disconnect();
+      navLinks.forEach((a) => a.removeEventListener("click", closeMenu));
+    };
+  }, []);
+
+  // Returning, logged-in users skip the marketing page and go to their dashboard.
+  if (!loading && session) return <Navigate to="/dashboard" replace />;
+
+  return <div ref={ref} dangerouslySetInnerHTML={{ __html: landingHtml }} />;
+}

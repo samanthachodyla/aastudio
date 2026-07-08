@@ -31,7 +31,7 @@ const Login = () => {
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const from = (location.state as { from?: string } | null)?.from ?? "/";
+  const from = (location.state as { from?: string } | null)?.from ?? "/dashboard";
 
   // If already authenticated, bounce away from the login screen.
   useEffect(() => {

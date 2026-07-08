@@ -29,7 +29,7 @@ export function AppShell({ title, eyebrow, description, actions, children }: Pro
             <header className="h-12 flex items-center border-b border-border px-3 gap-2 bg-background/80 backdrop-blur sticky top-0 z-20">
               <SidebarTrigger />
               <div className="rule w-px h-4 bg-border mx-2" style={{ width: 1 }} />
-              <Link to="/" className="eyebrow hover:opacity-70 transition-opacity" style={{ color: "#032419" }}>{studioLabel}</Link>
+              <Link to="/dashboard" className="eyebrow hover:opacity-70 transition-opacity" style={{ color: "#032419" }}>{studioLabel}</Link>
               <span className="ml-auto text-[11px] text-muted-foreground tabular-nums">
                 {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
               </span>

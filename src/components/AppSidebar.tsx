@@ -11,7 +11,7 @@ import { useIsAdmin } from "@/lib/admin";
 import { toast } from "sonner";
 
 const items = [
-  { title: "Today", url: "/", icon: LayoutDashboard },
+  { title: "Today", url: "/dashboard", icon: LayoutDashboard },
   { title: "Inventory", url: "/inventory", icon: Boxes },
   { title: "Sales & Finance", url: "/sales", icon: Receipt },
   { title: "Opportunities", url: "/exhibitions", icon: CalendarClock },
@@ -50,7 +50,7 @@ export function AppSidebar() {
         <div className="px-4 pt-6 pb-2">
           {!collapsed ? (
             <>
-              <Link to="/" aria-label="Allegory Studio — Dashboard">
+              <Link to="/dashboard" aria-label="Allegory Studio — Dashboard">
                 <img src="/Allegory_Studio_Logo.png" alt="Allegory Studio" style={{ width: 160, height: "auto" }} />
               </Link>
               {firstName && (
@@ -58,7 +58,7 @@ export function AppSidebar() {
               )}
             </>
           ) : (
-            <Link to="/" aria-label="Allegory Studio — Dashboard" className="block">
+            <Link to="/dashboard" aria-label="Allegory Studio — Dashboard" className="block">
               <img src="/AAC_Brandmark-03_Emerald.png" alt="Allegory Studio" style={{ width: 32, height: "auto" }} className="mx-auto" />
             </Link>
           )}
@@ -69,14 +69,14 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => {
-                const active = item.url === "/" ? pathname === "/" : pathname.startsWith(item.url);
+                const active = item.url === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.url);
                 const locked = tier === "starter" && isProPath(item.url);
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
                       <NavLink
                         to={item.url}
-                        end={item.url === "/"}
+                        end={item.url === "/dashboard"}
                         className={`group relative flex items-center gap-3 px-4 py-2 text-sm transition-colors ${
                           active
                             ? "text-foreground font-medium"
