@@ -6,7 +6,7 @@ import landingHtml from "./landing.html?raw";
 // Waitlist endpoint — a Google Apps Script Web App that appends each signup to a
 // Google Sheet AND emails cara@allegoryartconsulting.com. Paste the deployed
 // "/exec" web-app URL here (see landing/README-waitlist.md for the 5-min setup).
-const WAITLIST_ENDPOINT = "";
+const WAITLIST_ENDPOINT = "https://script.google.com/macros/s/AKfycbzGAf1SwVp5TM6j2rajwBFlyEFJf9NAKmECu9haZt_E7X5iuEqpabWG2tfu3QN2qz4/exec";
 
 /**
  * Public marketing landing page at "/".
