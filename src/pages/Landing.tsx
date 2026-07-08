@@ -3,6 +3,11 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import landingHtml from "./landing.html?raw";
 
+// Waitlist endpoint — a Google Apps Script Web App that appends each signup to a
+// Google Sheet AND emails cara@allegoryartconsulting.com. Paste the deployed
+// "/exec" web-app URL here (see landing/README-waitlist.md for the 5-min setup).
+const WAITLIST_ENDPOINT = "";
+
 /**
  * Public marketing landing page at "/".
  *
@@ -24,9 +29,10 @@ export default function Landing() {
     const root = host.querySelector<HTMLElement>(".allegory-lp");
     if (!root) return;
 
-    // ---- Launch-list signup → separate Supabase project (launch list only) ----
-    const SUPABASE_URL = "https://lafkbawmkxgvmmlrblff.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_hpsrRBmMf5QfN8hlpxGNYQ_gNVBfJvk";
+    // ---- Launch-list signup → Google Apps Script (Sheet + email to Cara) ----
+    // Posted as a "simple" urlencoded no-cors request so the browser sends it
+    // without a CORS preflight (Apps Script web apps don't return CORS headers).
+    // The response is opaque, so a resolved fetch = delivered.
     const forms = Array.from(root.querySelectorAll<HTMLFormElement>("[data-allegory-signup]"));
     const submitBindings: Array<[HTMLFormElement, (e: Event) => void]> = [];
     forms.forEach((form) => {
@@ -37,31 +43,25 @@ export default function Landing() {
         const email = (input?.value || "").trim();
         if (!email) return;
         const btn = form.querySelector<HTMLButtonElement>("button");
+        if (!WAITLIST_ENDPOINT) {
+          if (msg) { msg.className = "signup-msg err"; msg.textContent = "Sign-up isn't connected yet — please email hello@allegoryartstudio.com."; }
+          return;
+        }
         if (btn) { btn.disabled = true; btn.textContent = "Sending…"; }
         if (msg) { msg.className = "signup-msg"; msg.textContent = ""; }
-        fetch(SUPABASE_URL + "/rest/v1/launch_waitlist", {
+        fetch(WAITLIST_ENDPOINT, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: SUPABASE_KEY,
-            Authorization: "Bearer " + SUPABASE_KEY,
-            Prefer: "return=minimal",
-          },
-          body: JSON.stringify({
+          mode: "no-cors",
+          body: new URLSearchParams({
             email,
             source: form.getAttribute("data-source") || "landing",
-            referrer: document.referrer || null,
+            referrer: document.referrer || "",
             user_agent: navigator.userAgent,
           }),
         })
-          .then((res) => {
-            // 201 = added; 409 = already on the list — both a success to the visitor.
-            if (res.ok || res.status === 409) {
-              form.classList.add("done");
-              if (msg) { msg.className = "signup-msg"; msg.textContent = "You've got first access. We'll email you the moment we open on August 1. ✦"; }
-            } else {
-              throw new Error("Request failed: " + res.status);
-            }
+          .then(() => {
+            form.classList.add("done");
+            if (msg) { msg.className = "signup-msg"; msg.textContent = "You've got first access. We'll email you the moment we open on August 1. ✦"; }
           })
           .catch(() => {
             if (btn) { btn.disabled = false; btn.textContent = "Try again"; }
