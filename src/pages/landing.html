@@ -305,14 +305,31 @@
 }
 @media(max-width:560px){
   .allegory-lp{font-size:16px}
-  .allegory-lp section{padding:64px 0}
+  .allegory-lp section{padding:56px 0}
   .allegory-lp .feat-grid,.allegory-lp .q-grid{grid-template-columns:1fr}
   .allegory-lp .feat-grid.pro-grid{grid-template-columns:1fr;max-width:none}
   .allegory-lp .brk{display:none}
   .allegory-lp .brand-logo{height:44px}
   .allegory-lp .proof .item .n{font-size:32px}
+  .allegory-lp .proof .row{gap:18px 26px}
   .allegory-lp .topbar{font-size:10.5px;letter-spacing:.1em}
   .allegory-lp .wrap{padding:0 20px}
+  /* tighter vertical rhythm + comfier tap targets on phones */
+  .allegory-lp .hero{padding:18px 0 18px}
+  .allegory-lp .hero-grid{gap:26px}
+  .allegory-lp .sec-head{margin-bottom:38px}
+  .allegory-lp .feat{padding:22px 20px}
+  .allegory-lp .vs-col{padding:26px 22px}
+  .allegory-lp .plan{padding:30px 24px}
+  .allegory-lp .plan .amt .cur{font-size:46px}
+  .allegory-lp .q{padding:24px 22px}
+  .allegory-lp .show-row{gap:24px;margin-bottom:56px}
+  .allegory-lp .btn{padding:15px 24px}
+  .allegory-lp .signup .btn{flex:1 1 100%}
+  /* footer stacks cleanly, links left-aligned */
+  .allegory-lp .foot-grid{flex-direction:column;gap:28px}
+  .allegory-lp .foot-links{justify-content:flex-start;max-width:none}
+  .allegory-lp .foot-bottom{flex-direction:column;gap:8px}
 }
 </style>
 <!-- radios for pricing toggle live at the top so siblings can react -->
@@ -711,7 +728,7 @@
     </div>
     <div class="foot-bottom">
       <span>© 2026 Allegory Art Studio. All rights reserved.</span>
-      <span>allegoryartstudio.com</span>
+      <span>allegoryartstudio.com · <a href="https://moresilverlinings.com" target="_blank" rel="noopener" style="text-decoration:underline">Built by Silver Linings</a></span>
     </div>
   </div>
 </footer>
