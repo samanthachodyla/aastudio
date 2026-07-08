@@ -1,9 +1,64 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 820" role="img" aria-label="Inventory and sales screenshot placeholder">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 820" role="img" aria-label="Allegory Art Studio — Sales &amp; Finance dashboard">
+  <defs>
+    <style>
+      .d{font-family:'Cormorant Garamond',Georgia,serif}
+      .b{font-family:'Work Sans',system-ui,sans-serif}
+      .eye{font-family:'Work Sans',system-ui,sans-serif;letter-spacing:3px}
+    </style>
+  </defs>
   <rect width="1200" height="820" fill="#f5f3ee"/>
-  <rect x="0" y="0" width="1200" height="52" fill="#efece4"/>
-  <circle cx="28" cy="26" r="5" fill="#d8d2c6"/><circle cx="48" cy="26" r="5" fill="#d8d2c6"/><circle cx="68" cy="26" r="5" fill="#d8d2c6"/>
-  <text x="600" y="380" text-anchor="middle" font-family="'Cormorant Garamond',Georgia,serif" font-size="60" fill="#11281c">Inventory &amp; Sales</text>
-  <text x="600" y="440" text-anchor="middle" font-family="'Work Sans',system-ui,sans-serif" font-size="20" letter-spacing="3" fill="#6b746d">INVENTORY · SCREENSHOT PLACEHOLDER</text>
-  <text x="600" y="482" text-anchor="middle" font-family="'Work Sans',system-ui,sans-serif" font-size="15" fill="#9a9086">Replace public/shots/inventory.svg with a real 1200×820 image</text>
+  <!-- sidebar -->
+  <rect x="0" y="0" width="232" height="820" fill="#f0ede6"/>
+  <line x1="232" y1="0" x2="232" y2="820" stroke="#d8d2c6"/>
+  <text x="30" y="66" class="d" font-size="30" fill="#11281c">allegory</text>
+  <text x="31" y="84" class="eye" font-size="8" fill="#6b746d">ART STUDIO</text>
+  <text x="30" y="166" class="b" font-size="15" fill="#6b746d">Today</text>
+  <text x="30" y="206" class="b" font-size="15" fill="#6b746d">Inventory</text>
+  <rect x="0" y="230" width="3" height="22" fill="#11281c"/>
+  <text x="30" y="246" class="b" font-size="15" font-weight="600" fill="#11281c">Sales &amp; Finance</text>
+  <text x="30" y="286" class="b" font-size="15" fill="#6b746d">Opportunities</text>
+  <text x="30" y="326" class="b" font-size="15" fill="#6b746d">Contacts</text>
+  <text x="30" y="366" class="b" font-size="15" fill="#6b746d">Profile Vault</text>
+  <text x="30" y="406" class="b" font-size="15" fill="#6b746d">Communications</text>
+  <text x="30" y="446" class="b" font-size="15" fill="#6b746d">Marketing</text>
+  <text x="30" y="486" class="b" font-size="15" fill="#6b746d">Studio Manager</text>
+  <!-- main -->
+  <text x="290" y="104" class="eye" font-size="13" fill="#6b746d">SALES &amp; FINANCE</text>
+  <text x="288" y="170" class="d" font-size="54" fill="#11281c">The financial life of your practice.</text>
+  <text x="290" y="210" class="b" font-size="16" fill="#6b746d">Invoices, income, outstanding balances — everything in one place.</text>
+  <!-- tabs -->
+  <text x="290" y="262" class="b" font-size="15" font-weight="600" fill="#11281c">Overview</text>
+  <rect x="288" y="276" width="72" height="2" fill="#11281c"/>
+  <text x="392" y="262" class="b" font-size="15" fill="#6b746d">Invoices</text>
+  <text x="486" y="262" class="b" font-size="15" fill="#6b746d">Expenses</text>
+  <line x1="290" y1="278" x2="1140" y2="278" stroke="#d8d2c6"/>
+  <text x="290" y="322" class="eye" font-size="12" fill="#6b746d">FINANCE DASHBOARD</text>
+  <!-- stat tiles -->
+  <g>
+    <rect x="290" y="342" width="206" height="116" fill="#ffffff" stroke="#d8d2c6"/>
+    <rect x="496" y="342" width="206" height="116" fill="#ffffff" stroke="#d8d2c6"/>
+    <rect x="702" y="342" width="206" height="116" fill="#ffffff" stroke="#d8d2c6"/>
+    <rect x="908" y="342" width="232" height="116" fill="#ffffff" stroke="#d8d2c6"/>
+    <text x="314" y="378" class="eye" font-size="11" fill="#6b746d">TOTAL EARNED</text>
+    <text x="314" y="426" class="d" font-size="40" fill="#11281c">$1,500</text>
+    <text x="520" y="378" class="eye" font-size="11" fill="#6b746d">OUTSTANDING</text>
+    <text x="520" y="426" class="d" font-size="40" fill="#11281c">$1,500</text>
+    <text x="726" y="378" class="eye" font-size="11" fill="#a8472f">OVERDUE</text>
+    <text x="726" y="426" class="d" font-size="40" fill="#11281c">$0</text>
+    <text x="932" y="378" class="eye" font-size="11" fill="#6b746d">NET</text>
+    <text x="932" y="426" class="d" font-size="40" fill="#11281c">$675</text>
+  </g>
+  <!-- cash flow chart -->
+  <rect x="290" y="486" width="850" height="302" rx="3" fill="#ffffff" stroke="#d8d2c6"/>
+  <text x="314" y="524" class="eye" font-size="12" fill="#6b746d">MONTHLY CASH FLOW · 2026</text>
+  <text x="1116" y="524" text-anchor="end" class="b" font-size="13" fill="#6b746d">Paid invoices</text>
+  <line x1="314" y1="566" x2="1116" y2="566" stroke="#efece4" stroke-dasharray="4 4"/>
+  <line x1="314" y1="636" x2="1116" y2="636" stroke="#efece4" stroke-dasharray="4 4"/>
+  <line x1="314" y1="706" x2="1116" y2="706" stroke="#efece4" stroke-dasharray="4 4"/>
+  <text x="300" y="570" text-anchor="end" class="b" font-size="11" fill="#9a9086">$2k</text>
+  <text x="300" y="640" text-anchor="end" class="b" font-size="11" fill="#9a9086">$1k</text>
+  <!-- bars: mostly empty, one tall bar (matches the single-month spike) -->
+  <rect x="900" y="574" width="88" height="182" fill="#11281c"/>
+  <text x="944" y="776" text-anchor="middle" class="b" font-size="11" fill="#6b746d">Jul</text>
   <rect x="1" y="1" width="1198" height="818" fill="none" stroke="#d8d2c6" stroke-width="2"/>
 </svg>
