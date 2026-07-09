@@ -4,6 +4,18 @@ import { useStore } from "@/lib/store";
 import { setActiveUserId, importLocalDataIfNeeded, loadAllForUser } from "@/lib/sync";
 import { Button } from "@/components/ui/button";
 
+// Supabase/PostgREST errors are plain objects (not Error instances), so pull the
+// real message out of whatever shape we're handed — otherwise the screen just
+// says the generic fallback and hides the actual cause.
+function errMessage(e: unknown): string {
+  if (e instanceof Error && e.message) return e.message;
+  if (e && typeof e === "object" && "message" in e) {
+    const m = (e as { message?: unknown }).message;
+    if (m) return String(m);
+  }
+  return "Failed to load your studio";
+}
+
 /**
  * Once a user is authenticated, loads their studio data from Supabase into the
  * store (running the one-time localStorage import first), and gates rendering
@@ -36,7 +48,7 @@ export function DataGate({ children }: { children: ReactNode }) {
         hydrateAll(data);
       } catch (e) {
         console.error("[DataGate] hydration failed", e);
-        setError(e instanceof Error ? e.message : "Failed to load your studio");
+        setError(errMessage(e));
         loadedFor.current = null; // allow a retry
       }
     })();
@@ -60,7 +72,7 @@ export function DataGate({ children }: { children: ReactNode }) {
               importLocalDataIfNeeded(user.id)
                 .then(() => loadAllForUser(user.id))
                 .then(hydrateAll)
-                .catch((e) => setError(e instanceof Error ? e.message : "Failed to load your studio"));
+                .catch((e) => setError(errMessage(e)));
             }
           }}
         >

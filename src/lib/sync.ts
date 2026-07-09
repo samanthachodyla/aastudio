@@ -101,26 +101,44 @@ export interface HydratedData {
  *  load their OWN studio here — cross-user reads happen in the Reports page). */
 export async function loadAllForUser(userId: string): Promise<HydratedData> {
   const collections: Record<string, any[]> = {};
+  const entries = Object.entries(ENTITY_TABLES);
+  const failures: { table: string; error: any }[] = [];
 
   await Promise.all(
-    Object.entries(ENTITY_TABLES).map(async ([storeKey, table]) => {
-      const { data, error } = await db.from(table).select("*").eq("user_id", userId);
-      if (error) throw error;
-      collections[storeKey] = (data ?? []).map(rowFromDb);
+    entries.map(async ([storeKey, table]) => {
+      try {
+        const { data, error } = await db.from(table).select("*").eq("user_id", userId);
+        if (error) throw error;
+        collections[storeKey] = (data ?? []).map(rowFromDb);
+      } catch (e) {
+        // One failing table shouldn't blank the whole studio — load what we can.
+        console.error(`[sync] failed to load ${table}`, e);
+        collections[storeKey] = [];
+        failures.push({ table, error: e });
+      }
     })
   );
 
-  const { data: inboxRows, error: inboxErr } = await db
-    .from("inbox_connections")
-    .select("*")
-    .eq("user_id", userId)
-    .maybeSingle();
-  if (inboxErr) throw inboxErr;
+  // If EVERY table failed, this is systemic (auth/network/RLS) — surface it so
+  // the user sees a real error instead of a silently empty studio.
+  if (failures.length === entries.length) {
+    throw failures[0].error;
+  }
 
-  return {
-    collections,
-    inboxConnection: inboxRows ? rowFromDb(inboxRows) : null,
-  };
+  let inboxConnection: Record<string, any> | null = null;
+  try {
+    const { data: inboxRows, error: inboxErr } = await db
+      .from("inbox_connections")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (inboxErr) throw inboxErr;
+    inboxConnection = inboxRows ? rowFromDb(inboxRows) : null;
+  } catch (e) {
+    console.error("[sync] failed to load inbox_connections", e);
+  }
+
+  return { collections, inboxConnection };
 }
 
 // ---- one-time localStorage import ----------------------------------------
@@ -132,32 +150,47 @@ const migratedFlag = (userId: string) => `allegory.migrated.${userId}`;
 export async function importLocalDataIfNeeded(userId: string): Promise<boolean> {
   if (localStorage.getItem(migratedFlag(userId))) return false;
 
-  let parsed: any = null;
+  // This is a one-time, best-effort migration of legacy browser data. It must
+  // NEVER block a user from loading their (server-backed) studio — so every
+  // failure is caught, and the "migrated" flag is always set at the end so a
+  // bad legacy blob can't wedge someone on the error screen forever.
   try {
-    const raw = localStorage.getItem(OLD_PERSIST_KEY);
-    parsed = raw ? JSON.parse(raw) : null;
-  } catch {
-    parsed = null;
-  }
-  const state = parsed?.state ?? parsed;
-
-  if (state && typeof state === "object") {
-    for (const [storeKey, table] of Object.entries(ENTITY_TABLES)) {
-      const items: any[] = Array.isArray(state[storeKey]) ? state[storeKey] : [];
-      if (!items.length) continue;
-      const rows = items.map((it) => ({ ...rowToDb(it), user_id: userId }));
-      // Upsert so a re-run can't create duplicates (ids are client-supplied).
-      const { error } = await db.from(table).upsert(rows, { onConflict: "id" });
-      if (error) throw error;
+    let parsed: any = null;
+    try {
+      const raw = localStorage.getItem(OLD_PERSIST_KEY);
+      parsed = raw ? JSON.parse(raw) : null;
+    } catch {
+      parsed = null;
     }
-    if (state.inboxConnection) {
-      await pushInboxConnection(state.inboxConnection);
-    }
-  }
+    const state = parsed?.state ?? parsed;
 
-  // Clear the legacy blob so a different account signing in on this same browser
-  // can never re-import (and thereby absorb) the first user's leftover data.
-  localStorage.removeItem(OLD_PERSIST_KEY);
-  localStorage.setItem(migratedFlag(userId), new Date().toISOString());
+    if (state && typeof state === "object") {
+      for (const [storeKey, table] of Object.entries(ENTITY_TABLES)) {
+        const items: any[] = Array.isArray(state[storeKey]) ? state[storeKey] : [];
+        if (!items.length) continue;
+        const rows = items.map((it) => ({ ...rowToDb(it), user_id: userId }));
+        try {
+          // Upsert so a re-run can't create duplicates (ids are client-supplied).
+          const { error } = await db.from(table).upsert(rows, { onConflict: "id" });
+          if (error) throw error;
+        } catch (e) {
+          console.error(`[sync] legacy import for ${table} failed (skipping)`, e);
+        }
+      }
+      if (state.inboxConnection) {
+        try {
+          await pushInboxConnection(state.inboxConnection);
+        } catch (e) {
+          console.error("[sync] legacy inbox import failed (skipping)", e);
+        }
+      }
+    }
+  } catch (e) {
+    console.error("[sync] legacy import failed (skipping)", e);
+  } finally {
+    // Always: clear the legacy blob and mark migrated, even on partial failure.
+    localStorage.removeItem(OLD_PERSIST_KEY);
+    localStorage.setItem(migratedFlag(userId), new Date().toISOString());
+  }
   return true;
 }
