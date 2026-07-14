@@ -190,6 +190,14 @@
 .allegory-lp .show-text li{display:flex;gap:11px;padding:7px 0;font-size:15px}
 .allegory-lp .show-text li .mk{color:var(--sage);flex:none;width:17px;height:17px;margin-top:3px}
 .allegory-lp .show-img{border:1px solid var(--line);border-radius:5px;overflow:hidden;box-shadow:0 30px 60px -36px rgba(17,40,28,.3);min-height:300px}
+/* ----------  From the Founder (condensed)  ---------- */
+.allegory-lp #founder{padding:72px 0}
+.allegory-lp #founder .sec-head{margin-bottom:32px}
+.allegory-lp .founder-row{display:grid;grid-template-columns:280px 1fr;gap:44px;align-items:center;max-width:880px;margin:0 auto}
+.allegory-lp .founder-row img{width:100%;height:380px;object-fit:cover;border:1px solid var(--line);border-radius:5px;box-shadow:0 24px 50px -34px rgba(17,40,28,.32);display:block}
+.allegory-lp .founder-quote{font-family:var(--font-d);font-style:italic;font-size:clamp(18px,2vw,22px);line-height:1.45;color:var(--ink)}
+.allegory-lp .founder-sig{margin-top:16px;font-family:var(--font-b);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--forest);font-weight:600}
+@media(max-width:700px){.allegory-lp .founder-row{grid-template-columns:1fr;gap:22px;max-width:380px}.allegory-lp .founder-row img{height:340px}}
 /* ----------  Pricing  ---------- */
 .allegory-lp .price-toggle{display:flex;justify-content:center;margin-bottom:44px}
 .allegory-lp .seg{display:inline-flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:3px;background:var(--card)}
@@ -685,11 +693,11 @@
     <div class="sec-head reveal">
       <span class="eyebrow">From the Founder</span>
     </div>
-    <div class="show-row reveal">
-      <img class="show-img" src="/founder.jpg" alt="Cara Alford, Founder of Allegory Art Studio" loading="lazy" style="object-fit:cover;max-height:640px;width:100%" />
-      <div class="show-text">
-        <p style="font-family:var(--font-d);font-style:italic;font-size:clamp(21px,2.5vw,27px);line-height:1.45;color:var(--ink)">I founded Allegory Art Studio because after 15+ years working with artists, I kept seeing the same pain points: valuable studio time lost to invoices and inventory lists, deadlines missed, leads and opportunities left unanswered. Artists deserve better tools to run their businesses, so I built one: a clear, intuitive platform that brings your whole art business into sync. The admin runs itself, and the studio time stays yours.</p>
-        <p style="margin-top:22px;font-family:var(--font-b);font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--forest);font-weight:600">— Cara Alford, Founder</p>
+    <div class="founder-row reveal">
+      <img src="/founder.jpg" alt="Cara Alford, Founder of Allegory Art Studio" loading="lazy" />
+      <div>
+        <p class="founder-quote">I founded Allegory Art Studio because after 15+ years working with artists, I kept seeing the same pain points: valuable studio time lost to invoices and inventory lists, deadlines missed, leads and opportunities left unanswered. Artists deserve better tools to run their businesses, so I built one: a clear, intuitive platform that brings your whole art business into sync. The admin runs itself, and the studio time stays yours.</p>
+        <p class="founder-sig">— Cara Alford, Founder</p>
       </div>
     </div>
   </div>

@@ -69,7 +69,7 @@ export default function Landing() {
         })
           .then(() => {
             form.classList.add("done");
-            if (msg) { msg.className = "signup-msg"; msg.textContent = "You've got first access. We'll email you the moment we open on August 1. ✦"; }
+            if (msg) { msg.className = "signup-msg"; msg.textContent = "You've got first access. See you August 1. ✦"; }
             // Fire a GA4 conversion so signups can be tied to traffic/campaigns.
             try {
               (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", "waitlist_signup", {
