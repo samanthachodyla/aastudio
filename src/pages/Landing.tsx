@@ -49,19 +49,35 @@ export default function Landing() {
         }
         if (btn) { btn.disabled = true; btn.textContent = "Sending…"; }
         if (msg) { msg.className = "signup-msg"; msg.textContent = ""; }
+        // Capture UTM tags from the URL so each signup carries its campaign/post.
+        const qs = new URLSearchParams(window.location.search);
+        const formSource = form.getAttribute("data-source") || "landing";
         fetch(WAITLIST_ENDPOINT, {
           method: "POST",
           mode: "no-cors",
           body: new URLSearchParams({
             email,
-            source: form.getAttribute("data-source") || "landing",
+            source: formSource,
             referrer: document.referrer || "",
             user_agent: navigator.userAgent,
+            utm_source: qs.get("utm_source") || "",
+            utm_medium: qs.get("utm_medium") || "",
+            utm_campaign: qs.get("utm_campaign") || "",
+            utm_content: qs.get("utm_content") || "",
+            utm_term: qs.get("utm_term") || "",
           }),
         })
           .then(() => {
             form.classList.add("done");
             if (msg) { msg.className = "signup-msg"; msg.textContent = "You've got first access. We'll email you the moment we open on August 1. ✦"; }
+            // Fire a GA4 conversion so signups can be tied to traffic/campaigns.
+            try {
+              (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", "waitlist_signup", {
+                form_source: formSource,
+                utm_source: qs.get("utm_source") || undefined,
+                utm_campaign: qs.get("utm_campaign") || undefined,
+              });
+            } catch { /* analytics is best-effort */ }
           })
           .catch(() => {
             if (btn) { btn.disabled = false; btn.textContent = "Try again"; }
