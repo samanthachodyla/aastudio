@@ -78,6 +78,13 @@ export default function Landing() {
                 utm_campaign: qs.get("utm_campaign") || undefined,
               });
             } catch { /* analytics is best-effort */ }
+            // Fire the Meta Pixel Lead event so Meta ads can optimize for signups.
+            try {
+              (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq?.("track", "Lead", {
+                content_name: "waitlist",
+                source: formSource,
+              });
+            } catch { /* analytics is best-effort */ }
           })
           .catch(() => {
             if (btn) { btn.disabled = false; btn.textContent = "Try again"; }
