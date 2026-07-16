@@ -52,6 +52,14 @@ export default function Landing() {
         // Capture UTM tags from the URL so each signup carries its campaign/post.
         const qs = new URLSearchParams(window.location.search);
         const formSource = form.getAttribute("data-source") || "landing";
+        // Shared event id: the browser Pixel and the server (CAPI) send the same
+        // Lead with this id so Meta de-duplicates them into one conversion.
+        const cookie = (name: string) => {
+          const m = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]+)"));
+          return m ? decodeURIComponent(m[1]) : "";
+        };
+        const eventId = (crypto as { randomUUID?: () => string }).randomUUID?.()
+          ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
         fetch(WAITLIST_ENDPOINT, {
           method: "POST",
           mode: "no-cors",
@@ -65,6 +73,11 @@ export default function Landing() {
             utm_campaign: qs.get("utm_campaign") || "",
             utm_content: qs.get("utm_content") || "",
             utm_term: qs.get("utm_term") || "",
+            // For Meta Conversions API (server-side), forwarded by the endpoint:
+            event_id: eventId,
+            event_source_url: window.location.href,
+            fbp: cookie("_fbp"),
+            fbc: cookie("_fbc"),
           }),
         })
           .then(() => {
@@ -79,11 +92,12 @@ export default function Landing() {
               });
             } catch { /* analytics is best-effort */ }
             // Fire the Meta Pixel Lead event so Meta ads can optimize for signups.
+            // The eventID matches the server (CAPI) event so Meta de-dupes them.
             try {
               (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq?.("track", "Lead", {
                 content_name: "waitlist",
                 source: formSource,
-              });
+              }, { eventID: eventId });
             } catch { /* analytics is best-effort */ }
           })
           .catch(() => {
