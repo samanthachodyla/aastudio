@@ -60,6 +60,10 @@ export default function Landing() {
         };
         const eventId = (crypto as { randomUUID?: () => string }).randomUUID?.()
           ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        // GA client id (from the _ga cookie: "GA1.1.<id>.<ts>") so the server-side
+        // GA4 event lands on the same user as the browser.
+        const gaCookie = cookie("_ga");
+        const gaClientId = gaCookie ? gaCookie.split(".").slice(-2).join(".") : "";
         fetch(WAITLIST_ENDPOINT, {
           method: "POST",
           mode: "no-cors",
@@ -78,6 +82,8 @@ export default function Landing() {
             event_source_url: window.location.href,
             fbp: cookie("_fbp"),
             fbc: cookie("_fbc"),
+            // For the GA4 Measurement Protocol (server-side):
+            ga_client_id: gaClientId,
           }),
         })
           .then(() => {
