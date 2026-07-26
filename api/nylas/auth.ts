@@ -25,9 +25,18 @@ export default async function handler(req: any, res: any) {
   try {
     const token = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "").trim();
     if (!token) return res.status(401).json({ error: "Not signed in" });
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return res.status(500).json({ error: "Server missing SUPABASE_SERVICE_ROLE_KEY" });
 
-    const supabase = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+    const svc = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+    if (!svc) return res.status(500).json({ error: "Server missing SUPABASE_SERVICE_ROLE_KEY" });
+    // Catch a truncated paste (the "…" ellipsis or other non-ASCII) with a clear message.
+    if (/[^\x20-\x7E]/.test(svc) || svc.length < 30) {
+      return res.status(500).json({
+        error: "Config error",
+        detail: "SUPABASE_SERVICE_ROLE_KEY looks truncated — re-copy the FULL key with the copy button (long, no '…').",
+      });
+    }
+
+    const supabase = createClient(SUPABASE_URL, svc);
     const { data, error } = await supabase.auth.getUser(token);
     if (error || !data.user) {
       return res.status(401).json({
