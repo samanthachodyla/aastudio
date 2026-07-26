@@ -24,6 +24,7 @@ import { TierGate } from "./components/TierGate";
 import { AuthProvider } from "./lib/auth";
 import { RequireAuth } from "./components/RequireAuth";
 import { UsageTracker } from "./lib/usage";
+import { CookieConsent } from "./components/CookieConsent";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <CookieConsent />
       <BrowserRouter>
         <AuthProvider>
           <UsageTracker />

@@ -1,11 +1,32 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- Google tag (gtag.js) -->
+    <!-- Consent bootstrap (must run before analytics/ads load) -->
+    <script>
+      // US opt-out model: analytics + ads are granted by default, but we honor
+      // (a) a stored opt-out choice and (b) the browser Global Privacy Control
+      // signal. The in-app cookie banner can update this live at runtime.
+      (function () {
+        var declined = false;
+        try { declined = localStorage.getItem('allegory.consent') === 'declined'; } catch (e) {}
+        var gpc = (navigator.globalPrivacyControl === true);
+        // GPC signals "do not sell/share" -> deny ads; analytics stays unless opted out.
+        window.__allegoryDenyAds = declined || gpc;
+        window.__allegoryDenyAnalytics = declined;
+      })();
+    </script>
+
+    <!-- Google tag (gtag.js) with Consent Mode v2 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-CSJ5CQZ382"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        ad_storage: window.__allegoryDenyAds ? 'denied' : 'granted',
+        ad_user_data: window.__allegoryDenyAds ? 'denied' : 'granted',
+        ad_personalization: window.__allegoryDenyAds ? 'denied' : 'granted',
+        analytics_storage: window.__allegoryDenyAnalytics ? 'denied' : 'granted'
+      });
       gtag('js', new Date());
       gtag('config', 'G-CSJ5CQZ382');
     </script>
@@ -20,6 +41,8 @@
       t.src=v;s=b.getElementsByTagName(e)[0];
       s.parentNode.insertBefore(t,s)}(window, document,'script',
       'https://connect.facebook.net/en_US/fbevents.js');
+      // Pause the Pixel up front if the visitor opted out (or GPC is on), then init.
+      if (window.__allegoryDenyAds) { fbq('consent', 'revoke'); }
       fbq('init', '1583309690064748');
       fbq('track', 'PageView');
     </script>
