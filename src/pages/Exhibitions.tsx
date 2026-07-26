@@ -3,6 +3,7 @@ import { Plus, Trash2, Sparkles, Loader2, ChevronDown, CalendarClock, Search, Ex
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { useStore, fmtDate, daysUntil } from "@/lib/store";
+import { useAttachments } from "@/lib/attachments";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -124,8 +125,8 @@ const OPPORTUNITY_SEARCH_FIELDS: (keyof Opportunity)[] = [
 ];
 
 const Exhibitions = () => {
-  const { opportunities, addOpportunity, updateOpportunity, deleteOpportunity,
-    opportunityAttachments, addOppAttachment, removeOppAttachment } = useStore();
+  const { opportunities, addOpportunity, updateOpportunity, deleteOpportunity } = useStore();
+  const { byOpportunity: opportunityAttachments, addAttachment: addOppAttachment, removeAttachment: removeOppAttachment } = useAttachments();
   const [open, setOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -363,7 +364,7 @@ function OpportunityForm({ onSubmit }: { onSubmit: (d: any, files: PendingAttach
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {BUILT_IN_OPP_TYPES.map(k => <SelectItem key={k} value={k}>{typeLabels[k]}</SelectItem>)}
-                {customOpportunityTypes.map(t => <SelectItem key={t} value={t}>{labelForType(t)}</SelectItem>)}
+                {customOpportunityTypes.filter(t => !BUILT_IN_OPP_TYPES.includes(t)).map(t => <SelectItem key={t} value={t}>{labelForType(t)}</SelectItem>)}
                 <SelectItem value={ADD_NEW_OPP_TYPE}>＋ Add your own type…</SelectItem>
               </SelectContent>
             </Select>

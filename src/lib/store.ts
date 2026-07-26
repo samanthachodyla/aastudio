@@ -4,11 +4,12 @@ import { toast } from "sonner";
 import type {
   Artwork, Invoice, Consignment, Opportunity, Contact, Lead, Interaction, Expense,
   VaultDoc, PressItem, InboxConnection, FlaggedEmail,
-  ContentIdea, CaptionDraft, ScheduledPost, Newsletter, Todo, OppAttachment,
+  ContentIdea, CaptionDraft, ScheduledPost, Newsletter, Todo,
 } from "./types";
 import {
   pushInsert, pushUpdate, pushDelete, pushInboxConnection, type HydratedData,
 } from "./sync";
+import { useAttachments } from "./attachments";
 
 interface State {
   // Loaded from Supabase on login.
@@ -64,11 +65,6 @@ interface State {
   addOpportunity: (o: Omit<Opportunity, "id">) => Opportunity;
   updateOpportunity: (id: string, patch: Partial<Opportunity>) => void;
   deleteOpportunity: (id: string) => void;
-
-  // Opportunity file attachments — stored on-device (localStorage), keyed by opportunity id.
-  opportunityAttachments: Record<string, OppAttachment[]>;
-  addOppAttachment: (oppId: string, att: Omit<OppAttachment, "id" | "addedAt">) => void;
-  removeOppAttachment: (oppId: string, attId: string) => void;
 
   addContact: (c: Omit<Contact, "id">) => Contact;
   updateContact: (id: string, patch: Partial<Contact>) => void;
@@ -151,7 +147,6 @@ export const useStore = create<State>()(
       newsletters: [],
       customStatuses: [],
       customOpportunityTypes: [],
-      opportunityAttachments: {},
       todos: [],
 
       hydrateAll: (data) =>
@@ -265,21 +260,9 @@ export const useStore = create<State>()(
       },
       deleteOpportunity: (id) => {
         set({ opportunities: get().opportunities.filter(o => o.id !== id) });
-        // Drop any on-device attachments tied to this opportunity.
-        const { [id]: _removed, ...restAtt } = get().opportunityAttachments;
-        set({ opportunityAttachments: restAtt });
+        // Drop any on-device attachments tied to this opportunity (separate store).
+        useAttachments.getState().clearOpportunity(id);
         track(pushDelete("opportunities", id));
-      },
-
-      addOppAttachment: (oppId, att) => {
-        const item: OppAttachment = { ...att, id: uid(), addedAt: today() };
-        const map = get().opportunityAttachments;
-        set({ opportunityAttachments: { ...map, [oppId]: [...(map[oppId] ?? []), item] } });
-      },
-      removeOppAttachment: (oppId, attId) => {
-        const map = get().opportunityAttachments;
-        const next = (map[oppId] ?? []).filter(a => a.id !== attId);
-        set({ opportunityAttachments: { ...map, [oppId]: next } });
       },
 
       addContact: (c) => {
@@ -475,7 +458,7 @@ export const useStore = create<State>()(
     {
       // Only UI preferences live in localStorage now; studio data is server-backed.
       name: "allegory.studio.prefs.v1",
-      partialize: (s) => ({ customStatuses: s.customStatuses, customOpportunityTypes: s.customOpportunityTypes, opportunityAttachments: s.opportunityAttachments, vaultOnboarded: s.vaultOnboarded, todos: s.todos }),
+      partialize: (s) => ({ customStatuses: s.customStatuses, customOpportunityTypes: s.customOpportunityTypes, vaultOnboarded: s.vaultOnboarded, todos: s.todos }),
     }
   )
 );
