@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Plus, Trash2, Mail, Phone, MapPin, Search, ArrowUpRight, Calendar as CalendarIcon, X, UserPlus, Upload,
+  Plus, Trash2, Mail, Phone, MapPin, Search, ArrowUpRight, Calendar as CalendarIcon, X, UserPlus, Upload, Download,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useStore, fmtMoney, fmtDate, daysSince, daysUntil } from "@/lib/store";
@@ -20,8 +20,10 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle,
 } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { toCsv, downloadCsv } from "@/lib/csv";
 import type { Contact, ContactType, InteractionKind, LeadStatus } from "@/lib/types";
 
 const TYPES: ContactType[] = ["gallery", "collector", "consultant", "subcontractor", "press", "curator", "peer", "other"];
@@ -31,12 +33,36 @@ const Contacts = () => {
   const { contacts, addContact, deleteContact, updateContact, invoices, artworks, leads, addLead, updateLead, deleteLead } = useStore();
   const [openNew, setOpenNew] = useState(false);
   const [openImport, setOpenImport] = useState(false);
+  const [openExport, setOpenExport] = useState(false);
   const [leadOpen, setLeadOpen] = useState(false);
 
   const importContacts = (rows: Omit<Contact, "id">[]) => {
     rows.forEach(r => addContact(r));
     setOpenImport(false);
     toast.success(`Imported ${rows.length} contact${rows.length === 1 ? "" : "s"}`);
+  };
+
+  const exportContacts = (selectedTypes: ContactType[]) => {
+    const chosen = new Set(selectedTypes);
+    const data = contacts.filter(c => chosen.has(c.type));
+    if (data.length === 0) {
+      toast.error("No contacts in those categories to export.");
+      return;
+    }
+    const header = ["Name", "Type", "Email", "Phone", "Location", "Tags", "Notes", "Follow-up"];
+    const rows = data.map(c => [
+      c.name,
+      c.type,
+      c.email ?? "",
+      c.phone ?? "",
+      c.location ?? "",
+      (c.tags ?? []).join("; "),
+      c.notes ?? "",
+      c.followUpAt ? fmtDate(c.followUpAt) : "",
+    ]);
+    downloadCsv("allegory-contacts.csv", toCsv(header, rows));
+    setOpenExport(false);
+    toast.success(`Exported ${data.length} contact${data.length === 1 ? "" : "s"}`);
   };
   const [activeId, setActiveId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -73,6 +99,16 @@ const Contacts = () => {
               <Button size="sm" variant="outline" className="gap-2"><Upload className="h-3.5 w-3.5" /> Import</Button>
             </DialogTrigger>
             <ImportContactsDialog key={openImport ? "open" : "closed"} onImport={importContacts} />
+          </Dialog>
+          <Dialog open={openExport} onOpenChange={setOpenExport}>
+            <DialogTrigger asChild>
+              <Button size="sm" variant="outline" className="gap-2"><Download className="h-3.5 w-3.5" /> Export</Button>
+            </DialogTrigger>
+            <ExportContactsDialog
+              key={openExport ? "open" : "closed"}
+              counts={contacts.reduce((acc, c) => { acc[c.type] = (acc[c.type] ?? 0) + 1; return acc; }, {} as Record<string, number>)}
+              onExport={exportContacts}
+            />
           </Dialog>
           <Dialog open={openNew} onOpenChange={setOpenNew}>
             <DialogTrigger asChild>
@@ -708,6 +744,64 @@ function rowsToContacts(cells: string[][]): Omit<Contact, "id">[] {
     });
   }
   return out;
+}
+
+// =================== Export ===================
+function ExportContactsDialog({
+  counts, onExport,
+}: {
+  counts: Record<string, number>;
+  onExport: (types: ContactType[]) => void;
+}) {
+  const [selected, setSelected] = useState<ContactType[]>(TYPES);
+  const toggle = (t: ContactType) =>
+    setSelected(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
+  const total = selected.reduce((s, t) => s + (counts[t] ?? 0), 0);
+
+  return (
+    <DialogContent className="max-w-md">
+      <DialogHeader><DialogTitle className="font-display text-2xl font-normal">Export contacts</DialogTitle></DialogHeader>
+      <div className="grid gap-4 mt-2">
+        <p className="text-sm text-muted-foreground">
+          Choose which categories of people to include. Your file downloads as a{" "}
+          <span className="font-medium">.csv</span> you can open in Excel, Numbers, or Google Sheets.
+        </p>
+        <div className="space-y-2">
+          {TYPES.map(t => (
+            <label key={t} className="flex items-center gap-3 text-sm cursor-pointer">
+              <Checkbox checked={selected.includes(t)} onCheckedChange={() => toggle(t)} />
+              <span className="capitalize flex-1">{t}</span>
+              <span className="text-xs text-muted-foreground tabular-nums">{counts[t] ?? 0}</span>
+            </label>
+          ))}
+        </div>
+        <div className="flex items-center justify-between text-xs">
+          <button
+            type="button"
+            onClick={() => setSelected(TYPES)}
+            className="text-muted-foreground hover:text-foreground uppercase tracking-wider"
+          >
+            Select all
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelected([])}
+            className="text-muted-foreground hover:text-foreground uppercase tracking-wider"
+          >
+            Clear
+          </button>
+        </div>
+        <div className="flex items-center justify-between pt-2">
+          <span className="text-xs text-muted-foreground">
+            {total} contact{total === 1 ? "" : "s"} selected
+          </span>
+          <Button disabled={total === 0} onClick={() => onExport(selected)} className="gap-2">
+            <Download className="h-3.5 w-3.5" /> Download {total > 0 ? total : ""}
+          </Button>
+        </div>
+      </div>
+    </DialogContent>
+  );
 }
 
 function ImportContactsDialog({ onImport }: { onImport: (rows: Omit<Contact, "id">[]) => void }) {

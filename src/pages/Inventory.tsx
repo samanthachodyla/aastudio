@@ -5,6 +5,7 @@ import { useStore, fmtMoney } from "@/lib/store";
 import type { Artwork } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { StatusPill } from "@/components/StatusPill";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ConsignmentsView } from "@/components/ConsignmentsView";
 import { toast } from "sonner";
+import { parseCsv } from "@/lib/csv";
 import type { ArtworkStatus } from "@/lib/types";
 
 const exportableStatuses: { value: ArtworkStatus; label: string }[] = [
@@ -79,9 +81,16 @@ const Inventory = () => {
     setOpen(false);
   };
   const [exportOpen, setExportOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [exportStatuses, setExportStatuses] = useState<ArtworkStatus[]>(
     exportableStatuses.map(s => s.value)
   );
+
+  const importArtworks = (rows: Omit<Artwork, "id" | "createdAt">[]) => {
+    rows.forEach(r => addArtwork(r));
+    setImportOpen(false);
+    toast.success(`Imported ${rows.length} work${rows.length === 1 ? "" : "s"}`);
+  };
 
   const toggleExportStatus = (s: ArtworkStatus) => {
     setExportStatuses(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
@@ -116,6 +125,14 @@ const Inventory = () => {
       description="Every work, every state, every location. Your single source of truth for what exists in the studio and what's out in the world."
       actions={
         <>
+          <Dialog open={importOpen} onOpenChange={setImportOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Upload className="h-3.5 w-3.5" /> Import
+              </Button>
+            </DialogTrigger>
+            <ImportArtworksDialog key={importOpen ? "open" : "closed"} onImport={importArtworks} />
+          </Dialog>
           <Dialog open={exportOpen} onOpenChange={setExportOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
@@ -485,6 +502,131 @@ function ArtworkForm({ initial, onSubmit }: { initial?: Artwork; onSubmit: (data
           <Button type="submit">{initial ? "Save changes" : "Add to catalogue"}</Button>
         </div>
       </form>
+    </DialogContent>
+  );
+}
+
+// =================== Spreadsheet Import ===================
+// Header aliases → Artwork field. Anything unrecognized is ignored.
+const ART_HEADER_ALIASES: Record<string, keyof Omit<Artwork, "id" | "createdAt">> = {
+  title: "title", name: "title", work: "title", artwork: "title",
+  year: "year", date: "year",
+  medium: "medium", media: "medium", material: "medium", materials: "medium",
+  dimensions: "dimensions", size: "dimensions", dims: "dimensions",
+  edition: "edition", ed: "edition",
+  price: "price", value: "price", amount: "price", "list price": "price",
+  status: "status", state: "status",
+  location: "location", "location/consignee": "location", consignee: "location", "where": "location",
+};
+const ART_POSITIONAL: (keyof Omit<Artwork, "id" | "createdAt">)[] =
+  ["title", "year", "medium", "dimensions", "edition", "price", "status", "location"];
+
+// Normalize free-text status into one of our known statuses (falls back to in_studio).
+const STATUS_ALIASES: Record<string, ArtworkStatus> = {
+  "in studio": "in_studio", studio: "in_studio", available: "in_studio", instudio: "in_studio",
+  "on consignment": "on_consignment", consignment: "on_consignment", consigned: "on_consignment",
+  sold: "sold", donated: "donated", loaned: "loaned", loan: "loaned",
+  nfs: "nfs", "not for sale": "nfs",
+  "in transit": "in_transit", "in storage": "in_storage", storage: "in_storage",
+};
+
+function parsePrice(v: string): number {
+  const n = parseFloat(String(v).replace(/[^0-9.]/g, ""));
+  return Number.isFinite(n) ? n : 0;
+}
+
+function rowsToArtworks(cells: string[][]): Omit<Artwork, "id" | "createdAt">[] {
+  if (cells.length === 0) return [];
+  const first = cells[0].map(c => c.trim().toLowerCase());
+  const hasHeader = first.some(c => c in ART_HEADER_ALIASES);
+  const map = hasHeader ? first.map(h => ART_HEADER_ALIASES[h]) : ART_POSITIONAL;
+  const body = hasHeader ? cells.slice(1) : cells;
+
+  const out: Omit<Artwork, "id" | "createdAt">[] = [];
+  for (const r of body) {
+    const rec: Record<string, string> = {};
+    r.forEach((val, i) => {
+      const field = map[i];
+      if (field) rec[field] = (rec[field] ? rec[field] + " " : "") + val.trim();
+    });
+    const title = (rec.title ?? "").trim();
+    if (!title) continue; // title is required
+    const rawStatus = (rec.status ?? "").trim().toLowerCase();
+    const status: ArtworkStatus = STATUS_ALIASES[rawStatus] ?? (rawStatus ? rawStatus : "in_studio");
+    const yearNum = parseInt(String(rec.year ?? "").replace(/[^0-9]/g, ""), 10);
+    out.push({
+      title,
+      year: Number.isFinite(yearNum) && yearNum > 0 ? yearNum : new Date().getFullYear(),
+      medium: rec.medium?.trim() || "",
+      dimensions: rec.dimensions?.trim() || "",
+      edition: rec.edition?.trim() || undefined,
+      price: parsePrice(rec.price ?? ""),
+      status,
+      location: rec.location?.trim() || undefined,
+    });
+  }
+  return out;
+}
+
+function ImportArtworksDialog({ onImport }: { onImport: (rows: Omit<Artwork, "id" | "createdAt">[]) => void }) {
+  const [raw, setRaw] = useState("");
+  const parsed = useMemo(() => (raw.trim() ? rowsToArtworks(parseCsv(raw)) : []), [raw]);
+
+  const onFile = (file: File | undefined) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setRaw(String(reader.result ?? ""));
+    reader.readAsText(file);
+  };
+
+  return (
+    <DialogContent className="max-w-xl">
+      <DialogHeader><DialogTitle className="font-display text-2xl font-normal">Import inventory</DialogTitle></DialogHeader>
+      <div className="grid gap-4 mt-2">
+        <p className="text-sm text-muted-foreground">
+          Upload a <span className="font-medium">.csv</span> file (export one from Excel, Numbers, or Google Sheets)
+          or paste rows below. Columns are matched by header
+          (<span className="font-mono text-xs">title, year, medium, dimensions, edition, price, status, location</span>)
+          — or, with no header, read in that order. Only <span className="font-medium">title</span> is required.
+        </p>
+
+        <div>
+          <input
+            id="inventory-csv-file"
+            type="file"
+            accept=".csv,text/csv,text/plain"
+            onChange={(e) => onFile(e.target.files?.[0])}
+            className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-border file:bg-background file:px-3 file:py-1.5 file:text-sm file:cursor-pointer hover:file:bg-surface"
+          />
+        </div>
+
+        <div>
+          <Label className="eyebrow text-[10px]">Or paste CSV</Label>
+          <Textarea
+            value={raw}
+            onChange={(e) => setRaw(e.target.value)}
+            rows={7}
+            placeholder={"title,year,medium,dimensions,edition,price,status,location\nMorning Tide,2024,Oil on linen,24 × 30 in,,4200,in_studio,\nField Notes,2023,Monotype,11 × 14 in,2/10,650,sold,"}
+            className="font-mono text-xs mt-1"
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">
+            {raw.trim()
+              ? `${parsed.length} valid work${parsed.length === 1 ? "" : "s"} detected${parsed.length === 0 ? " — check that each row has a title." : "."}`
+              : "Nothing to import yet."}
+          </span>
+          <Button disabled={parsed.length === 0} onClick={() => onImport(parsed)} className="gap-2">
+            <Upload className="h-3.5 w-3.5" /> Import {parsed.length > 0 ? parsed.length : ""}
+          </Button>
+        </div>
+
+        <p className="text-[11px] text-muted-foreground italic">
+          Statuses like “In studio”, “On consignment”, “Sold”, “Donated”, “Loaned”, or “NFS” are recognized automatically.
+          Prices can include $ and commas.
+        </p>
+      </div>
     </DialogContent>
   );
 }
