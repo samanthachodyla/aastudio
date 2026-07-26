@@ -29,7 +29,12 @@ export default async function handler(req: any, res: any) {
 
     const supabase = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
     const { data, error } = await supabase.auth.getUser(token);
-    if (error || !data.user) return res.status(401).json({ error: "Invalid session" });
+    if (error || !data.user) {
+      return res.status(401).json({
+        error: "Invalid session",
+        detail: error?.message || "no user for token",
+      });
+    }
 
     const url = new URL(`${NYLAS_API_URI}/v3/connect/auth`);
     url.searchParams.set("client_id", CLIENT_ID);

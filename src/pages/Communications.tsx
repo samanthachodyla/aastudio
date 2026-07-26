@@ -43,7 +43,7 @@ const Communications = () => {
       });
       const json = await res.json();
       if (json.authUrl) window.location.href = json.authUrl;
-      else toast.error(json.error || "Couldn't start Gmail connect.");
+      else toast.error(json.detail ? `${json.error}: ${json.detail}` : (json.error || "Couldn't start Gmail connect."));
     } catch {
       toast.error("Couldn't reach the connection service. Please try again.");
     }
