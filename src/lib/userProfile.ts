@@ -4,8 +4,10 @@ import { persist } from "zustand/middleware";
 interface UserProfileState {
   fullName: string;
   email: string;
+  /** Optional custom logo (data URL) shown on printed/exported invoices. */
+  invoiceLogo: string;
   welcomeDismissed: boolean;
-  setProfile: (patch: Partial<Pick<UserProfileState, "fullName" | "email">>) => void;
+  setProfile: (patch: Partial<Pick<UserProfileState, "fullName" | "email" | "invoiceLogo">>) => void;
   dismissWelcome: () => void;
 }
 
@@ -14,6 +16,7 @@ export const useUserProfile = create<UserProfileState>()(
     (set) => ({
       fullName: "",
       email: "",
+      invoiceLogo: "",
       welcomeDismissed: false,
       setProfile: (patch) => set(patch),
       dismissWelcome: () => set({ welcomeDismissed: true }),

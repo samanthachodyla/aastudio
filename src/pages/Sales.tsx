@@ -29,7 +29,7 @@ const Sales = () => {
   } = useStore();
   const [open, setOpen] = useState(false);
   const [editExpense, setEditExpense] = useState<Expense | null>(null);
-  const { fullName } = useUserProfile();
+  const { fullName, invoiceLogo } = useUserProfile();
   const artistLine = fullName ? `${getFirstName(fullName)}${getLastName(fullName) ? " " + getLastName(fullName) : ""} · Artist` : "";
   const [pnlOpen, setPnlOpen] = useState(false);
   const [expenseOpen, setExpenseOpen] = useState(false);
@@ -165,8 +165,10 @@ const Sales = () => {
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;font-family:Helvetica,sans-serif;font-size:13px;margin-top:16px}
   .meta{display:flex;justify-content:space-between;font-family:Helvetica,sans-serif;font-size:13px;margin-top:8px}
   .block{white-space:pre-line;margin-top:6px;line-height:1.5}
+  .logo{max-height:72px;max-width:260px;margin-bottom:16px;object-fit:contain}
 </style></head><body>
-<div class="eyebrow">Allegory Studio · Invoice</div>
+${invoiceLogo ? `<img class="logo" src="${invoiceLogo}" alt="Studio logo"/>` : ""}
+<div class="eyebrow">${invoiceLogo ? "Invoice" : "Allegory Studio · Invoice"}</div>
 ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>` : ""}
 <h1>${inv.number}</h1>
 <hr/>

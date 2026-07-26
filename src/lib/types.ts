@@ -75,6 +75,17 @@ export interface Consignment {
 export type OpportunityType = "open_call" | "residency" | "prize" | "show" | "grant" | "commission" | "delivery" | (string & {});
 export type OpportunityStatus = "researching" | "applying" | "submitted" | "accepted" | "declined" | "withdrawn";
 
+/** A file attached to an opportunity (PDF / image / doc), stored as a data URL.
+ *  Kept on-device (localStorage) so it never blocks the opportunity's DB write. */
+export interface OppAttachment {
+  id: string;
+  name: string;
+  mime: string;
+  size: number;      // bytes
+  dataUrl: string;   // base64 data URL
+  addedAt: string;   // ISO
+}
+
 export interface Opportunity {
   id: string;
   title: string;

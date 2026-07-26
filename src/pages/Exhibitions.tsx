@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Plus, Trash2, Sparkles, Loader2, ChevronDown, CalendarClock, Search, ExternalLink, Check } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { Plus, Trash2, Sparkles, Loader2, ChevronDown, CalendarClock, Search, ExternalLink, Check, Paperclip, Download, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { useStore, fmtDate, daysUntil } from "@/lib/store";
@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import type { Opportunity, OpportunityStatus, OpportunityType } from "@/lib/types";
+import type { Opportunity, OpportunityStatus, OpportunityType, OppAttachment } from "@/lib/types";
 
 const typeLabels: Record<string, string> = {
   open_call: "Open call",
@@ -41,6 +41,82 @@ const labelForType = (t?: string): string => {
   return t;
 };
 
+// ---- Opportunity attachments (on-device) ----
+const MAX_ATT_BYTES = 5 * 1024 * 1024; // 5MB per file
+
+const fmtBytes = (n: number) =>
+  n < 1024 ? `${n} B` : n < 1024 * 1024 ? `${(n / 1024).toFixed(0)} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`;
+
+type PendingAttachment = Omit<OppAttachment, "id" | "addedAt">;
+
+function readAttachment(file: File): Promise<PendingAttachment | null> {
+  if (file.size > MAX_ATT_BYTES) {
+    toast.error(`"${file.name}" is over 5MB — please attach a smaller file.`);
+    return Promise.resolve(null);
+  }
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve({
+      name: file.name,
+      mime: file.type || "application/octet-stream",
+      size: file.size,
+      dataUrl: String(reader.result),
+    });
+    reader.onerror = () => { toast.error(`Couldn't read "${file.name}".`); resolve(null); };
+    reader.readAsDataURL(file);
+  });
+}
+
+/** Hidden file input rendered as a labelled button; hands parsed attachments back. */
+function AttachmentButton({ onFiles, label = "Attach file" }: { onFiles: (a: PendingAttachment[]) => void; label?: string }) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <>
+      <input
+        ref={ref}
+        type="file"
+        multiple
+        accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.gif,.webp,.heic,image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        className="hidden"
+        onChange={async (e) => {
+          const files = Array.from(e.target.files ?? []);
+          const parsed = (await Promise.all(files.map(readAttachment))).filter(Boolean) as PendingAttachment[];
+          if (parsed.length) onFiles(parsed);
+          if (ref.current) ref.current.value = "";
+        }}
+      />
+      <Button type="button" size="sm" variant="outline" className="gap-2" onClick={() => ref.current?.click()}>
+        <Paperclip className="h-3.5 w-3.5" /> {label}
+      </Button>
+    </>
+  );
+}
+
+/** One attachment row with a download link and a remove button. */
+function AttachmentRow({ att, onRemove }: { att: OppAttachment | PendingAttachment; onRemove: () => void }) {
+  const id = "id" in att ? att.id : att.name;
+  return (
+    <li key={id} className="flex items-center gap-3 py-2 px-3 border border-border rounded-sm bg-surface/40">
+      <Paperclip className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+      <div className="min-w-0 flex-1">
+        <div className="text-sm truncate">{att.name}</div>
+        <div className="text-[11px] text-muted-foreground">{fmtBytes(att.size)}</div>
+      </div>
+      <a
+        href={att.dataUrl}
+        download={att.name}
+        className="text-muted-foreground hover:text-foreground shrink-0"
+        title="Download"
+      >
+        <Download className="h-3.5 w-3.5" />
+      </a>
+      <button type="button" onClick={onRemove} className="text-muted-foreground hover:text-destructive shrink-0" title="Remove">
+        <X className="h-3.5 w-3.5" />
+      </button>
+    </li>
+  );
+}
+
 // Text fields the opportunity search reads. Add a new field here (e.g. "location")
 // to include it in search — that's the only change required.
 const OPPORTUNITY_SEARCH_FIELDS: (keyof Opportunity)[] = [
@@ -48,7 +124,8 @@ const OPPORTUNITY_SEARCH_FIELDS: (keyof Opportunity)[] = [
 ];
 
 const Exhibitions = () => {
-  const { opportunities, addOpportunity, updateOpportunity, deleteOpportunity } = useStore();
+  const { opportunities, addOpportunity, updateOpportunity, deleteOpportunity,
+    opportunityAttachments, addOppAttachment, removeOppAttachment } = useStore();
   const [open, setOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -91,7 +168,11 @@ const Exhibitions = () => {
             </div>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild><Button size="sm" className="gap-2 shrink-0"><Plus className="h-3.5 w-3.5" /> New opportunity</Button></DialogTrigger>
-              <OpportunityForm onSubmit={(d) => { addOpportunity(d); setOpen(false); }} />
+              <OpportunityForm onSubmit={(d, files) => {
+                const created = addOpportunity(d);
+                files.forEach(f => addOppAttachment(created.id, f));
+                setOpen(false);
+              }} />
             </Dialog>
           </div>
           <ul className="divide-y divide-border border-b border-border">
@@ -181,6 +262,26 @@ const Exhibitions = () => {
                           placeholder="Artist statement, 10 images, CV…"
                         />
                       </div>
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <Label className="eyebrow">Attachments</Label>
+                          <AttachmentButton onFiles={(atts) => atts.forEach(a => addOppAttachment(o.id, a))} />
+                        </div>
+                        {(opportunityAttachments[o.id]?.length ?? 0) === 0 ? (
+                          <p className="text-xs text-muted-foreground italic">
+                            No files yet. Attach a prospectus, application PDF, or reference image.
+                          </p>
+                        ) : (
+                          <ul className="grid gap-2">
+                            {opportunityAttachments[o.id].map(att => (
+                              <AttachmentRow key={att.id} att={att} onRemove={() => removeOppAttachment(o.id, att.id)} />
+                            ))}
+                          </ul>
+                        )}
+                        <p className="text-[11px] text-muted-foreground mt-2 italic">
+                          Files are saved on this device. PDF, Word, or images up to 5MB each.
+                        </p>
+                      </div>
                     </div>
                   )}
                 </li>
@@ -204,11 +305,12 @@ const Exhibitions = () => {
   );
 };
 
-function OpportunityForm({ onSubmit }: { onSubmit: (d: any) => void }) {
+function OpportunityForm({ onSubmit }: { onSubmit: (d: any, files: PendingAttachment[]) => void }) {
   const customOpportunityTypes = useStore(s => s.customOpportunityTypes);
   const addCustomOpportunityType = useStore(s => s.addCustomOpportunityType);
   const [addingType, setAddingType] = useState(false);
   const [newType, setNewType] = useState("");
+  const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
   const [form, setForm] = useState({
     title: "", organization: "",
     deadline: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
@@ -241,7 +343,7 @@ function OpportunityForm({ onSubmit }: { onSubmit: (d: any) => void }) {
           link: form.link || undefined,
           requirements: form.requirements || undefined,
           award: form.award || undefined,
-        });
+        }, pendingAttachments);
       }}>
         <div><Label>Title</Label><Input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
         <div className="grid grid-cols-2 gap-4">
@@ -302,6 +404,27 @@ function OpportunityForm({ onSubmit }: { onSubmit: (d: any) => void }) {
         <div><Label>Award / stipend / value</Label><Input value={form.award} onChange={(e) => setForm({ ...form, award: e.target.value })} placeholder="e.g. $5,000 + residency" /></div>
         <div><Label>Requirements or materials needed</Label><Textarea value={form.requirements} onChange={(e) => setForm({ ...form, requirements: e.target.value })} placeholder="Artist statement, 10 images, CV…" /></div>
         <div><Label>Notes</Label><Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Anything else worth remembering…" /></div>
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <Label>Attachments</Label>
+            <AttachmentButton onFiles={(atts) => setPendingAttachments(prev => [...prev, ...atts])} />
+          </div>
+          {pendingAttachments.length === 0 ? (
+            <p className="text-xs text-muted-foreground italic">
+              Optional — attach a prospectus, application PDF, or reference image (PDF, Word, or images up to 5MB each).
+            </p>
+          ) : (
+            <ul className="grid gap-2">
+              {pendingAttachments.map((att, i) => (
+                <AttachmentRow
+                  key={att.name + i}
+                  att={att}
+                  onRemove={() => setPendingAttachments(prev => prev.filter((_, j) => j !== i))}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
         <div className="flex justify-end"><Button type="submit">Save opportunity</Button></div>
       </form>
     </DialogContent>
