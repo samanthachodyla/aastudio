@@ -8,10 +8,19 @@ export default {
     container: { center: true, padding: "2rem", screens: { "2xl": "1400px" } },
     extend: {
       fontFamily: {
-        display: ["Cormorant Garamond", "Times New Roman", "serif"],
-        sans: ["Work Sans", "system-ui", "sans-serif"],
+        display: ["Archivo", "system-ui", "sans-serif"],
+        serif: ["Tinos", "Times New Roman", "Georgia", "serif"],
+        sans: ["Archivo", "system-ui", "sans-serif"],
       },
       colors: {
+        espresso: "hsl(var(--brand-espresso))",
+        brown: "hsl(var(--brand-brown))",
+        terracotta: "hsl(var(--brand-terracotta))",
+        olive: "hsl(var(--brand-olive))",
+        sage: "hsl(var(--brand-sage))",
+        cream: "hsl(var(--brand-cream))",
+        greige: "hsl(var(--brand-greige))",
+        sand: "hsl(var(--brand-sand))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

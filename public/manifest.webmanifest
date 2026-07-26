@@ -1,15 +1,13 @@
 {
-  "name": "Allegory Art Studio",
-  "short_name": "Allegory",
-  "description": "Studio management for working artists.",
+  "name": "My Evryday",
+  "short_name": "My Evryday",
+  "description": "Clean, botanical hair care for everyday routines.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f5f3ee",
-  "theme_color": "#11281c",
+  "background_color": "#FBF8EF",
+  "theme_color": "#472e21",
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ]
 }

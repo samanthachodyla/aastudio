@@ -2,124 +2,151 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Allegory Studio — Gallery White editorial design system */
+/* ==========================================================================
+   MY EVRYDAY — earthy, botanical, editorial hair-care design system
+   Palette (from brand board):
+     espresso  #3A241A   olive   #2B3210   sage   #505631
+     terracotta#DE6E27   cream   #FBF8EF   greige #E5E2D9   sand #C9A97C
+   Type: Archivo (display / UI, condensed-grotesque feel) + Tinos (serif body)
+   ========================================================================== */
 @layer base {
   :root {
-    --background: 42 24% 96%;          /* #f5f3ee */
-    --foreground: 150 30% 10%;         /* deep ink, slight green cast */
+    --background: 43 44% 96%;          /* cream #FBF8EF */
+    --foreground: 22 38% 16%;          /* espresso ink */
 
-    --surface: 38 22% 92%;             /* #e8e4dd */
-    --surface-foreground: 150 30% 10%;
+    --surface: 45 22% 88%;             /* greige panel */
+    --surface-foreground: 22 38% 16%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 150 30% 10%;
+    --card: 43 44% 97%;
+    --card-foreground: 22 38% 16%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 150 30% 10%;
+    --popover: 43 44% 97%;
+    --popover-foreground: 22 38% 16%;
 
-    /* Allegory forest green — matches the site's announcement bar / wordmark */
-    --primary: 150 45% 12%;            /* #11281c */
-    --primary-foreground: 42 24% 96%;
-    --primary-glow: 145 30% 24%;       /* lighter forest for accents */
+    /* Primary = warm chocolate brown of the logo */
+    --primary: 20 38% 20%;             /* #472e21 */
+    --primary-foreground: 43 44% 96%;
+    --primary-glow: 24 73% 51%;        /* terracotta accent */
 
-    --secondary: 38 22% 92%;
-    --secondary-foreground: 150 30% 10%;
+    --secondary: 45 22% 88%;           /* greige */
+    --secondary-foreground: 22 38% 16%;
 
-    --muted: 38 18% 88%;
-    --muted-foreground: 150 8% 36%;
+    --muted: 43 28% 91%;
+    --muted-foreground: 24 14% 38%;
 
-    --accent: 145 30% 24%;             /* sage-forest accent */
-    --accent-foreground: 42 24% 96%;
+    --accent: 24 73% 51%;              /* terracotta #DE6E27 */
+    --accent-foreground: 43 44% 97%;
 
-    --destructive: 14 60% 42%;
-    --destructive-foreground: 42 24% 96%;
+    --destructive: 12 62% 42%;
+    --destructive-foreground: 43 44% 96%;
 
     --warning: 32 70% 45%;
-    --success: 145 35% 28%;
+    --success: 74 34% 24%;
 
-    --border: 36 14% 80%;
-    --input: 36 14% 80%;
-    --ring: 150 45% 12%;
+    --border: 36 20% 82%;
+    --input: 36 20% 82%;
+    --ring: 24 73% 51%;
 
-    --radius: 0.125rem;
+    --radius: 0.25rem;
 
-    --sidebar-background: 42 26% 94%;
-    --sidebar-foreground: 150 12% 22%;
-    --sidebar-primary: 150 45% 12%;
-    --sidebar-primary-foreground: 42 24% 96%;
-    --sidebar-accent: 38 22% 88%;
-    --sidebar-accent-foreground: 150 30% 10%;
-    --sidebar-border: 36 14% 82%;
-    --sidebar-ring: 150 45% 12%;
+    /* Named brand tokens (also mapped into tailwind) */
+    --brand-espresso: 22 44% 14%;
+    --brand-brown: 20 38% 24%;
+    --brand-terracotta: 24 73% 51%;
+    --brand-olive: 74 51% 13%;
+    --brand-sage: 68 27% 27%;
+    --brand-cream: 43 44% 96%;
+    --brand-greige: 45 22% 88%;
+    --brand-sand: 34 43% 64%;
 
-    --font-display: "Cormorant Garamond", "Times New Roman", serif;
-    --font-body: "Work Sans", system-ui, sans-serif;
-  }
+    --sidebar-background: 43 44% 96%;
+    --sidebar-foreground: 22 20% 24%;
+    --sidebar-primary: 20 38% 20%;
+    --sidebar-primary-foreground: 43 44% 96%;
+    --sidebar-accent: 45 22% 88%;
+    --sidebar-accent-foreground: 22 38% 16%;
+    --sidebar-border: 36 20% 82%;
+    --sidebar-ring: 24 73% 51%;
 
-  .dark {
-    --background: 0 0% 8%;
-    --foreground: 42 24% 94%;
-    --surface: 0 0% 12%;
-    --card: 0 0% 10%;
-    --card-foreground: 42 24% 94%;
-    --popover: 0 0% 10%;
-    --popover-foreground: 42 24% 94%;
-    --primary: 42 24% 94%;
-    --primary-foreground: 0 0% 8%;
-    --secondary: 0 0% 14%;
-    --secondary-foreground: 42 24% 94%;
-    --muted: 0 0% 14%;
-    --muted-foreground: 0 0% 60%;
-    --accent: 0 0% 14%;
-    --accent-foreground: 42 24% 94%;
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 42 24% 94%;
+    --font-display: "Archivo", system-ui, -apple-system, sans-serif;
+    --font-serif: "Tinos", "Times New Roman", Georgia, serif;
+    --font-body: "Archivo", system-ui, sans-serif;
   }
 }
 
 @layer base {
   * { @apply border-border; }
+  html { scroll-behavior: smooth; }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-body);
-    font-feature-settings: "ss01", "kern";
+    font-family: var(--font-serif);
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
-  h1, h2, h3, h4, .font-display {
+  h1, h2, h3, h4, h5, .font-display {
     font-family: var(--font-display);
-    font-weight: 400;
-    letter-spacing: -0.005em;
+    font-weight: 800;
+    letter-spacing: -0.01em;
   }
+  ::selection { background: hsl(var(--accent) / 0.28); }
 }
 
 @layer components {
+  /* Small tracked uppercase label used throughout */
   .eyebrow {
-    @apply text-[10px] uppercase tracking-[0.28em] text-muted-foreground font-medium;
+    @apply font-display text-[11px] uppercase tracking-[0.34em] font-semibold;
+    color: hsl(var(--accent));
   }
-  .rule {
-    @apply h-px w-full bg-border;
+  /* Condensed, wide-tracked wordmark feel of the logo */
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1;
   }
-  .hairline-card {
-    @apply bg-card border border-border rounded-sm;
+  .rule { @apply h-px w-full bg-border; }
+
+  /* Buttons ---------------------------------------------------------------- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-display font-semibold uppercase
+           tracking-[0.14em] text-[12px] px-7 py-3.5 rounded-sm transition-colors duration-200
+           cursor-pointer select-none whitespace-nowrap;
   }
-  /* Horizontal scroll without a visible scrollbar (mobile tab bars, filters). */
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  .btn-solid {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
   }
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
+  .btn-solid:hover { background: hsl(var(--accent)); }
+  .btn-terra {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
   }
-  /* Allegory wordmark: lowercase serif + tracked subline */
-  .allegory-wordmark {
-    @apply font-display lowercase leading-none;
-    color: hsl(var(--primary));
-    letter-spacing: -0.015em;
-    font-weight: 400;
+  .btn-terra:hover { background: hsl(var(--primary)); }
+  .btn-outline {
+    border: 1px solid currentColor;
+    background: transparent;
   }
-  .allegory-subline {
-    @apply uppercase tracking-[0.32em] text-[9px] font-medium;
-    color: hsl(var(--primary) / 0.75);
+  .btn-outline:hover { background: hsl(var(--foreground) / 0.06); }
+
+  .link-underline {
+    @apply relative inline-block;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    transition: background-size 0.3s ease;
   }
+  .link-underline:hover { background-size: 100% 1px; }
+
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .marquee-track { animation: marquee 26s linear infinite; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .reveal { opacity: 0; transform: translateY(14px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.in { opacity: 1; transform: none; }
 }

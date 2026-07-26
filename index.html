@@ -1,207 +1,79 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- Consent bootstrap (must run before analytics/ads load) -->
-    <script>
-      // US opt-out model: analytics + ads are granted by default, but we honor
-      // (a) a stored opt-out choice and (b) the browser Global Privacy Control
-      // signal. The in-app cookie banner can update this live at runtime.
-      (function () {
-        var declined = false;
-        try { declined = localStorage.getItem('allegory.consent') === 'declined'; } catch (e) {}
-        var gpc = (navigator.globalPrivacyControl === true);
-        // GPC signals "do not sell/share" -> deny ads; analytics stays unless opted out.
-        window.__allegoryDenyAds = declined || gpc;
-        window.__allegoryDenyAnalytics = declined;
-      })();
-    </script>
-
-    <!-- Google tag (gtag.js) with Consent Mode v2 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-CSJ5CQZ382"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('consent', 'default', {
-        ad_storage: window.__allegoryDenyAds ? 'denied' : 'granted',
-        ad_user_data: window.__allegoryDenyAds ? 'denied' : 'granted',
-        ad_personalization: window.__allegoryDenyAds ? 'denied' : 'granted',
-        analytics_storage: window.__allegoryDenyAnalytics ? 'denied' : 'granted'
-      });
-      gtag('js', new Date());
-      gtag('config', 'G-CSJ5CQZ382');
-    </script>
-
-    <!-- Meta Pixel Code -->
-    <script>
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      // Pause the Pixel up front if the visitor opted out (or GPC is on), then init.
-      if (window.__allegoryDenyAds) { fbq('consent', 'revoke'); }
-      fbq('init', '1583309690064748');
-      fbq('track', 'PageView');
-    </script>
-    <!-- End Meta Pixel Code -->
-
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Allegory Studio — CRM for Artists & Studio Management Software</title>
-    <meta name="description" content="Allegory Studio is the CRM for artists and studio management software for working artists — art inventory software, sales, consignments, exhibitions, and outreach, running quietly in the background." />
-    <meta name="author" content="Allegory Studio" />
-    <link rel="canonical" href="https://allegoryartstudio.com/" />
+    <title>My Evryday — Clean, Botanical Hair Care & Dry Shampoo</title>
+    <meta
+      name="description"
+      content="My Evryday makes clean, plant-based hair care for real, everyday routines — starting with a waterless dry shampoo that refreshes roots and revives volume between washes."
+    />
+    <meta name="author" content="My Evryday" />
+    <link rel="canonical" href="https://myevryday.com/" />
 
-    <!-- App icons + install-to-home-screen (PWA) -->
-    <link rel="icon" href="/favicon.ico" sizes="any" />
-    <link rel="icon" type="image/png" href="/icon-192.png" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#11281c" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Allegory" />
+    <!-- Icons -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <meta name="theme-color" content="#472e21" />
+    <meta name="apple-mobile-web-app-title" content="My Evryday" />
 
+    <!-- Fonts: Archivo (display) + Tinos (serif body) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
 
-    <meta property="og:title" content="Allegory Studio" />
-    <meta property="og:description" content="An intelligent studio management platform for working artists." />
+    <!-- Open Graph / Twitter -->
+    <meta property="og:title" content="My Evryday — Clean, Botanical Hair Care" />
+    <meta
+      property="og:description"
+      content="Naturally better hair days. Clean, plant-based essentials built for real routines — starting with our waterless dry shampoo."
+    />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://allegoryartstudio.com/" />
-    <meta property="og:image" content="https://allegoryartstudio.com/Allegory_Studio_Logo.png" />
-    <meta property="og:image:width" content="1181" />
-    <meta property="og:image:height" content="591" />
-    <meta property="og:image:alt" content="Allegory Studio" />
+    <meta property="og:url" content="https://myevryday.com/" />
+    <meta property="og:image" content="https://myevryday.com/me-og.svg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="My Evryday" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Allegory Studio" />
-    <meta name="twitter:description" content="An intelligent studio management platform for working artists." />
-    <meta name="twitter:image" content="https://allegoryartstudio.com/Allegory_Studio_Logo.png" />
+    <meta name="twitter:title" content="My Evryday — Clean, Botanical Hair Care" />
+    <meta
+      name="twitter:description"
+      content="Naturally better hair days. Clean, plant-based hair care built for real routines."
+    />
+    <meta name="twitter:image" content="https://myevryday.com/me-og.svg" />
 
-    <!-- Structured data: SoftwareApplication (SEO / rich results) -->
+    <!-- Structured data: Organization / Brand -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Allegory Art Studio",
-      "alternateName": "Allegory Studio",
-      "applicationCategory": "BusinessApplication",
-      "applicationSubCategory": "CRM for Artists",
-      "operatingSystem": "Web",
-      "url": "https://allegoryartstudio.com/",
-      "image": "https://allegoryartstudio.com/Allegory_Studio_Logo.png",
-      "description": "Allegory Studio is the CRM for artists and studio management software for working artists — art inventory software, sales and finance tracking, consignments, exhibitions and deadlines, contacts, and outreach in one calm place.",
-      "featureList": [
-        "Art inventory software",
-        "CRM and contact management for artists",
-        "Sales, invoices and finance tracking",
-        "Consignment tracking",
-        "Exhibition and opportunity deadlines",
-        "Marketing and outreach tools"
-      ],
-      "offers": [
-        {
-          "@type": "Offer",
-          "name": "Studio Starter",
-          "price": "25.00",
-          "priceCurrency": "USD",
-          "category": "Monthly subscription"
-        },
-        {
-          "@type": "Offer",
-          "name": "Studio Pro",
-          "price": "55.00",
-          "priceCurrency": "USD",
-          "category": "Monthly subscription"
-        }
-      ],
-      "publisher": {
+      {
+        "@context": "https://schema.org",
         "@type": "Organization",
-        "name": "Allegory Studio, LLC",
-        "url": "https://allegoryartstudio.com/",
-        "logo": "https://allegoryartstudio.com/Allegory_Studio_Logo.png"
+        "name": "My Evryday",
+        "url": "https://myevryday.com/",
+        "logo": "https://myevryday.com/favicon.svg",
+        "description": "Clean, botanical hair care for everyday routines, including waterless dry shampoo.",
+        "sameAs": ["https://www.instagram.com/myevryday_/", "https://jaespace.squarespace.com/shop"]
       }
-    }
     </script>
 
-    <!-- Structured data: Organization (brand / logo in search) -->
+    <!-- Structured data: flagship product -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Allegory Art Studio",
-      "legalName": "Allegory Studio, LLC",
-      "url": "https://allegoryartstudio.com/",
-      "logo": "https://allegoryartstudio.com/Allegory_Studio_Logo.png",
-      "description": "The CRM for artists and studio management software for working artists — art inventory software, sales, consignments, exhibitions, and outreach in one calm place.",
-      "email": "hello@allegoryartstudio.com",
-      "sameAs": [
-        "https://www.instagram.com/allegoryartstudio/",
-        "https://www.facebook.com/profile.php?id=61592146343249"
-      ]
-    }
-    </script>
-
-    <!-- Structured data: FAQPage (mirrors the on-page FAQ) -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "When does Allegory Art Studio launch?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "We launch publicly on August 1, 2026. Get first access now and we'll let you know the moment we go live."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What's the difference between Starter and Pro?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Starter gives you the core studio: inventory, sales & finance, deadlines, contacts, and the daily dashboard. Pro adds the full Profile Vault, Communications Hub, Marketing Assistant, smart pricing and opportunity discovery, plus direct access to a working arts administrator."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Who is Allegory Art Studio for?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Working and emerging artists who are managing the business of their practice, inventory, sales, consignments, exhibitions, and outreach, and want one calm place to do it. If you're thinking about hiring a studio manager but don't have the budget for one, start with Allegory Art Studio to help offload the admin burden."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Can I cancel anytime?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Absolutely. Plans are month-to-month (or annual if you prefer the savings). Cancel anytime, no questions asked."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Is my data private and secure?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Your studio data is yours. It's stored securely and never sold. You can export or delete it whenever you like."
-          }
-        }
-      ]
-    }
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "ME Dry Shampoo",
+        "brand": { "@type": "Brand", "name": "My Evryday" },
+        "category": "Hair Care",
+        "description": "A weightless, plant-based dry shampoo that absorbs excess oil at the root and revives volume — no water, no residue, no white cast.",
+        "url": "https://jaespace.squarespace.com/shop"
+      }
     </script>
   </head>
 
   <body>
-    <!-- Meta Pixel <noscript> fallback -->
-    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1583309690064748&ev=PageView&noscript=1" alt="" /></noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

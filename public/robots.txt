@@ -1,21 +1,4 @@
 User-agent: *
-Allow: /$
-Allow: /terms
+Allow: /
 
-# Authenticated app routes — no SEO value, keep crawl budget on marketing pages.
-Disallow: /dashboard
-Disallow: /inventory
-Disallow: /sales
-Disallow: /exhibitions
-Disallow: /contacts
-Disallow: /studio-manager
-Disallow: /profile-vault
-Disallow: /communications
-Disallow: /marketing
-Disallow: /pricing
-Disallow: /settings
-Disallow: /reports
-Disallow: /login
-Disallow: /reset-password
-
-Sitemap: https://allegoryartstudio.com/sitemap.xml
+Sitemap: https://myevryday.com/sitemap.xml
