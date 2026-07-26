@@ -167,11 +167,19 @@ const Settings = () => {
           <div className="eyebrow mb-2">Legal</div>
           <h3 className="font-display text-xl mb-2 tracking-tight">Terms &amp; policies</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Review the terms that govern your use of Allegory Studio.
+            Review the terms and policies that govern your use of Allegory Studio.
           </p>
-          <Button asChild variant="outline" className="rounded-sm">
-            <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline" className="rounded-sm">
+              <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a>
+            </Button>
+            <Button asChild variant="outline" className="rounded-sm">
+              <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>
+            </Button>
+            <Button asChild variant="outline" className="rounded-sm">
+              <a href="/cookies" target="_blank" rel="noopener">Cookie Policy</a>
+            </Button>
+          </div>
         </section>
       </div>
     </AppShell>

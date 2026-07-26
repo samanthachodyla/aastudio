@@ -22,6 +22,8 @@ const Pricing = lazy(() => import("./pages/Pricing.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
+const Privacy = lazy(() => import("./pages/Privacy.tsx"));
+const Cookies = lazy(() => import("./pages/Cookies.tsx"));
 const Reports = lazy(() => import("./pages/Reports.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 import { TierGate } from "./components/TierGate";
@@ -55,6 +57,8 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/cookies" element={<Cookies />} />
 
               {/* Authenticated app */}
               <Route path="/dashboard" element={<RequireAuth><Index /></RequireAuth>} />

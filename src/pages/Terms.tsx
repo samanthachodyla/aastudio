@@ -95,7 +95,9 @@ export default function Terms() {
             we will notify you before your data becomes subject to a different privacy policy, and any successor will be
             required to honor the commitments made in our Privacy Policy at the time of transfer.</li>
           </ul>
-          <p>Our full data practices are described in our Privacy Policy, which is incorporated into these Terms by reference.</p>
+          <p>Our full data practices are described in our{" "}
+          <Link to="/privacy" className="text-[#2c533f] underline">Privacy Policy</Link>, which is incorporated into these
+          Terms by reference.</p>
         </Section>
 
         <Section n="6." title="AI-Powered Features">
@@ -174,8 +176,10 @@ export default function Terms() {
         </Section>
 
         <Section n="16." title="Miscellaneous">
-          <p>These Terms, together with our Privacy Policy, constitute the entire agreement between you and Allegory
-          Studio regarding the Service. If any provision is found unenforceable, the remainder remains in effect. Our
+          <p>These Terms, together with our{" "}
+          <Link to="/privacy" className="text-[#2c533f] underline">Privacy Policy</Link>, constitute the entire agreement
+          between you and Allegory Studio regarding the Service. If any provision is found unenforceable, the remainder
+          remains in effect. Our
           failure to enforce any provision is not a waiver. You may not assign these Terms without our consent; we may
           assign them in connection with a merger, acquisition, or sale of assets.</p>
         </Section>

@@ -85,7 +85,7 @@ export function CookieConsent() {
           <p className="text-[13px] leading-relaxed flex-1">
             We use cookies to measure site traffic and improve our marketing. You can opt out anytime.
             See our{" "}
-            <a href="/terms" className="underline hover:text-white">data practices</a>.
+            <a href="/cookies" className="underline hover:text-white">Cookie Policy</a>.
           </p>
           <div className="flex items-center gap-2 shrink-0">
             <button
