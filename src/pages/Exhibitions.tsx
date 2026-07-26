@@ -15,7 +15,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import type { Opportunity, OpportunityStatus, OpportunityType } from "@/lib/types";
 
-const typeLabels: Record<OpportunityType, string> = {
+const typeLabels: Record<string, string> = {
   open_call: "Open call",
   residency: "Residency",
   prize: "Prize",
@@ -23,6 +23,22 @@ const typeLabels: Record<OpportunityType, string> = {
   grant: "Grant",
   commission: "Commission",
   delivery: "Delivery deadline",
+};
+
+// Built-in types the form always offers.
+const BUILT_IN_OPP_TYPES = Object.keys(typeLabels);
+const ADD_NEW_OPP_TYPE = "__add_new_opp_type__";
+
+// Turn a custom type value (e.g. "artist_talk" or "Pop-up market") into a
+// readable label. Known types use their curated label; anything else is
+// shown as-is (or de-underscored/capitalized if it looks slug-like).
+const labelForType = (t?: string): string => {
+  if (!t) return "—";
+  if (typeLabels[t]) return typeLabels[t];
+  if (/^[a-z0-9_]+$/.test(t)) {
+    return t.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+  }
+  return t;
 };
 
 // Text fields the opportunity search reads. Add a new field here (e.g. "location")
@@ -97,7 +113,7 @@ const Exhibitions = () => {
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="eyebrow">{typeLabels[o.type]}</span>
+                        <span className="eyebrow">{labelForType(o.type)}</span>
                         <span className="text-muted-foreground text-xs">· {fmtDate(o.deadline)}</span>
                       </div>
                       <h3 className="font-display text-2xl flex items-center gap-2">
@@ -189,6 +205,10 @@ const Exhibitions = () => {
 };
 
 function OpportunityForm({ onSubmit }: { onSubmit: (d: any) => void }) {
+  const customOpportunityTypes = useStore(s => s.customOpportunityTypes);
+  const addCustomOpportunityType = useStore(s => s.addCustomOpportunityType);
+  const [addingType, setAddingType] = useState(false);
+  const [newType, setNewType] = useState("");
   const [form, setForm] = useState({
     title: "", organization: "",
     deadline: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
@@ -200,6 +220,15 @@ function OpportunityForm({ onSubmit }: { onSubmit: (d: any) => void }) {
     requirements: "",
     award: "",
   });
+
+  const confirmNewType = () => {
+    const v = newType.trim();
+    if (!v) return;
+    addCustomOpportunityType(v);
+    setForm(f => ({ ...f, type: v }));
+    setNewType("");
+    setAddingType(false);
+  };
   return (
     <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
       <DialogHeader><DialogTitle className="font-display text-2xl font-normal">New opportunity</DialogTitle></DialogHeader>
@@ -222,12 +251,39 @@ function OpportunityForm({ onSubmit }: { onSubmit: (d: any) => void }) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label>Type</Label>
-            <Select value={form.type} onValueChange={(v: OpportunityType) => setForm({ ...form, type: v })}>
+            <Select
+              value={form.type}
+              onValueChange={(v) => {
+                if (v === ADD_NEW_OPP_TYPE) { setAddingType(true); return; }
+                setForm({ ...form, type: v });
+              }}
+            >
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {Object.entries(typeLabels).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+                {BUILT_IN_OPP_TYPES.map(k => <SelectItem key={k} value={k}>{typeLabels[k]}</SelectItem>)}
+                {customOpportunityTypes.map(t => <SelectItem key={t} value={t}>{labelForType(t)}</SelectItem>)}
+                <SelectItem value={ADD_NEW_OPP_TYPE}>＋ Add your own type…</SelectItem>
               </SelectContent>
             </Select>
+            {addingType && (
+              <div className="mt-2 flex items-center gap-2">
+                <Input
+                  autoFocus
+                  value={newType}
+                  onChange={(e) => setNewType(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") { e.preventDefault(); confirmNewType(); }
+                    if (e.key === "Escape") { setAddingType(false); setNewType(""); }
+                  }}
+                  placeholder="e.g. Art fair, Pop-up, Podcast…"
+                  className="h-8 text-sm"
+                />
+                <Button type="button" size="sm" onClick={confirmNewType}>Add</Button>
+              </div>
+            )}
+            {!addingType && customOpportunityTypes.length > 0 && (
+              <p className="text-[11px] text-muted-foreground mt-1">Your saved types stay in this list for next time.</p>
+            )}
           </div>
           <div>
             <Label>Status</Label>

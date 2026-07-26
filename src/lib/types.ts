@@ -72,7 +72,7 @@ export interface Consignment {
   generatedAgreementAt?: string;
 }
 
-export type OpportunityType = "open_call" | "residency" | "prize" | "show" | "grant" | "commission" | "delivery";
+export type OpportunityType = "open_call" | "residency" | "prize" | "show" | "grant" | "commission" | "delivery" | (string & {});
 export type OpportunityStatus = "researching" | "applying" | "submitted" | "accepted" | "declined" | "withdrawn";
 
 export interface Opportunity {

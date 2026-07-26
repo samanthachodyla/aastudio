@@ -36,6 +36,9 @@ interface State {
   customStatuses: string[];          // UI pref — persisted locally
   addCustomStatus: (label: string) => void;
 
+  customOpportunityTypes: string[];  // UI pref — persisted locally
+  addCustomOpportunityType: (label: string) => void;
+
   todos: Todo[];                     // dashboard to-dos — persisted locally, not server-backed
   addTodo: (text: string) => void;
   toggleTodo: (id: string) => void;
@@ -142,6 +145,7 @@ export const useStore = create<State>()(
       scheduledPosts: [],
       newsletters: [],
       customStatuses: [],
+      customOpportunityTypes: [],
       todos: [],
 
       hydrateAll: (data) =>
@@ -157,6 +161,13 @@ export const useStore = create<State>()(
         if (!v) return;
         if (get().customStatuses.includes(v)) return;
         set({ customStatuses: [...get().customStatuses, v] });
+      },
+
+      addCustomOpportunityType: (label) => {
+        const v = label.trim();
+        if (!v) return;
+        if (get().customOpportunityTypes.includes(v)) return;
+        set({ customOpportunityTypes: [...get().customOpportunityTypes, v] });
       },
 
       // To-dos are local-only (localStorage) — no write-through to Supabase.
@@ -444,7 +455,7 @@ export const useStore = create<State>()(
     {
       // Only UI preferences live in localStorage now; studio data is server-backed.
       name: "allegory.studio.prefs.v1",
-      partialize: (s) => ({ customStatuses: s.customStatuses, vaultOnboarded: s.vaultOnboarded, todos: s.todos }),
+      partialize: (s) => ({ customStatuses: s.customStatuses, customOpportunityTypes: s.customOpportunityTypes, vaultOnboarded: s.vaultOnboarded, todos: s.todos }),
     }
   )
 );
