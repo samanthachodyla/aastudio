@@ -150,47 +150,70 @@ const migratedFlag = (userId: string) => `allegory.migrated.${userId}`;
 export async function importLocalDataIfNeeded(userId: string): Promise<boolean> {
   if (localStorage.getItem(migratedFlag(userId))) return false;
 
-  // This is a one-time, best-effort migration of legacy browser data. It must
-  // NEVER block a user from loading their (server-backed) studio — so every
-  // failure is caught, and the "migrated" flag is always set at the end so a
-  // bad legacy blob can't wedge someone on the error screen forever.
+  let raw: string | null = null;
   try {
-    let parsed: any = null;
-    try {
-      const raw = localStorage.getItem(OLD_PERSIST_KEY);
-      parsed = raw ? JSON.parse(raw) : null;
-    } catch {
-      parsed = null;
-    }
-    const state = parsed?.state ?? parsed;
+    raw = localStorage.getItem(OLD_PERSIST_KEY);
+  } catch {
+    raw = null;
+  }
 
-    if (state && typeof state === "object") {
-      for (const [storeKey, table] of Object.entries(ENTITY_TABLES)) {
-        const items: any[] = Array.isArray(state[storeKey]) ? state[storeKey] : [];
-        if (!items.length) continue;
-        const rows = items.map((it) => ({ ...rowToDb(it), user_id: userId }));
-        try {
-          // Upsert so a re-run can't create duplicates (ids are client-supplied).
-          const { error } = await db.from(table).upsert(rows, { onConflict: "id" });
-          if (error) throw error;
-        } catch (e) {
-          console.error(`[sync] legacy import for ${table} failed (skipping)`, e);
-        }
-      }
-      if (state.inboxConnection) {
-        try {
-          await pushInboxConnection(state.inboxConnection);
-        } catch (e) {
-          console.error("[sync] legacy inbox import failed (skipping)", e);
-        }
+  // Nothing legacy in this browser — mark migrated so we don't recheck each login.
+  if (!raw) {
+    try {
+      localStorage.setItem(migratedFlag(userId), new Date().toISOString());
+    } catch { /* ignore */ }
+    return false;
+  }
+
+  let parsed: any = null;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    parsed = null;
+  }
+  const state = parsed?.state ?? parsed;
+
+  // Best-effort, one-time migration of legacy browser data. It must NEVER block
+  // hydration (every failure is caught), and — critically — it must NEVER delete
+  // the local backup unless every row reached the server. Otherwise a failed
+  // sync would destroy data that never made it to the database.
+  let hadError = false;
+  if (state && typeof state === "object") {
+    for (const [storeKey, table] of Object.entries(ENTITY_TABLES)) {
+      const items: any[] = Array.isArray(state[storeKey]) ? state[storeKey] : [];
+      if (!items.length) continue;
+      const rows = items.map((it) => ({ ...rowToDb(it), user_id: userId }));
+      try {
+        // Upsert so a re-run can't create duplicates (ids are client-supplied).
+        const { error } = await db.from(table).upsert(rows, { onConflict: "id" });
+        if (error) throw error;
+      } catch (e) {
+        console.error(`[sync] legacy import for ${table} failed`, e);
+        hadError = true;
       }
     }
-  } catch (e) {
-    console.error("[sync] legacy import failed (skipping)", e);
-  } finally {
-    // Always: clear the legacy blob and mark migrated, even on partial failure.
+    if (state.inboxConnection) {
+      try {
+        await pushInboxConnection(state.inboxConnection);
+      } catch (e) {
+        console.error("[sync] legacy inbox import failed", e);
+        hadError = true;
+      }
+    }
+  }
+
+  if (hadError) {
+    // Something didn't sync — KEEP the local backup and do NOT mark migrated, so
+    // no data is lost and the import retries on the next login. Hydration still
+    // proceeds normally (this function never throws).
+    console.warn("[sync] legacy import had errors — preserving local backup for retry");
+    return false;
+  }
+
+  // Clean success only: now it's safe to clear the local blob and mark migrated.
+  try {
     localStorage.removeItem(OLD_PERSIST_KEY);
     localStorage.setItem(migratedFlag(userId), new Date().toISOString());
-  }
+  } catch { /* ignore */ }
   return true;
 }
