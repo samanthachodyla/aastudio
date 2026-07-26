@@ -55,17 +55,21 @@ function doPost(e) {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName("Signups") || ss.insertSheet("Signups");
     if (sheet.getLastRow() === 0) {
-      sheet.appendRow(["Timestamp", "Email", "Source", "Referrer", "User Agent"]);
+      sheet.appendRow(["Timestamp", "Email", "First Name", "Last Name", "Source", "Referrer", "User Agent"]);
     }
     var p = (e && e.parameter) ? e.parameter : {};
     var email = (p.email || "").toString().trim();
+    var firstName = (p.first_name || "").toString().trim();
+    var lastName  = (p.last_name  || "").toString().trim();
+    var fullName  = (p.name || (firstName + " " + lastName)).toString().trim();
     if (email) {
       var ts = new Date();
-      sheet.appendRow([ts, email, p.source || "", p.referrer || "", p.user_agent || ""]);
+      sheet.appendRow([ts, email, firstName, lastName, p.source || "", p.referrer || "", p.user_agent || ""]);
       MailApp.sendEmail({
         to: NOTIFY,
-        subject: "New Allegory waitlist signup: " + email,
-        body: "New launch-list signup\n\nEmail: " + email + "\nSource: " + (p.source || "") +
+        subject: "New Allegory waitlist signup: " + (fullName ? fullName + " (" + email + ")" : email),
+        body: "New launch-list signup\n\nName: " + (fullName || "—") + "\nEmail: " + email +
+              "\nSource: " + (p.source || "") +
               "\nCampaign: " + (p.utm_campaign || p.utm_source || "") +
               "\nTime: " + ts + "\nReferrer: " + (p.referrer || "") + "\n"
       });
@@ -90,6 +94,10 @@ function sendMetaCapiLead(p) {
   var email = (p.email || "").toString().trim().toLowerCase();
   if (!email) return;
   var userData = { em: [sha256Hex(email)] };
+  var fn = (p.first_name || "").toString().trim().toLowerCase();
+  var ln = (p.last_name  || "").toString().trim().toLowerCase();
+  if (fn) userData.fn = [sha256Hex(fn)];   // hashed — improves Meta match quality
+  if (ln) userData.ln = [sha256Hex(ln)];
   if (p.user_agent) userData.client_user_agent = p.user_agent;
   if (p.fbp) userData.fbp = p.fbp;
   if (p.fbc) userData.fbc = p.fbc;

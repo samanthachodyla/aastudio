@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Seo } from "@/components/Seo";
 
 /**
  * Public Terms & Conditions page (/terms). Content mirrors the studio's
@@ -17,6 +18,11 @@ const Section = ({ n, title, children }: { n: string; title: string; children: R
 export default function Terms() {
   return (
     <div className="min-h-screen bg-[#f5f3ee] text-[#11281c]" style={{ fontFamily: "'Work Sans', system-ui, sans-serif" }}>
+      <Seo
+        title="Terms & Conditions — Allegory Studio"
+        description="The Terms & Conditions governing use of Allegory Studio, the CRM and studio management software for working artists."
+        canonicalPath="/terms"
+      />
       <div className="max-w-3xl mx-auto px-6 py-14 md:py-20">
         <Link to="/" className="text-[11px] uppercase tracking-[0.28em] text-[#6b746d] hover:text-[#11281c]">← Allegory Art Studio</Link>
 

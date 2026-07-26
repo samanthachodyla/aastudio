@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
+import { Seo } from "@/components/Seo";
 import landingHtml from "./landing.html?raw";
 
 // Waitlist endpoint — a Google Apps Script Web App that appends each signup to a
@@ -41,7 +42,16 @@ export default function Landing() {
         e.preventDefault();
         const input = form.querySelector<HTMLInputElement>("input[type=email]");
         const email = (input?.value || "").trim();
+        const firstEl = form.querySelector<HTMLInputElement>('input[name="first_name"]');
+        const lastEl = form.querySelector<HTMLInputElement>('input[name="last_name"]');
+        const firstName = (firstEl?.value || "").trim();
+        const lastName = (lastEl?.value || "").trim();
         if (!email) return;
+        if (!firstName) {
+          if (msg) { msg.className = "signup-msg err"; msg.textContent = "Please add your first name."; }
+          firstEl?.focus();
+          return;
+        }
         const btn = form.querySelector<HTMLButtonElement>("button");
         if (!WAITLIST_ENDPOINT) {
           if (msg) { msg.className = "signup-msg err"; msg.textContent = "Sign-up isn't connected yet — please email hello@allegoryartstudio.com."; }
@@ -69,6 +79,9 @@ export default function Landing() {
           mode: "no-cors",
           body: new URLSearchParams({
             email,
+            first_name: firstName,
+            last_name: lastName,
+            name: [firstName, lastName].filter(Boolean).join(" "),
             source: formSource,
             referrer: document.referrer || "",
             user_agent: navigator.userAgent,
@@ -162,5 +175,10 @@ export default function Landing() {
   // Returning, logged-in users skip the marketing page and go to their dashboard.
   if (!loading && session) return <Navigate to="/dashboard" replace />;
 
-  return <div ref={ref} dangerouslySetInnerHTML={{ __html: landingHtml }} />;
+  return (
+    <>
+      <Seo canonicalPath="/" />
+      <div ref={ref} dangerouslySetInnerHTML={{ __html: landingHtml }} />
+    </>
+  );
 }

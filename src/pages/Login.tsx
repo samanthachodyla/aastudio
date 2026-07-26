@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Seo } from "@/components/Seo";
 import { toast } from "sonner";
 
 type Mode = "signin" | "signup" | "forgot";
@@ -95,6 +96,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <Seo title="Sign in — Allegory Studio" canonicalPath="/login" noindex />
       <div
         className="bg-primary text-[11px] tracking-[0.28em] uppercase text-center py-2 font-medium"
         style={{ color: "#032419" }}

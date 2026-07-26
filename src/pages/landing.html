@@ -58,13 +58,16 @@
 .allegory-lp .btn-sm{padding:9px 18px;font-size:12px}
 /* ----------  Signup funnel form  ---------- */
 .allegory-lp .signup{display:flex;gap:10px;flex-wrap:wrap;max-width:480px;margin-top:8px}
-.allegory-lp .signup input[type=email]{
-  flex:1;min-width:220px;font-family:var(--font-b);font-size:15px;color:var(--ink);
+.allegory-lp .signup input[type=email],
+.allegory-lp .signup input[type=text]{
+  font-family:var(--font-b);font-size:15px;color:var(--ink);
   background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
   padding:14px 16px;outline:none;transition:border-color .2s;
 }
-.allegory-lp .signup input[type=email]:focus{border-color:var(--forest)}
-.allegory-lp .signup input[type=email]::placeholder{color:var(--muted)}
+.allegory-lp .signup input[type=text]{flex:1 1 46%;min-width:140px}
+.allegory-lp .signup input[type=email]{flex:1 1 100%;min-width:220px}
+.allegory-lp .signup input:focus{border-color:var(--forest)}
+.allegory-lp .signup input::placeholder{color:var(--muted)}
 .allegory-lp .signup .btn{flex:none}
 .allegory-lp .signup-msg{flex-basis:100%;font-size:13px;margin-top:2px;min-height:0;color:var(--sage)}
 .allegory-lp .signup-msg:empty{display:none}
@@ -73,7 +76,8 @@
 .allegory-lp .final .signup{margin:0 auto 0;justify-content:center}
 .allegory-lp .final .signup-msg{text-align:center}
 /* on the forest CTA / footer backgrounds */
-.allegory-lp .final .signup input[type=email]{background:var(--bg)}
+.allegory-lp .final .signup input[type=email],
+.allegory-lp .final .signup input[type=text]{background:var(--bg)}
 /* ----------  Announcement bar  ---------- */
 .allegory-lp .topbar{background:var(--forest);color:var(--bg);font-size:12px;letter-spacing:.16em;text-transform:uppercase;padding:9px 0;overflow:hidden}
 .allegory-lp .topbar .mq{display:flex;width:max-content;animation:aas-marquee 34s linear infinite}
@@ -387,6 +391,8 @@
       <h1 style="margin-top:10px">The CRM for Artists. Run your art practice like a <em>professional studio.</em></h1>
       <p class="lead">Inventory, sales, consignments, exhibitions, outreach and more, all thoughtfully organized in one place.</p>
       <form class="signup" data-allegory-signup data-source="hero">
+        <input type="text" name="first_name" required placeholder="First name" aria-label="First name" autocomplete="given-name" />
+        <input type="text" name="last_name" placeholder="Last name (optional)" aria-label="Last name" autocomplete="family-name" />
         <input type="email" name="email" required placeholder="you@studio.com" aria-label="Email address" autocomplete="email" />
         <button type="submit" class="btn btn-solid">Get first access</button>
         <p class="signup-msg" role="status" aria-live="polite"></p>
@@ -718,6 +724,8 @@
     <h2 style="margin-top:18px">A good day to <em>make artwork.</em></h2>
     <p>Get first access and be among the first artists in when we open on August 1.</p>
     <form class="signup" data-allegory-signup data-source="footer-cta">
+      <input type="text" name="first_name" required placeholder="First name" aria-label="First name" autocomplete="given-name" />
+      <input type="text" name="last_name" placeholder="Last name (optional)" aria-label="Last name" autocomplete="family-name" />
       <input type="email" name="email" required placeholder="you@studio.com" aria-label="Email address" autocomplete="email" />
       <button type="submit" class="btn btn-solid">Get first access</button>
       <p class="signup-msg" role="status" aria-live="polite"></p>
