@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Mail, Inbox, CheckCircle2, Instagram } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useStore, mockFlaggedEmails } from "@/lib/store";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/StatusPill";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { FlagStatus, InboxProvider } from "@/lib/types";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const FILTERS: { value: "all" | FlagStatus; label: string }[] = [
@@ -31,19 +32,61 @@ const Communications = () => {
     return filter === "all" ? sorted : sorted.filter(e => e.status === filter);
   }, [sourceEmails, filter]);
 
+  // Real Gmail connect via Nylas (redirects to Google through our /api function).
+  const connectGmail = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { toast.error("Please sign in again."); return; }
+    try {
+      const res = await fetch("/api/nylas/auth", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const json = await res.json();
+      if (json.authUrl) window.location.href = json.authUrl;
+      else toast.error(json.error || "Couldn't start Gmail connect.");
+    } catch {
+      toast.error("Couldn't reach the connection service. Please try again.");
+    }
+  };
+
   const connect = (provider: InboxProvider) => {
+    if (provider === "gmail") { connectGmail(); return; }
+    // Outlook / Instagram remain demo connections until wired.
     connectInbox({
       provider,
-      email:
-        provider === "gmail" ? "studio@gmail.com" :
-        provider === "outlook" ? "studio@outlook.com" :
-        "@studio",
+      email: provider === "outlook" ? "studio@outlook.com" : "@studio",
       connectedAt: new Date().toISOString(),
     });
     toast.success(`Connected to ${providerLabel(provider)}`, {
       description: "Demo mode — sample flagged correspondence loaded.",
     });
   };
+
+  // Handle the return from the Nylas auth redirect (?connected=1 / ?error=...).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("connected")) {
+      window.history.replaceState({}, "", "/communications");
+      toast.success("Gmail connected — syncing your inbox…");
+      (async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            await fetch("/api/nylas/sync", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${session.access_token}` },
+            });
+          }
+        } finally {
+          // Re-hydrate so the newly-synced flagged emails appear.
+          window.location.reload();
+        }
+      })();
+    } else if (params.get("error")) {
+      const err = params.get("error");
+      window.history.replaceState({}, "", "/communications");
+      toast.error(`Couldn't connect Gmail (${err}). Please try again.`);
+    }
+  }, []);
 
   const startPreview = () => {
     setPreviewEmails(mockFlaggedEmails());
@@ -192,7 +235,7 @@ function ConnectPanel({ onConnect, onPreview }: { onConnect: (p: InboxProvider) 
         </Button>
       </div>
       <p className="text-[11px] text-muted-foreground mt-6 italic max-w-md mx-auto">
-        Instagram DMs require a connected Facebook Business account and Instagram Professional account. Gmail and Outlook OAuth will be wired in a later release.
+        Gmail connects securely through Nylas — Allegory only reads what it needs to flag replies, and you can disconnect anytime. Outlook and Instagram DMs are coming soon.
       </p>
       <div className="mt-4">
         <button onClick={onPreview} className="text-xs text-muted-foreground underline hover:text-foreground">
