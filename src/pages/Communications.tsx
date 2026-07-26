@@ -23,6 +23,7 @@ const Communications = () => {
   const { inboxConnection, flaggedEmails, connectInbox, disconnectInbox, updateFlaggedEmail } = useStore();
   const [filter, setFilter] = useState<"all" | FlagStatus>("all");
   const [previewMode, setPreviewMode] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [previewEmails, setPreviewEmails] = useState(() => [] as ReturnType<typeof mockFlaggedEmails>);
 
   const sourceEmails = previewMode ? previewEmails : flaggedEmails;
@@ -88,6 +89,48 @@ const Communications = () => {
     }
   }, []);
 
+  // Pull the latest Gmail messages on demand.
+  const refreshInbox = async () => {
+    setSyncing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error("Please sign in again."); return; }
+      const res = await fetch("/api/nylas/sync", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const json = await res.json();
+      if (!res.ok) { toast.error(json.error || "Couldn't refresh your inbox."); return; }
+      toast.success(`Synced ${json.synced ?? 0} message${json.synced === 1 ? "" : "s"}.`);
+      window.location.reload();
+    } catch {
+      toast.error("Couldn't reach the sync service.");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  // Disconnect: revoke the Nylas grant server-side, then clear the connection.
+  const handleDisconnect = async () => {
+    if (inboxConnection?.provider === "gmail") {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          await fetch("/api/nylas/disconnect", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          });
+        }
+      } catch { /* clear locally regardless */ }
+      disconnectInbox();
+      toast.message("Gmail disconnected");
+      window.location.reload();
+      return;
+    }
+    disconnectInbox();
+    toast.message("Disconnected");
+  };
+
   const startPreview = () => {
     setPreviewEmails(mockFlaggedEmails());
     setPreviewMode(true);
@@ -118,7 +161,12 @@ const Communications = () => {
               <span className="h-1.5 w-1.5 rounded-full inline-block" style={{ background: "hsl(var(--success))" }} />
               Connected: {providerLabel(inboxConnection.provider)} · {inboxConnection.email}
             </span>
-            <Button size="sm" variant="ghost" onClick={() => { disconnectInbox(); toast.message("Disconnected"); }}>
+            {inboxConnection.provider === "gmail" && (
+              <Button size="sm" variant="outline" onClick={refreshInbox} disabled={syncing}>
+                {syncing ? "Syncing…" : "Refresh"}
+              </Button>
+            )}
+            <Button size="sm" variant="ghost" onClick={handleDisconnect}>
               Disconnect
             </Button>
           </div>
