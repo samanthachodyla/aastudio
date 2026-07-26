@@ -174,6 +174,21 @@ const Login = () => {
                   ? "Create account"
                   : "Send reset link"}
               </Button>
+
+              {mode === "signup" && (
+                <p className="text-[11px] leading-relaxed text-muted-foreground text-center">
+                  By creating an account, you agree to our{" "}
+                  <a
+                    href="/terms"
+                    target="_blank"
+                    rel="noopener"
+                    className="underline underline-offset-2 hover:text-foreground"
+                  >
+                    Terms &amp; Conditions
+                  </a>
+                  .
+                </p>
+              )}
             </form>
           </div>
 

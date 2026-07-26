@@ -94,6 +94,18 @@ const Settings = () => {
             </Button>
           </div>
         </section>
+
+        {/* Legal */}
+        <section className="hairline-card p-6">
+          <div className="eyebrow mb-2">Legal</div>
+          <h3 className="font-display text-xl mb-2 tracking-tight">Terms &amp; policies</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Review the terms that govern your use of Allegory Studio.
+          </p>
+          <Button asChild variant="outline" className="rounded-sm">
+            <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a>
+          </Button>
+        </section>
       </div>
     </AppShell>
   );
