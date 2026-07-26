@@ -6,10 +6,11 @@ import crypto from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 
 const NYLAS_API_URI = process.env.NYLAS_API_URI || "https://api.us.nylas.com";
-const CLIENT_ID = process.env.NYLAS_CLIENT_ID || "";
+const CLIENT_ID = process.env.NYLAS_CLIENT_ID || "7754da07-6633-498e-abce-e0f2bfb404af";
 const API_KEY = process.env.NYLAS_API_KEY || "";
 const APP_URL = process.env.APP_URL || "https://allegoryartstudio.com";
-const STATE_SECRET = process.env.NYLAS_STATE_SECRET || "";
+const STATE_SECRET = process.env.NYLAS_STATE_SECRET || "allegory-nylas-state-a7f3c9e21b8d4f60a5e7c9d1f2b34856";
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://czbzunpabgmwpldkrcex.supabase.co";
 
 function verifyState(state: string): string | null {
   try {
@@ -37,6 +38,8 @@ export default async function handler(req: any, res: any) {
 
     const userId = verifyState(state);
     if (!userId) return back("error=bad_state");
+    if (!API_KEY) return back("error=missing_nylas_api_key");
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return back("error=missing_supabase_key");
 
     // Exchange the authorization code for a grant. In Nylas v3 the API key is
     // passed as client_secret.
@@ -55,7 +58,7 @@ export default async function handler(req: any, res: any) {
     if (!tokenRes.ok || !token.grant_id) return back("error=token_exchange_failed");
 
     const email = token.email || "";
-    const supabase = createClient(process.env.SUPABASE_URL || "", process.env.SUPABASE_SERVICE_ROLE_KEY || "");
+    const supabase = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY || "");
 
     // Grant (secret) lives in a server-only table the client never reads.
     await supabase.from("nylas_grants").upsert(

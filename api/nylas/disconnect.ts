@@ -5,6 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const NYLAS_API_URI = process.env.NYLAS_API_URI || "https://api.us.nylas.com";
 const API_KEY = process.env.NYLAS_API_KEY || "";
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://czbzunpabgmwpldkrcex.supabase.co";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
@@ -12,7 +13,7 @@ export default async function handler(req: any, res: any) {
     const token = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "").trim();
     if (!token) return res.status(401).json({ error: "Not signed in" });
 
-    const supabase = createClient(process.env.SUPABASE_URL || "", process.env.SUPABASE_SERVICE_ROLE_KEY || "");
+    const supabase = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY || "");
     const { data: ures, error: uerr } = await supabase.auth.getUser(token);
     if (uerr || !ures.user) return res.status(401).json({ error: "Invalid session" });
     const userId = ures.user.id;
