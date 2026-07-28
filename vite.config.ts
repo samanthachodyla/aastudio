@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import fs from "node:fs";
 import { componentTagger } from "lovable-tagger";
+import { isLaunched, toLiveLanding, toLiveIndexHead } from "./src/lib/landingLive";
 
 // Build-time prerender for the marketing landing page.
 //
@@ -23,6 +24,11 @@ function prerenderLanding(): Plugin {
         landing = fs.readFileSync(landingPath, "utf8");
       } catch {
         return html; // if it can't be read, ship the normal SPA shell
+      }
+      // Post-launch builds prerender the live homepage; earlier builds, the waitlist.
+      if (isLaunched()) {
+        landing = toLiveLanding(landing);
+        html = toLiveIndexHead(html); // keep the FAQ schema in sync
       }
       const guard =
         '<script>(function(){var p=location.pathname;' +

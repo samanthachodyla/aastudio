@@ -2,7 +2,11 @@ import { useEffect, useRef } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { Seo } from "@/components/Seo";
+import { isLaunched, toLiveLanding } from "@/lib/landingLive";
 import landingHtml from "./landing.html?raw";
+
+// Before Aug 1 2026 the waitlist page shows; from launch, the live homepage.
+const pageHtml = isLaunched() ? toLiveLanding(landingHtml) : landingHtml;
 
 // Waitlist endpoint — a Google Apps Script Web App that appends each signup to a
 // Google Sheet AND emails cara@allegoryartconsulting.com. Paste the deployed
@@ -178,7 +182,7 @@ export default function Landing() {
   return (
     <>
       <Seo canonicalPath="/" />
-      <div ref={ref} dangerouslySetInnerHTML={{ __html: landingHtml }} />
+      <div ref={ref} dangerouslySetInnerHTML={{ __html: pageHtml }} />
     </>
   );
 }
