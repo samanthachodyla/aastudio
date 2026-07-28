@@ -21,15 +21,23 @@ export function toLiveLanding(html: string): string {
   out = out.split('href="#signup"').join('href="/login"');
   out = out.split('>Get first access</a>').join('>Get started</a>');
 
+  // Pricing section: retire the remaining pre-launch "reserve a spot" framing.
+  out = out.split('Join the launch list and get first access.')
+    .join('Choose your plan and start managing your studio today.');
+  out = out.split('>Reserve your spot</a>').join('>Get started</a>');
+
   // Hero eyebrow tag.
   out = out.replace('<span class="hero-tag">Launching August 1</span>',
     '<span class="hero-tag">Now live for artists</span>');
 
   // Replace both waitlist signup forms with sign-up call-to-action buttons.
+  // Both the hero and the final CTA sit on light (cream) backgrounds, so the
+  // secondary button is a ghost outline — btn-light would be cream-on-cream and
+  // effectively invisible.
   out = out.replace(/<form class="signup"[\s\S]*?<\/form>/g,
     '<div class="signup">' +
     '<a class="btn btn-solid" href="/login">Start your studio</a>' +
-    '<a class="btn btn-light" href="/login" style="margin-left:8px">Sign in</a>' +
+    '<a class="btn btn-ghost" href="/login" style="margin-left:8px">Sign in</a>' +
     '</div>');
 
   // Final CTA section copy.
