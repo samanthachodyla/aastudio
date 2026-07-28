@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTier, type Tier } from "@/lib/tier";
 import { useUserProfile } from "@/lib/userProfile";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const Settings = () => {
@@ -38,6 +39,28 @@ const Settings = () => {
   const switchTo = (t: Tier) => {
     setTier(t);
     toast.success(`Switched to Studio ${t === "pro" ? "Pro" : "Starter"}`);
+  };
+
+  const [billingBusy, setBillingBusy] = useState(false);
+  const openBillingPortal = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { toast.error("Please sign in again."); return; }
+    setBillingBusy(true);
+    try {
+      const res = await fetch("/api/stripe/portal", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const json = await res.json();
+      if (json.url) { window.location.href = json.url; return; }
+      toast.error(json.error === "No billing account yet"
+        ? "You don't have a billing account yet — choose a plan first."
+        : (json.error || "Couldn't open billing."));
+    } catch {
+      toast.error("Couldn't reach billing. Please try again.");
+    } finally {
+      setBillingBusy(false);
+    }
   };
 
   const saveProfile = (e: React.FormEvent) => {
@@ -131,9 +154,14 @@ const Settings = () => {
               ? "You have access to every module plus a real arts administrator."
               : "Upgrade to Pro to unlock Profile Vault, Communications, Marketing, and a real arts administrator."}
           </p>
-          <Button asChild variant="outline" className="rounded-sm">
-            <Link to="/pricing">View plans</Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline" className="rounded-sm">
+              <Link to="/pricing">View plans</Link>
+            </Button>
+            <Button variant="outline" className="rounded-sm" onClick={openBillingPortal} disabled={billingBusy}>
+              {billingBusy ? "Opening…" : "Manage billing"}
+            </Button>
+          </div>
         </section>
 
         {/* Developer tier switcher */}

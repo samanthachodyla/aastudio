@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Minus, Sparkles, Brain, ChevronDown } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { useTier } from "@/lib/tier";
+import { useSubscription, hasActiveAccess } from "@/lib/subscription";
+import { BETA_ALL_PRO } from "@/lib/tier";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+type Plan = "starter" | "pro";
 
 type Cycle = "monthly" | "annual";
 
@@ -26,7 +30,7 @@ const STARTER_FEATURES = [
   "Contacts — light CRM",
   "Finance Dashboard",
   "Daily Check-In dashboard",
-  "7-day free trial · no credit card required",
+  "Cancel anytime",
 ];
 
 const PRO_MODULES: { label: string; emphasize?: boolean }[] = [
@@ -39,7 +43,7 @@ const PRO_MODULES: { label: string; emphasize?: boolean }[] = [
   { label: "Statements shaped to fit every opportunity" },
   { label: "Opportunity discovery, personalized to your practice" },
   { label: "Content suggestions and social trend insights" },
-  { label: "7-day free trial · no credit card required" },
+  { label: "Cancel anytime" },
 ];
 
 type Cell = boolean | string;
@@ -86,12 +90,41 @@ const COMPARE_ROWS: CompareRow[] = [
 const Pricing = () => {
   const [cycle, setCycle] = useState<Cycle>("monthly");
   const [openCompare, setOpenCompare] = useState(false);
-  const { tier } = useTier();
+  const [busy, setBusy] = useState<Plan | null>(null);
+  const { subscription, fetch: fetchSubscription } = useSubscription();
 
-  const handleTrial = () => {
-    toast.info("Stripe checkout coming soon", {
-      description: "Use the developer tier switcher in Settings to preview both tiers.",
-    });
+  useEffect(() => { fetchSubscription(); }, [fetchSubscription]);
+
+  // Note a canceled/returned checkout so the user isn't left wondering.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("checkout") === "cancel") {
+      window.history.replaceState({}, "", "/pricing");
+      toast.message("Checkout canceled — no charge was made.");
+    }
+  }, []);
+
+  // The plan the user is actively subscribed to (null during beta or if none).
+  const currentPlan = !BETA_ALL_PRO && hasActiveAccess(subscription) ? subscription?.plan ?? null : null;
+
+  const startCheckout = async (plan: Plan) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { toast.error("Please sign in again."); return; }
+    setBusy(plan);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ plan, cycle }),
+      });
+      const json = await res.json();
+      if (json.url) { window.location.href = json.url; return; }
+      toast.error(json.detail || json.error || "Couldn't start checkout. Please try again.");
+    } catch {
+      toast.error("Couldn't reach checkout. Please try again.");
+    } finally {
+      setBusy(null);
+    }
   };
 
   const starterPrice = PRICES.starter[cycle];
@@ -104,7 +137,7 @@ const Pricing = () => {
       description="Built for working artists. Cancel anytime."
     >
       <p className="text-sm text-muted-foreground -mt-4 mb-10">
-        All plans include a 7-day free trial. No credit card required.
+        Pick a plan to get started. Cancel anytime · have a discount code? Add it at checkout.
       </p>
 
       {/* Billing toggle */}
@@ -163,10 +196,10 @@ const Pricing = () => {
           <Button
             variant="outline"
             className="rounded-sm w-full"
-            disabled={tier === "starter"}
-            onClick={handleTrial}
+            disabled={currentPlan === "starter" || busy !== null}
+            onClick={() => startCheckout("starter")}
           >
-            {tier === "starter" ? "Current plan" : "Start free trial"}
+            {currentPlan === "starter" ? "Current plan" : busy === "starter" ? "Starting…" : "Choose Starter"}
           </Button>
         </div>
 
@@ -233,10 +266,10 @@ const Pricing = () => {
           </ul>
           <Button
             className="rounded-sm w-full"
-            disabled={tier === "pro"}
-            onClick={handleTrial}
+            disabled={currentPlan === "pro" || busy !== null}
+            onClick={() => startCheckout("pro")}
           >
-            {tier === "pro" ? "Current plan" : "Start free trial"}
+            {currentPlan === "pro" ? "Current plan" : busy === "pro" ? "Starting…" : "Choose Pro"}
           </Button>
         </div>
       </div>

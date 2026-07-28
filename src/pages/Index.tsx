@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, AlertCircle, Clock, DollarSign, Boxes, Inbox, Megaphone, CalendarClock } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
@@ -8,11 +8,24 @@ import { StatusPill } from "@/components/StatusPill";
 import { StudioManagerBubble } from "@/components/StudioManagerBubble";
 import { DashboardTodos } from "@/components/DashboardTodos";
 import { useUserProfile, getFirstName } from "@/lib/userProfile";
+import { useSubscription } from "@/lib/subscription";
+import { toast } from "sonner";
 
 const Dashboard = () => {
   const { artworks, invoices, opportunities, flaggedEmails, scheduledPosts, contentIdeas, leads, contacts, expenses } = useStore();
   const { fullName, welcomeDismissed, dismissWelcome } = useUserProfile();
   const firstName = getFirstName(fullName);
+  const refetchSubscription = useSubscription((s) => s.fetch);
+
+  // Returning from a successful Stripe Checkout — confirm and refresh access.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("checkout") === "success") {
+      window.history.replaceState({}, "", "/dashboard");
+      toast.success("You're all set — welcome to Allegory Studio. ✦");
+      refetchSubscription();
+    }
+  }, [refetchSubscription]);
 
   const checkin = useMemo(() => {
     const items: { tone: "alert" | "info" | "muted"; icon: any; text: string; cta?: { to: string; label: string } }[] = [];

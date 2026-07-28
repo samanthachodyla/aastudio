@@ -1,0 +1,82 @@
+// Vercel Serverless Function — start a Stripe Checkout session for a subscription.
+// The signed-in user posts { plan, cycle }; we create (or reuse) their Stripe
+// customer and return a hosted Checkout URL. Promotion codes are enabled so the
+// studio can hand out discount / free-access codes from the Stripe dashboard.
+import Stripe from "stripe";
+import { createClient } from "@supabase/supabase-js";
+
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://czbzunpabgmwpldkrcex.supabase.co";
+const APP_URL = process.env.APP_URL || "https://allegoryartstudio.com";
+
+// Map plan+cycle -> Stripe Price ID (set these as env vars in Vercel).
+const PRICE_IDS: Record<string, string | undefined> = {
+  "starter:monthly": process.env.STRIPE_PRICE_STARTER_MONTHLY,
+  "starter:annual": process.env.STRIPE_PRICE_STARTER_ANNUAL,
+  "pro:monthly": process.env.STRIPE_PRICE_PRO_MONTHLY,
+  "pro:annual": process.env.STRIPE_PRICE_PRO_ANNUAL,
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default async function handler(req: any, res: any) {
+  try {
+    if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+
+    const secret = process.env.STRIPE_SECRET_KEY || "";
+    if (!secret) return res.status(500).json({ error: "Server missing STRIPE_SECRET_KEY" });
+    const svc = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+    if (!svc) return res.status(500).json({ error: "Server missing SUPABASE_SERVICE_ROLE_KEY" });
+
+    const token = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "").trim();
+    if (!token) return res.status(401).json({ error: "Not signed in" });
+
+    const supabase = createClient(SUPABASE_URL, svc);
+    const { data: ures, error: uerr } = await supabase.auth.getUser(token);
+    if (uerr || !ures.user) return res.status(401).json({ error: "Invalid session" });
+    const user = ures.user;
+
+    const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
+    const plan = String(body.plan || "");
+    const cycle = String(body.cycle || "");
+    const price = PRICE_IDS[`${plan}:${cycle}`];
+    if (!price) {
+      return res.status(400).json({ error: "Unknown plan", detail: `No price configured for ${plan}/${cycle}` });
+    }
+
+    const stripe = new Stripe(secret);
+
+    // Reuse an existing Stripe customer for this user if we have one.
+    const { data: subRow } = await supabase
+      .from("subscriptions")
+      .select("stripe_customer_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    let customerId = subRow?.stripe_customer_id as string | undefined;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: user.email || undefined,
+        metadata: { user_id: user.id },
+      });
+      customerId = customer.id;
+      await supabase
+        .from("subscriptions")
+        .upsert({ user_id: user.id, stripe_customer_id: customerId, status: "inactive" }, { onConflict: "user_id" });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      customer: customerId,
+      line_items: [{ price, quantity: 1 }],
+      allow_promotion_codes: true,
+      billing_address_collection: "auto",
+      success_url: `${APP_URL}/dashboard?checkout=success`,
+      cancel_url: `${APP_URL}/pricing?checkout=cancel`,
+      metadata: { user_id: user.id, plan, cycle },
+      subscription_data: { metadata: { user_id: user.id, plan, cycle } },
+    });
+
+    return res.status(200).json({ url: session.url });
+  } catch (e: unknown) {
+    return res.status(500).json({ error: e instanceof Error ? e.message : "Unknown error" });
+  }
+}
