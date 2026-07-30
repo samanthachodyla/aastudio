@@ -110,7 +110,7 @@ export default function Landing() {
             form.classList.add("done");
             if (msg) {
               msg.className = "signup-msg";
-              msg.textContent = formSource === "newsletter"
+              msg.textContent = (formSource === "newsletter" || formSource === "popup")
                 ? "You're in! Your 20% code is on its way to your inbox. ✦"
                 : "Thanks — you're on the list. ✦";
             }
@@ -174,6 +174,33 @@ export default function Landing() {
     const closeMenu = () => { if (chk) chk.checked = false; };
     navLinks.forEach((a) => a.addEventListener("click", closeMenu));
 
+    // ---- Members discount popup: opens once per browser after a short delay or
+    // on exit-intent; its form posts to the same waitlist Sheet as the others
+    // (data-source="popup"). Dismissal/submission is remembered so it won't nag.
+    const POP_KEY = "allegory.popup.seen.v1";
+    const popup = root.querySelector<HTMLElement>("#aasPopup");
+    const popSeen = () => { try { return !!localStorage.getItem(POP_KEY); } catch { return false; } };
+    const markSeen = () => { try { localStorage.setItem(POP_KEY, "1"); } catch { /* ignore */ } };
+    const openPopup = () => {
+      if (popup && !popSeen()) { popup.classList.add("open"); popup.setAttribute("aria-hidden", "false"); }
+    };
+    const closePopup = () => {
+      if (popup) { popup.classList.remove("open"); popup.setAttribute("aria-hidden", "true"); markSeen(); }
+    };
+    const onExitIntent = (e: MouseEvent) => { if (e.clientY <= 0) openPopup(); };
+    const onPopKey = (e: KeyboardEvent) => { if (e.key === "Escape") closePopup(); };
+    const onPopSubmit = () => { markSeen(); window.setTimeout(closePopup, 3200); };
+    const popCloseEls = popup ? Array.from(popup.querySelectorAll<HTMLElement>("[data-pop-close]")) : [];
+    const popForm = popup?.querySelector<HTMLFormElement>("form") ?? null;
+    let popupTimer = 0;
+    if (popup && !popSeen()) {
+      popupTimer = window.setTimeout(openPopup, 7000);
+      document.addEventListener("mouseout", onExitIntent);
+      document.addEventListener("keydown", onPopKey);
+      popCloseEls.forEach((el) => el.addEventListener("click", closePopup));
+      popForm?.addEventListener("submit", onPopSubmit);
+    }
+
     return () => {
       submitBindings.forEach(([form, h]) => form.removeEventListener("submit", h));
       window.removeEventListener("resize", aasFit);
@@ -181,6 +208,11 @@ export default function Landing() {
       window.clearTimeout(fitTimer);
       io?.disconnect();
       navLinks.forEach((a) => a.removeEventListener("click", closeMenu));
+      window.clearTimeout(popupTimer);
+      document.removeEventListener("mouseout", onExitIntent);
+      document.removeEventListener("keydown", onPopKey);
+      popCloseEls.forEach((el) => el.removeEventListener("click", closePopup));
+      popForm?.removeEventListener("submit", onPopSubmit);
     };
   }, []);
 

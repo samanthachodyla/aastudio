@@ -369,6 +369,27 @@
   .allegory-lp .nl-row{flex-direction:column;gap:12px}
   .allegory-lp .newsletter h2{font-size:30px}
 }
+/* ----------  Members discount popup  ---------- */
+.allegory-lp .aas-modal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.allegory-lp .aas-modal.open{display:flex}
+.allegory-lp .aas-modal-backdrop{position:absolute;inset:0;background:rgba(17,40,28,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.allegory-lp .aas-modal-card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:6px;max-width:440px;width:100%;padding:42px 34px 28px;box-shadow:0 40px 90px -30px rgba(17,40,28,.55);text-align:center;animation:aas-pop .3s ease}
+@keyframes aas-pop{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.allegory-lp .aas-modal-card{animation:none}}
+.allegory-lp .aas-modal-card .eyebrow{display:block;margin-bottom:12px}
+.allegory-lp .aas-modal-card h2{font-size:clamp(25px,4vw,33px);line-height:1.14;margin-bottom:12px}
+.allegory-lp .aas-modal-card h2 em{font-style:italic;color:var(--sage)}
+.allegory-lp .aas-modal-card > p{color:var(--ink-2);font-size:15.5px;margin-bottom:22px}
+.allegory-lp .aas-modal-x{position:absolute;top:10px;right:13px;background:none;border:0;font-size:26px;line-height:1;color:var(--muted);cursor:pointer;padding:4px 8px}
+.allegory-lp .aas-modal-x:hover{color:var(--forest)}
+.allegory-lp .pop-form{display:flex;flex-direction:column;gap:11px;text-align:left}
+.allegory-lp .pop-form input{width:100%;font-family:var(--font-b);font-size:15px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:13px 15px;outline:none;transition:border-color .2s}
+.allegory-lp .pop-form input:focus{border-color:var(--forest)}
+.allegory-lp .pop-form input::placeholder{color:var(--muted)}
+.allegory-lp .pop-form .btn{width:100%;margin-top:2px}
+.allegory-lp .pop-form .signup-msg{text-align:center}
+.allegory-lp .pop-fine{font-size:11.5px;color:var(--muted);margin-top:12px}
+.allegory-lp .pop-form.done input,.allegory-lp .pop-form.done .btn{display:none}
 </style>
 <!-- radios for pricing toggle live at the top so siblings can react -->
 <input type="radio" name="bill" id="bm" checked>
@@ -810,4 +831,23 @@
     </div>
   </div>
 </footer>
+<!-- ===== Members discount popup ===== -->
+<div class="aas-modal" id="aasPopup" aria-hidden="true">
+  <div class="aas-modal-backdrop" data-pop-close></div>
+  <div class="aas-modal-card" role="dialog" aria-modal="true" aria-labelledby="aasPopTitle">
+    <button class="aas-modal-x" type="button" aria-label="Close" data-pop-close>&times;</button>
+    <span class="eyebrow">Members-only offer</span>
+    <h2 id="aasPopTitle">Sign up to receive an <em>extra 20% off</em> your membership.</h2>
+    <p>Join our list and we&rsquo;ll send your extra-20%-off code straight to your inbox.</p>
+    <form class="pop-form" data-allegory-signup data-source="popup">
+      <input type="text" name="first_name" required placeholder="First name" aria-label="First name" autocomplete="given-name" />
+      <input type="email" name="email" required placeholder="you@studio.com" aria-label="Email address" autocomplete="email" />
+      <input type="tel" name="phone" placeholder="Phone (optional)" aria-label="Phone number" autocomplete="tel" />
+      <button type="submit" class="btn btn-solid">Send my 20% code</button>
+      <p class="signup-msg" role="status" aria-live="polite"></p>
+    </form>
+    <p class="pop-fine">No spam &mdash; just your code and the occasional studio update.</p>
+  </div>
+</div>
+
 </div>
