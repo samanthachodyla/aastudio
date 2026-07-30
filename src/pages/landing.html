@@ -343,6 +343,32 @@
   .allegory-lp .foot-links{justify-content:flex-start;max-width:none}
   .allegory-lp .foot-bottom{flex-direction:column;gap:8px}
 }
+/* ----------  Newsletter capture  ---------- */
+.allegory-lp .newsletter{background:var(--bg-2);text-align:center}
+.allegory-lp .newsletter h2{font-size:clamp(30px,4.6vw,48px);margin-top:14px}
+.allegory-lp .newsletter h2 em{font-style:italic;color:var(--sage)}
+.allegory-lp .newsletter > .wrap > p{color:var(--ink-2);font-size:18px;margin:16px auto 28px;max-width:520px}
+.allegory-lp .nl{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:12px;text-align:left}
+.allegory-lp .nl-row{display:flex;gap:12px}
+.allegory-lp .nl input{flex:1 1 50%;min-width:0;width:100%;font-family:var(--font-b);font-size:15px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;outline:none;transition:border-color .2s}
+.allegory-lp .nl input:focus{border-color:var(--forest)}
+.allegory-lp .nl input::placeholder{color:var(--muted)}
+.allegory-lp .nl .btn{width:100%;margin-top:2px}
+.allegory-lp .nl .signup-msg{text-align:center}
+.allegory-lp .nl-fine{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}
+.allegory-lp .nl.done .nl-row,.allegory-lp .nl.done .btn,.allegory-lp .nl.done .nl-fine{display:none}
+/* ----------  Pricing: friendlier on phones  ---------- */
+@media(max-width:900px){
+  .allegory-lp .plan{max-width:440px;width:100%;margin-left:auto;margin-right:auto}
+  .allegory-lp .plan .btn{width:100%}
+  .allegory-lp .price-grid{gap:20px}
+  .allegory-lp .cmp{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .allegory-lp .cmp table{min-width:520px}
+}
+@media(max-width:560px){
+  .allegory-lp .nl-row{flex-direction:column;gap:12px}
+  .allegory-lp .newsletter h2{font-size:30px}
+}
 </style>
 <!-- radios for pricing toggle live at the top so siblings can react -->
 <input type="radio" name="bill" id="bm" checked>
@@ -430,6 +456,90 @@
 </div>
 </div>
 <!-- /opening -->
+<!-- ===== Pricing ===== -->
+<section id="pricing">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Pricing</span>
+      <h2>Built for working artists.</h2>
+      <p>Join the launch list and get first access.</p>
+    </div>
+    <div class="price-toggle reveal">
+      <div class="seg">
+        <label for="bm">Monthly</label>
+        <label for="ba">Annual · save 20%</label>
+      </div>
+    </div>
+    <div class="price-grid reveal">
+      <!-- Starter -->
+      <div class="plan">
+        <div class="pname">Studio Starter</div>
+        <div class="amt">
+          <span class="cur">$<span class="price-m">25</span><span class="price-a">20</span></span>
+          <span class="per">/ month</span>
+        </div>
+        <div class="annual-note"><span class="price-a">$240 billed annually, save $60</span></div>
+        <p class="desc">Get organized and take control of your practice.</p>
+        <ul>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Inventory Manager</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Sales &amp; Finance</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Deadline &amp; Opportunity Tracker</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Contacts &amp; a light CRM</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Finance Dashboard</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Daily Check-In dashboard</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Profile Vault, lite version</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Cancel anytime, no commitment</li>
+        </ul>
+        <a class="btn btn-ghost" href="#signup">Reserve your spot</a>
+      </div>
+      <!-- Pro -->
+      <div class="plan pro">
+        <span class="badge">Most popular</span>
+        <div class="pname">Studio Pro</div>
+        <div class="amt">
+          <span class="cur">$<span class="price-m">55</span><span class="price-a">44</span></span>
+          <span class="per">/ month</span>
+        </div>
+        <div class="annual-note"><span class="price-a">$528 billed annually, save $132</span></div>
+        <p class="desc">Your practice, supported by someone who understands it.</p>
+        <div class="callout">
+          <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2L12 16.6 5.7 21l2.3-7.2-6-4.4h7.6z"/></svg> Direct access to a real arts administrator</div>
+          <p>Bounce ideas off someone who's worked with artists for years. No question too small.</p>
+        </div>
+        <ul>
+          <li class="emph"><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Everything in Studio Starter</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Profile Vault, full version</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Communications Hub</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Marketing Assistant</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Smart pricing tool</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Tailored statements for every opportunity</li>
+          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Personalized opportunity discovery</li>
+        </ul>
+        <a class="btn btn-solid" href="#signup">Reserve your spot</a>
+      </div>
+    </div>
+    <!-- Compare table (collapsible) -->
+    <details class="cmp-toggle reveal" id="compare">
+      <summary>Compare plans <span class="pl">+</span></summary>
+      <div class="cmp">
+        <table>
+          <thead><tr><th>Feature</th><th>Starter</th><th>Pro</th></tr></thead>
+          <tbody>
+            <tr><td>Inventory, sales, deadlines &amp; contacts</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+            <tr><td>Consignment tracking &amp; reminders</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+            <tr><td>Daily Check-In dashboard</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+            <tr><td>Profile Vault</td><td>1 of each</td><td>Unlimited &amp; tailored</td></tr>
+            <tr><td>Consignment agreements &amp; statements</td><td class="no"></td><td class="yes">✓</td></tr>
+            <tr><td>Communications Hub</td><td class="no"></td><td class="yes">✓</td></tr>
+            <tr><td>Marketing Assistant</td><td class="no"></td><td class="yes">✓</td></tr>
+            <tr><td>Smart pricing &amp; opportunity discovery</td><td class="no"></td><td class="yes">✓</td></tr>
+            <tr><td>Direct access to a real arts administrator</td><td class="no"></td><td class="yes">✓</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </div>
+</section>
 <!-- ===== Features ===== -->
 <section id="features">
   <div class="wrap">
@@ -582,90 +692,6 @@
     </div>
   </div>
 </section>
-<!-- ===== Pricing ===== -->
-<section id="pricing">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">Pricing</span>
-      <h2>Built for working artists.</h2>
-      <p>Join the launch list and get first access.</p>
-    </div>
-    <div class="price-toggle reveal">
-      <div class="seg">
-        <label for="bm">Monthly</label>
-        <label for="ba">Annual · save 20%</label>
-      </div>
-    </div>
-    <div class="price-grid reveal">
-      <!-- Starter -->
-      <div class="plan">
-        <div class="pname">Studio Starter</div>
-        <div class="amt">
-          <span class="cur">$<span class="price-m">25</span><span class="price-a">20</span></span>
-          <span class="per">/ month</span>
-        </div>
-        <div class="annual-note"><span class="price-a">$240 billed annually, save $60</span></div>
-        <p class="desc">Get organized and take control of your practice.</p>
-        <ul>
-          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Inventory Manager</li>
-          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Sales &amp; Finance</li>
-          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Deadline &amp; Opportunity Tracker</li>
-          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Contacts &amp; a light CRM</li>
-          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Finance Dashboard</li>
-          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Daily Check-In dashboard</li>
-          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Profile Vault, lite version</li>
-          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Cancel anytime, no commitment</li>
-        </ul>
-        <a class="btn btn-ghost" href="#signup">Reserve your spot</a>
-      </div>
-      <!-- Pro -->
-      <div class="plan pro">
-        <span class="badge">Most popular</span>
-        <div class="pname">Studio Pro</div>
-        <div class="amt">
-          <span class="cur">$<span class="price-m">55</span><span class="price-a">44</span></span>
-          <span class="per">/ month</span>
-        </div>
-        <div class="annual-note"><span class="price-a">$528 billed annually, save $132</span></div>
-        <p class="desc">Your practice, supported by someone who understands it.</p>
-        <div class="callout">
-          <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2L12 16.6 5.7 21l2.3-7.2-6-4.4h7.6z"/></svg> Direct access to a real arts administrator</div>
-          <p>Bounce ideas off someone who's worked with artists for years. No question too small.</p>
-        </div>
-        <ul>
-          <li class="emph"><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Everything in Studio Starter</li>
-          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Profile Vault, full version</li>
-          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Communications Hub</li>
-          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Marketing Assistant</li>
-          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Smart pricing tool</li>
-          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Tailored statements for every opportunity</li>
-          <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Personalized opportunity discovery</li>
-        </ul>
-        <a class="btn btn-solid" href="#signup">Reserve your spot</a>
-      </div>
-    </div>
-    <!-- Compare table (collapsible) -->
-    <details class="cmp-toggle reveal" id="compare">
-      <summary>Compare plans <span class="pl">+</span></summary>
-      <div class="cmp">
-        <table>
-          <thead><tr><th>Feature</th><th>Starter</th><th>Pro</th></tr></thead>
-          <tbody>
-            <tr><td>Inventory, sales, deadlines &amp; contacts</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-            <tr><td>Consignment tracking &amp; reminders</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-            <tr><td>Daily Check-In dashboard</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-            <tr><td>Profile Vault</td><td>1 of each</td><td>Unlimited &amp; tailored</td></tr>
-            <tr><td>Consignment agreements &amp; statements</td><td class="no"></td><td class="yes">✓</td></tr>
-            <tr><td>Communications Hub</td><td class="no"></td><td class="yes">✓</td></tr>
-            <tr><td>Marketing Assistant</td><td class="no"></td><td class="yes">✓</td></tr>
-            <tr><td>Smart pricing &amp; opportunity discovery</td><td class="no"></td><td class="yes">✓</td></tr>
-            <tr><td>Direct access to a real arts administrator</td><td class="no"></td><td class="yes">✓</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </details>
-  </div>
-</section>
 <!-- ===== Testimonials ===== -->
 <section class="quotes">
   <div class="wrap">
@@ -715,6 +741,27 @@
       <details><summary>Can I cancel anytime? <span class="pl">+</span></summary><div class="ans">Absolutely. Plans are month-to-month (or annual if you prefer the savings). Cancel anytime, no questions asked.</div></details>
       <details><summary>Is my data private and secure? <span class="pl">+</span></summary><div class="ans">Your studio data is yours. It's stored securely and never sold. You can export or delete it whenever you like.</div></details>
     </div>
+  </div>
+</section>
+<!-- ===== Newsletter ===== -->
+<section id="newsletter" class="newsletter">
+  <div class="wrap reveal">
+    <span class="eyebrow">Newsletter</span>
+    <h2>Sign up for our newsletter to get <em>20% off.</em></h2>
+    <p>Studio tips, new opportunities, and a 20% discount code &mdash; straight to your inbox.</p>
+    <form class="nl" data-allegory-signup data-source="newsletter">
+      <div class="nl-row">
+        <input type="text" name="first_name" required placeholder="First name" aria-label="First name" autocomplete="given-name" />
+        <input type="text" name="last_name" placeholder="Last name" aria-label="Last name" autocomplete="family-name" />
+      </div>
+      <div class="nl-row">
+        <input type="email" name="email" required placeholder="you@studio.com" aria-label="Email address" autocomplete="email" />
+        <input type="tel" name="phone" required placeholder="Phone number" aria-label="Phone number" autocomplete="tel" />
+      </div>
+      <button type="submit" class="btn btn-solid">Get my 20% code</button>
+      <p class="signup-msg" role="status" aria-live="polite"></p>
+      <p class="nl-fine">No spam. Unsubscribe anytime.</p>
+    </form>
   </div>
 </section>
 <!-- ===== Final CTA ===== -->

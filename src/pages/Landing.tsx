@@ -50,6 +50,8 @@ export default function Landing() {
         const lastEl = form.querySelector<HTMLInputElement>('input[name="last_name"]');
         const firstName = (firstEl?.value || "").trim();
         const lastName = (lastEl?.value || "").trim();
+        const phoneEl = form.querySelector<HTMLInputElement>('input[name="phone"]');
+        const phone = (phoneEl?.value || "").trim();
         if (!email) return;
         if (!firstName) {
           if (msg) { msg.className = "signup-msg err"; msg.textContent = "Please add your first name."; }
@@ -85,6 +87,7 @@ export default function Landing() {
             email,
             first_name: firstName,
             last_name: lastName,
+            phone,
             name: [firstName, lastName].filter(Boolean).join(" "),
             source: formSource,
             referrer: document.referrer || "",
@@ -105,7 +108,12 @@ export default function Landing() {
         })
           .then(() => {
             form.classList.add("done");
-            if (msg) { msg.className = "signup-msg"; msg.textContent = "You've got first access. See you August 1. ✦"; }
+            if (msg) {
+              msg.className = "signup-msg";
+              msg.textContent = formSource === "newsletter"
+                ? "You're in! Your 20% code is on its way to your inbox. ✦"
+                : "Thanks — you're on the list. ✦";
+            }
             // Fire a GA4 conversion so signups can be tied to traffic/campaigns.
             try {
               (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", "waitlist_signup", {

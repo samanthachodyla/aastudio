@@ -2,7 +2,6 @@ import { ReactNode, useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { DataGate } from "@/components/DataGate";
-import { SurveyGate } from "@/components/SurveyGate";
 import { BETA_ALL_PRO } from "@/lib/tier";
 import { useSubscription, hasActiveAccess } from "@/lib/subscription";
 
@@ -50,9 +49,5 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     }
   }
 
-  return (
-    <DataGate>
-      <SurveyGate>{children}</SurveyGate>
-    </DataGate>
-  );
+  return <DataGate>{children}</DataGate>;
 }
