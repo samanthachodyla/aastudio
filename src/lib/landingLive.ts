@@ -1,9 +1,9 @@
 // Turns the pre-launch waitlist landing markup into the live "sign up" homepage.
 // Used at runtime (Landing.tsx) and at build time (vite prerender) so both agree.
 //
-// Launch is 5:00 PM Eastern on Jul 31, 2026 (21:00 UTC — EDT is UTC-4). Before that
-// the waitlist page shows; from that moment the live homepage shows automatically.
-export const LAUNCH_AT_MS = Date.UTC(2026, 6, 31, 21, 0, 0); // Jul 31 2026, 17:00 ET
+// Launched: the live "sign up" homepage shows from here on. (Set to a past moment
+// so the site is live immediately; before this timestamp the waitlist page showed.)
+export const LAUNCH_AT_MS = Date.UTC(2026, 6, 30, 0, 0, 0); // Live as of Jul 30 2026
 
 export function isLaunched(nowMs: number = Date.now()): boolean {
   return nowMs >= LAUNCH_AT_MS;
