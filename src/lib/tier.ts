@@ -9,7 +9,7 @@ export type Tier = "starter" | "pro";
 // the effective tier is always "pro" regardless of what's persisted locally or
 // chosen in the Settings tier switcher.
 // ---------------------------------------------------------------------------
-export const BETA_ALL_PRO = false;
+export const BETA_ALL_PRO = true;
 
 interface TierState {
   tier: Tier;
