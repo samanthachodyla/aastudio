@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { Plus, Upload, Download, Trash2, FileText, Pencil, Wand2, Loader2, Copy, Save, Sparkles, Newspaper, ExternalLink } from "lucide-react";
+import { Plus, Upload, Download, Trash2, FileText, Pencil, Wand2, Loader2, Copy, Save, Sparkles, Newspaper, ExternalLink, Eye } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useStore, fmtDate } from "@/lib/store";
 import { useTier } from "@/lib/tier";
@@ -291,6 +291,33 @@ function DocCard({ doc, isPro = true }: { doc: VaultDoc; isPro?: boolean }) {
     toast.message("Nothing to export");
   };
 
+  // Open an uploaded PDF in a new tab for a quick read. Data URLs are converted
+  // to a blob URL first, which browsers reliably display in their PDF viewer.
+  const previewDoc = async () => {
+    if (!doc.fileData) return;
+    try {
+      const res = await fetch(doc.fileData);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener");
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch {
+      window.open(doc.fileData, "_blank", "noopener");
+    }
+  };
+
+  // The AI "tailor" tool works on the document's TEXT. An uploaded PDF has a file
+  // but no text body yet, so guide the user to paste it in rather than dead-ending
+  // on a greyed-out button.
+  const handleTailor = () => {
+    if (!isPro) { setUpsellOpen(true); return; }
+    if (doc.body) { setTailorOpen(true); return; }
+    toast.message("Add the text first", {
+      description: "Paste this document's text so the AI can tailor it — the file upload keeps the PDF, but the AI needs the words.",
+    });
+    setEditOpen(true);
+  };
+
   return (
     <div className="hairline-card p-5 group">
       <div className="flex items-start justify-between gap-3 mb-3">
@@ -303,13 +330,17 @@ function DocCard({ doc, isPro = true }: { doc: VaultDoc; isPro?: boolean }) {
         </div>
         <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
           <button
-            onClick={() => (isPro ? setTailorOpen(true) : setUpsellOpen(true))}
-            disabled={!doc.body}
-            className="p-1.5 hover:bg-surface rounded-sm disabled:opacity-30 disabled:cursor-not-allowed"
-            title={isPro ? (doc.body ? "Tailor for opportunity" : "Add a body to tailor") : "Tailored statements are a Pro feature"}
+            onClick={handleTailor}
+            className="p-1.5 hover:bg-surface rounded-sm"
+            title={isPro ? (doc.body ? "Tailor for opportunity" : "Add the text, then tailor with AI") : "Tailored statements are a Pro feature"}
           >
             <Wand2 className="h-3.5 w-3.5" />
           </button>
+          {doc.fileData && (
+            <button onClick={previewDoc} className="p-1.5 hover:bg-surface rounded-sm" title="Preview PDF">
+              <Eye className="h-3.5 w-3.5" />
+            </button>
+          )}
           <button onClick={() => setEditOpen(true)} className="p-1.5 hover:bg-surface rounded-sm" title="Edit">
             <Pencil className="h-3.5 w-3.5" />
           </button>

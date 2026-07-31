@@ -357,12 +357,13 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
               <Button
                 size="sm"
                 variant="outline"
-                className="gap-2"
+                className="gap-2 opacity-60"
                 onClick={() => receiptInputRef.current?.click()}
-                disabled={scanning}
+                disabled
+                title="Receipt scanning is coming soon"
               >
                 {scanning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ScanLine className="h-3.5 w-3.5" />}
-                {scanning ? "Reading…" : "Scan receipt"}
+                {scanning ? "Reading…" : "Scan receipt · coming soon"}
               </Button>
               <Dialog open={expenseOpen} onOpenChange={setExpenseOpen}>
                 <DialogTrigger asChild>

@@ -17,17 +17,19 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Opportunity, OpportunityStatus, OpportunityType, OppAttachment } from "@/lib/types";
 
 const typeLabels: Record<string, string> = {
-  open_call: "Open call",
+  exhibition: "Exhibition",
   residency: "Residency",
-  prize: "Prize",
-  show: "Show",
   grant: "Grant",
+  prize: "Prize",
   commission: "Commission",
   delivery: "Delivery deadline",
+  // Legacy / Opportunity-Finder types — kept so existing opportunities still render.
+  open_call: "Open call",
+  show: "Show",
 };
 
-// Built-in types the form always offers.
-const BUILT_IN_OPP_TYPES = Object.keys(typeLabels);
+// Built-in types the "New opportunity" form offers, in this order.
+const BUILT_IN_OPP_TYPES = ["exhibition", "residency", "grant", "prize", "commission", "delivery"];
 const ADD_NEW_OPP_TYPE = "__add_new_opp_type__";
 
 // Turn a custom type value (e.g. "artist_talk" or "Pop-up market") into a
@@ -315,7 +317,7 @@ function OpportunityForm({ onSubmit }: { onSubmit: (d: any, files: PendingAttach
   const [form, setForm] = useState({
     title: "", organization: "",
     deadline: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
-    type: "open_call" as OpportunityType,
+    type: "exhibition" as OpportunityType,
     status: "researching" as OpportunityStatus,
     notes: "",
     link: "",
@@ -365,7 +367,7 @@ function OpportunityForm({ onSubmit }: { onSubmit: (d: any, files: PendingAttach
               <SelectContent>
                 {BUILT_IN_OPP_TYPES.map(k => <SelectItem key={k} value={k}>{typeLabels[k]}</SelectItem>)}
                 {customOpportunityTypes.filter(t => !BUILT_IN_OPP_TYPES.includes(t)).map(t => <SelectItem key={t} value={t}>{labelForType(t)}</SelectItem>)}
-                <SelectItem value={ADD_NEW_OPP_TYPE}>＋ Add your own type…</SelectItem>
+                <SelectItem value={ADD_NEW_OPP_TYPE}>＋ Add other…</SelectItem>
               </SelectContent>
             </Select>
             {addingType && (
@@ -433,10 +435,11 @@ function OpportunityForm({ onSubmit }: { onSubmit: (d: any, files: PendingAttach
 }
 
 const FINDER_TYPES = [
-  { value: "Open call", label: "Open call" },
-  { value: "Residency", label: "Residency" },
+  { value: "Open Call", label: "Open Call" },
   { value: "Grant", label: "Grant" },
-  { value: "Prize", label: "Prize" },
+  { value: "Residency", label: "Residency" },
+  { value: "Fellowship", label: "Fellowship" },
+  { value: "Award", label: "Award" },
 ];
 
 interface Suggestion {
@@ -481,7 +484,7 @@ function OpportunityFinder({ existingTitles, onAdd }: {
   const [region, setRegion] = useState("");
   const [discipline, setDiscipline] = useState("");
   const [types, setTypes] = useState<string[]>([]);
-  const [feePreference, setFeePreference] = useState("Any");
+  const [feePreference, setFeePreference] = useState("Both");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
@@ -584,9 +587,9 @@ function OpportunityFinder({ existingTitles, onAdd }: {
           <Select value={feePreference} onValueChange={setFeePreference}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="No fee only">No fee only</SelectItem>
-              <SelectItem value="Under $35">Under $35</SelectItem>
-              <SelectItem value="Any">Any</SelectItem>
+              <SelectItem value="Free">Free</SelectItem>
+              <SelectItem value="Fee $$">Fee $$</SelectItem>
+              <SelectItem value="Both">Both</SelectItem>
             </SelectContent>
           </Select>
         </div>
