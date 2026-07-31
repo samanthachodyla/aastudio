@@ -61,17 +61,22 @@ export interface AdminDataset {
   invoices: { user_id: string; id: string; number: string | null; buyer_name: string | null; amount: number | null; status: string | null }[];
   contacts: { user_id: string; id: string; name: string; type: string | null; email: string | null }[];
   opportunities: { user_id: string; id: string }[];
+  subscriptions: { user_id: string; plan: string | null; cycle: string | null; status: string | null }[];
 }
 
 /** Pull everything the Reports page needs in one shot (admin-scoped by RLS). */
 export async function fetchAdminDataset(): Promise<AdminDataset> {
-  const [profiles, usage, artworks, invoices, contacts, opportunities] = await Promise.all([
+  const [profiles, usage, artworks, invoices, contacts, opportunities, subscriptions] = await Promise.all([
     db.from("profiles").select("id,email,full_name,is_admin,tier,last_seen_at,created_at"),
     db.from("usage_events").select("user_id,event_type,occurred_at,path"),
     db.from("artworks").select("user_id,id,title,medium,year,price,status"),
     db.from("invoices").select("user_id,id,number,buyer_name,amount,status"),
     db.from("contacts").select("user_id,id,name,type,email"),
     db.from("opportunities").select("user_id,id"),
+    // Plan/cycle per user. Admins see everyone once the "admins read all
+    // subscriptions" RLS policy is added; otherwise this returns just their own
+    // row (harmless — other members show "—" in the Plan column until then).
+    db.from("subscriptions").select("user_id,plan,cycle,status"),
   ]);
 
   const firstError =
@@ -103,5 +108,6 @@ export async function fetchAdminDataset(): Promise<AdminDataset> {
     invoices: invoices.data ?? [],
     contacts: contacts.data ?? [],
     opportunities: opportunities.data ?? [],
+    subscriptions: subscriptions.data ?? [],
   };
 }

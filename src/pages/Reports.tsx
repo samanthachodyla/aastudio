@@ -16,6 +16,9 @@ interface UserAgg {
   email: string;
   isAdmin: boolean;
   tier: string;
+  plan: string | null;
+  cycle: string | null;
+  subStatus: string | null;
   lastActive: string | null;
   pageViews: number;
   activeMinutes: number;
@@ -40,6 +43,19 @@ const fmtWhen = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "Never";
 
 const tierLabel = (tier: string) => (BETA_ALL_PRO ? "Pro · beta" : tier === "pro" ? "Pro" : "Starter");
+
+// Plan + billing cycle at a glance, from the subscriptions table.
+const planLabel = (plan: string | null, cycle: string | null, status: string | null): string => {
+  if (!status || ["inactive", "canceled", "incomplete", "unpaid"].includes(status)) return "—";
+  const t = plan === "pro" ? "Pro" : plan === "starter" ? "Starter" : "—";
+  const tag = status === "comp" ? "Comp"
+    : status === "trialing" ? "Trial"
+    : status === "past_due" ? "Past due"
+    : cycle === "annual" ? "Annual"
+    : cycle === "monthly" ? "Monthly"
+    : "";
+  return tag ? `${t} · ${tag}` : t;
+};
 
 const Reports = () => {
   const { isAdmin, loading: adminLoading } = useIsAdmin();
@@ -69,6 +85,7 @@ const Reports = () => {
     const invBy = by(data.invoices);
     const conBy = by(data.contacts);
     const oppBy = by(data.opportunities);
+    const subByUser = new Map(data.subscriptions.map((s) => [s.user_id, s]));
 
     return data.profiles
       .map((p): UserAgg => {
@@ -95,6 +112,9 @@ const Reports = () => {
           email: p.email || "—",
           isAdmin: p.is_admin,
           tier: p.tier || "starter",
+          plan: subByUser.get(p.id)?.plan ?? null,
+          cycle: subByUser.get(p.id)?.cycle ?? null,
+          subStatus: subByUser.get(p.id)?.status ?? null,
           lastActive: p.last_seen_at || lastFromUsage,
           pageViews: views.length,
           activeMinutes: heartbeats.length,
@@ -249,6 +269,7 @@ const Reports = () => {
           <thead>
             <tr className="text-left text-muted-foreground border-b border-border">
               <th className="font-normal eyebrow px-4 py-3">Member</th>
+              <th className="font-normal eyebrow px-4 py-3">Plan</th>
               <th className="font-normal eyebrow px-4 py-3">Last active</th>
               <th className="font-normal eyebrow px-4 py-3 text-right">Page views</th>
               <th className="font-normal eyebrow px-4 py-3 text-right">Active time</th>
@@ -272,6 +293,18 @@ const Reports = () => {
                   </div>
                   <div className="text-xs text-muted-foreground">{r.email}</div>
                 </td>
+                <td className="px-4 py-3">
+                  {(() => {
+                    const label = planLabel(r.plan, r.cycle, r.subStatus);
+                    if (label === "—") return <span className="text-muted-foreground">—</span>;
+                    const isPro = r.plan === "pro";
+                    return (
+                      <span className={`inline-block text-[11px] font-medium tracking-wide rounded-sm px-2 py-0.5 whitespace-nowrap ${isPro ? "bg-primary/10 text-primary" : "bg-muted text-foreground/70"}`}>
+                        {label}
+                      </span>
+                    );
+                  })()}
+                </td>
                 <td className="px-4 py-3 text-muted-foreground">{fmtWhen(r.lastActive)}</td>
                 <td className="px-4 py-3 text-right tabular-nums">{r.pageViews}</td>
                 <td className="px-4 py-3 text-right tabular-nums">{fmtMinutes(r.activeMinutes)}</td>
@@ -280,7 +313,7 @@ const Reports = () => {
               </tr>
             ))}
             {!rows.length && !error && (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground text-sm">Loading members…</td></tr>
+              <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground text-sm">Loading members…</td></tr>
             )}
           </tbody>
         </table>
@@ -294,8 +327,11 @@ const Reports = () => {
             <div className="eyebrow mb-1">Member detail</div>
             <h2 className="font-display text-3xl tracking-tight">{selectedUser.name}</h2>
             <p className="text-sm text-muted-foreground">
-              {selectedUser.email} · Studio {tierLabel(selectedUser.tier)} ·{" "}
-              {selectedUser.opportunities} opportunities · {selectedUser.contacts} contacts
+              {selectedUser.email} ·{" "}
+              {planLabel(selectedUser.plan, selectedUser.cycle, selectedUser.subStatus) === "—"
+                ? `Studio ${tierLabel(selectedUser.tier)}`
+                : planLabel(selectedUser.plan, selectedUser.cycle, selectedUser.subStatus)}{" "}
+              · {selectedUser.opportunities} opportunities · {selectedUser.contacts} contacts
             </p>
           </div>
 
