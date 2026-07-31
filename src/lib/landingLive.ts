@@ -17,8 +17,8 @@ export function toLiveLanding(html: string): string {
   out = out.split('Launching August 1st <span class="bar">|</span> Join the list &amp; get first access')
     .join('Now live <span class="bar">|</span> Start managing your studio today');
 
-  // Every "first access" call-to-action anchor now points at sign-up.
-  out = out.split('href="#signup"').join('href="/login"');
+  // Every "first access" call-to-action anchor now opens the create-account form.
+  out = out.split('href="#signup"').join('href="/login?mode=signup"');
   out = out.split('>Get first access</a>').join('>Get started</a>');
 
   // Pricing section: retire the remaining pre-launch "reserve a spot" framing.
@@ -34,9 +34,11 @@ export function toLiveLanding(html: string): string {
   // Both the hero and the final CTA sit on light (cream) backgrounds, so the
   // secondary button is a ghost outline — btn-light would be cream-on-cream and
   // effectively invisible.
+  // "Start your studio" scrolls down to the pricing options; "Sign in" goes to
+  // the login form. (The pricing "Get started" buttons are what open sign-up.)
   out = out.replace(/<form class="signup"[\s\S]*?<\/form>/g,
     '<div class="signup">' +
-    '<a class="btn btn-solid" href="/login">Start your studio</a>' +
+    '<a class="btn btn-solid" href="#pricing">Start your studio</a>' +
     '<a class="btn btn-ghost" href="/login" style="margin-left:8px">Sign in</a>' +
     '</div>');
 

@@ -26,13 +26,19 @@ const Login = () => {
   const location = useLocation();
   const { session, loading } = useAuth();
 
-  const [mode, setMode] = useState<Mode>("signin");
+  // Landing "Get started" CTAs deep-link here with ?mode=signup so new artists
+  // land straight on the create-account form.
+  const startedAsSignup = new URLSearchParams(location.search).get("mode") === "signup";
+  const [mode, setMode] = useState<Mode>(startedAsSignup ? "signup" : "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const from = (location.state as { from?: string } | null)?.from ?? "/dashboard";
+  // New sign-ups go straight to pricing to choose a plan; returning users go to
+  // wherever they were headed (default their dashboard).
+  const from =
+    (location.state as { from?: string } | null)?.from ?? (startedAsSignup ? "/pricing" : "/dashboard");
 
   // If already authenticated, bounce away from the login screen.
   useEffect(() => {
