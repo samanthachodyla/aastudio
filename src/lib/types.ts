@@ -98,6 +98,9 @@ export interface Opportunity {
   fee?: number;
   requirements?: string;
   award?: string;
+  /** Id of a Profile Vault document (bio/statement/CV) linked to this opportunity,
+   *  so you can pull up the right file and tailor it to the application's specifics. */
+  vaultDocId?: string;
 }
 
 export type ContactType = "gallery" | "collector" | "consultant" | "subcontractor" | "press" | "curator" | "peer" | "other";

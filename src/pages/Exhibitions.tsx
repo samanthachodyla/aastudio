@@ -44,6 +44,25 @@ const labelForType = (t?: string): string => {
   return t;
 };
 
+// Profile Vault docs that make sense to link to an opportunity (the text/PDF ones).
+const LINKABLE_VAULT_KINDS = ["statement", "bio", "cv"];
+const vaultKindLabel = (k: string): string =>
+  k === "bio" ? "Bio" : k === "cv" ? "CV" : k === "statement" ? "Statement" : k;
+
+// Open a linked Vault PDF in a new tab (data URL → blob URL for reliable viewing).
+const openVaultFile = async (fileData?: string) => {
+  if (!fileData) return;
+  try {
+    const res = await fetch(fileData);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank", "noopener");
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch {
+    window.open(fileData, "_blank", "noopener");
+  }
+};
+
 // ---- Opportunity attachments (on-device) ----
 const MAX_ATT_BYTES = 5 * 1024 * 1024; // 5MB per file
 
@@ -127,7 +146,8 @@ const OPPORTUNITY_SEARCH_FIELDS: (keyof Opportunity)[] = [
 ];
 
 const Exhibitions = () => {
-  const { opportunities, addOpportunity, updateOpportunity, deleteOpportunity } = useStore();
+  const { opportunities, addOpportunity, updateOpportunity, deleteOpportunity, vaultDocs } = useStore();
+  const linkableVaultDocs = vaultDocs.filter(d => LINKABLE_VAULT_KINDS.includes(d.kind));
   const { byOpportunity: opportunityAttachments, addAttachment: addOppAttachment, removeAttachment: removeOppAttachment } = useAttachments();
   const [open, setOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -285,6 +305,38 @@ const Exhibitions = () => {
                           Files are saved on this device. PDF, Word, or images up to 5MB each.
                         </p>
                       </div>
+                      <div>
+                        <Label className="eyebrow">Link a Profile Vault file</Label>
+                        <Select
+                          value={o.vaultDocId ?? "none"}
+                          onValueChange={(v) => updateOpportunity(o.id, { vaultDocId: v === "none" ? undefined : v })}
+                        >
+                          <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">None</SelectItem>
+                            {linkableVaultDocs.map(d => (
+                              <SelectItem key={d.id} value={d.id}>{d.title} · {vaultKindLabel(d.kind)}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {(() => {
+                          const linked = o.vaultDocId ? vaultDocs.find(d => d.id === o.vaultDocId) : undefined;
+                          if (o.vaultDocId && !linked) {
+                            return <p className="text-[11px] text-muted-foreground mt-1 italic">That Vault file was removed — pick another.</p>;
+                          }
+                          if (linked?.fileData) {
+                            return (
+                              <button type="button" onClick={() => openVaultFile(linked.fileData)} className="text-xs text-primary inline-flex items-center gap-1 mt-2 hover:underline">
+                                <ExternalLink className="h-3 w-3" /> Preview {vaultKindLabel(linked.kind).toLowerCase()}
+                              </button>
+                            );
+                          }
+                          if (linked) {
+                            return <p className="text-[11px] text-muted-foreground mt-1 italic">Linked — open it in Profile Vault to edit or tailor its text.</p>;
+                          }
+                          return <p className="text-[11px] text-muted-foreground mt-1 italic">Pull a bio, statement, or CV from your Vault so it's one click away — then tailor it to this opportunity's notes.</p>;
+                        })()}
+                      </div>
                     </div>
                   )}
                 </li>
@@ -311,6 +363,7 @@ const Exhibitions = () => {
 function OpportunityForm({ onSubmit }: { onSubmit: (d: any, files: PendingAttachment[]) => void }) {
   const customOpportunityTypes = useStore(s => s.customOpportunityTypes);
   const addCustomOpportunityType = useStore(s => s.addCustomOpportunityType);
+  const linkableVaultDocs = useStore(s => s.vaultDocs).filter(d => LINKABLE_VAULT_KINDS.includes(d.kind));
   const [addingType, setAddingType] = useState(false);
   const [newType, setNewType] = useState("");
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
@@ -324,6 +377,7 @@ function OpportunityForm({ onSubmit }: { onSubmit: (d: any, files: PendingAttach
     fee: "" as string,
     requirements: "",
     award: "",
+    vaultDocId: "",
   });
 
   const confirmNewType = () => {
@@ -346,6 +400,7 @@ function OpportunityForm({ onSubmit }: { onSubmit: (d: any, files: PendingAttach
           link: form.link || undefined,
           requirements: form.requirements || undefined,
           award: form.award || undefined,
+          vaultDocId: form.vaultDocId || undefined,
         }, pendingAttachments);
       }}>
         <div><Label>Title</Label><Input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
@@ -406,6 +461,19 @@ function OpportunityForm({ onSubmit }: { onSubmit: (d: any, files: PendingAttach
         </div>
         <div><Label>Award / stipend / value</Label><Input value={form.award} onChange={(e) => setForm({ ...form, award: e.target.value })} placeholder="e.g. $5,000 + residency" /></div>
         <div><Label>Requirements or materials needed</Label><Textarea value={form.requirements} onChange={(e) => setForm({ ...form, requirements: e.target.value })} placeholder="Artist statement, 10 images, CV…" /></div>
+        {linkableVaultDocs.length > 0 && (
+          <div>
+            <Label>Link a Profile Vault file</Label>
+            <Select value={form.vaultDocId || "none"} onValueChange={(v) => setForm({ ...form, vaultDocId: v === "none" ? "" : v })}>
+              <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                {linkableVaultDocs.map(d => <SelectItem key={d.id} value={d.id}>{d.title} · {vaultKindLabel(d.kind)}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <p className="text-[11px] text-muted-foreground mt-1 italic">Pull a bio, statement, or CV from your Vault so it's ready to tailor for this one.</p>
+          </div>
+        )}
         <div><Label>Notes</Label><Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Anything else worth remembering…" /></div>
         <div>
           <div className="flex items-center justify-between mb-2">
