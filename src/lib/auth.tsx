@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserProfile } from "@/lib/userProfile";
+import { useSubscription } from "@/lib/subscription";
 
 interface AuthState {
   session: Session | null;
@@ -19,9 +20,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Subscribe first so we never miss an auth event that fires during init.
+    let lastUserId: string | null = null;
     const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
       setSession(next);
       syncProfileEmail(next?.user ?? null);
+      // When the signed-in user changes (sign in / sign out / account switch),
+      // clear the cached subscription so the paywall re-checks for THIS account
+      // instead of inheriting the previous user's access. Without this, signing
+      // up a new (unpaid) account in the same tab would keep a prior comped
+      // user's access and let them into the app without paying.
+      const nextUserId = next?.user?.id ?? null;
+      if (nextUserId !== lastUserId) {
+        lastUserId = nextUserId;
+        useSubscription.getState().reset();
+      }
     });
 
     supabase.auth
