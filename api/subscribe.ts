@@ -42,6 +42,8 @@ export default async function handler(req: any, res: any) {
   const phone = str(body.phone);
   const source = str(body.source) || "landing";
   const eventId = str(body.event_id) || crypto.randomUUID();
+  // Lead forms send "Lead"; full app signups send "CompleteRegistration".
+  const eventName = str(body.event_name) || "Lead";
 
   // ---- 1. Mailchimp upsert (PUT to the member hash is idempotent — no "already
   //         a member" error, and it updates merge fields on repeat signups). ----
@@ -126,7 +128,7 @@ export default async function handler(req: any, res: any) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           data: [{
-            event_name: "Lead",
+            event_name: eventName,
             event_time: Math.floor(Date.now() / 1000),
             event_id: eventId,
             action_source: "website",

@@ -82,6 +82,24 @@ const Login = () => {
           options: { data: { full_name: name.trim() } },
         });
         if (error) throw error;
+        // Add every new account to Mailchimp too (system of record), tagged
+        // "app-signup" so full signups are distinguishable from newsletter/popup
+        // leads. Best-effort — never blocks account creation.
+        try {
+          const [fn, ...rest] = name.trim().split(/\s+/).filter(Boolean);
+          void fetch("/api/subscribe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: email.trim(),
+              first_name: fn || "",
+              last_name: rest.join(" "),
+              source: "app-signup",
+              event_name: "CompleteRegistration",
+              event_source_url: window.location.href,
+            }),
+          }).catch(() => {});
+        } catch { /* never block signup */ }
         if (!data.session) {
           // Email confirmation is enabled on the project — no session yet.
           toast.success("Check your email to confirm your account, then sign in.");
