@@ -7,6 +7,41 @@
 // customer.subscription.updated, customer.subscription.deleted.
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+import crypto from "crypto";
+
+const META_PIXEL_ID = process.env.META_PIXEL_ID || "1583309690064748";
+const META_CAPI_TOKEN = process.env.META_CAPI_TOKEN || "";
+
+// Meta Conversions API "Purchase" — shares event_id (purchase_<session>) with the
+// browser Pixel fired on the post-checkout success page, so Meta de-dupes them.
+// No-op until META_CAPI_TOKEN is set. Value comes from the actual amount charged
+// (after any discount code), so 100%-off signups report $0.
+async function firePurchaseCapi(session: Stripe.Checkout.Session) {
+  if (!META_CAPI_TOKEN || !META_PIXEL_ID) return;
+  const email = (session.customer_details?.email || "").trim().toLowerCase();
+  const userData: Record<string, unknown> = {};
+  if (email) userData.em = [crypto.createHash("sha256").update(email).digest("hex")];
+  try {
+    await fetch(`https://graph.facebook.com/v19.0/${META_PIXEL_ID}/events?access_token=${encodeURIComponent(META_CAPI_TOKEN)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        data: [{
+          event_name: "Purchase",
+          event_time: Math.floor(Date.now() / 1000),
+          event_id: `purchase_${session.id}`,
+          action_source: "website",
+          event_source_url: `${process.env.APP_URL || "https://allegoryartstudio.com"}/dashboard`,
+          user_data: userData,
+          custom_data: {
+            currency: (session.currency || "usd").toUpperCase(),
+            value: (session.amount_total ?? 0) / 100,
+          },
+        }],
+      }),
+    });
+  } catch { /* CAPI is best-effort */ }
+}
 
 // We need the raw body to verify the Stripe signature — disable body parsing.
 export const config = { api: { bodyParser: false } };
@@ -84,6 +119,7 @@ export default async function handler(req: any, res: any) {
           const sub = await stripe.subscriptions.retrieve(subId);
           await supabase.from("subscriptions").upsert(rowFromSubscription(userId, customerId, sub), { onConflict: "user_id" });
         }
+        await firePurchaseCapi(s);
         break;
       }
       case "customer.subscription.created":

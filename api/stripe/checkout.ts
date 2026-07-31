@@ -69,7 +69,7 @@ export default async function handler(req: any, res: any) {
       line_items: [{ price, quantity: 1 }],
       allow_promotion_codes: true,
       billing_address_collection: "auto",
-      success_url: `${APP_URL}/dashboard?checkout=success`,
+      success_url: `${APP_URL}/dashboard?checkout=success&sid={CHECKOUT_SESSION_ID}&plan=${plan}&cycle=${cycle}`,
       cancel_url: `${APP_URL}/pricing?checkout=cancel`,
       metadata: { user_id: user.id, plan, cycle },
       subscription_data: { metadata: { user_id: user.id, plan, cycle } },

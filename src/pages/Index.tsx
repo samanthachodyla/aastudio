@@ -21,6 +21,23 @@ const Dashboard = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("checkout") === "success") {
+      // Meta Pixel Purchase — shares event_id (purchase_<session>) with the
+      // server-side CAPI Purchase from the Stripe webhook so Meta de-dupes them.
+      try {
+        const sid = params.get("sid") || "";
+        const plan = params.get("plan") || "";
+        const cycle = params.get("cycle") || "";
+        const PRICE: Record<string, number> = {
+          "starter:monthly": 25, "starter:annual": 240,
+          "pro:monthly": 55, "pro:annual": 528,
+        };
+        const value = PRICE[`${plan}:${cycle}`];
+        (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq?.(
+          "track", "Purchase",
+          { value, currency: "USD", content_name: `${plan}-${cycle}` },
+          sid ? { eventID: `purchase_${sid}` } : undefined,
+        );
+      } catch { /* analytics is best-effort */ }
       window.history.replaceState({}, "", "/dashboard");
       toast.success("You're all set — welcome to Allegory Studio. ✦");
       refetchSubscription();
