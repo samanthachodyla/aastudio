@@ -18,4 +18,32 @@ Disallow: /reports
 Disallow: /login
 Disallow: /reset-password
 
+# AI answer engines & assistants are welcome on the marketing pages so the studio
+# can be surfaced and cited (see /llms.txt for a concise summary). App routes stay private.
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: anthropic-ai
+User-agent: Claude-Web
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: CCBot
+Disallow: /dashboard
+Disallow: /inventory
+Disallow: /sales
+Disallow: /exhibitions
+Disallow: /contacts
+Disallow: /studio-manager
+Disallow: /profile-vault
+Disallow: /communications
+Disallow: /marketing
+Disallow: /pricing
+Disallow: /settings
+Disallow: /reports
+Disallow: /login
+Disallow: /reset-password
+
 Sitemap: https://allegoryartstudio.com/sitemap.xml
