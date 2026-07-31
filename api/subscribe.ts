@@ -46,19 +46,15 @@ export default async function handler(req: any, res: any) {
   // ---- 1. Mailchimp upsert (PUT to the member hash is idempotent — no "already
   //         a member" error, and it updates merge fields on repeat signups). ----
   let mailchimp = "skipped";
+  let mcDetail = "";
   if (MC_KEY && MC_LIST && MC_DC) {
-    try {
-      const hash = crypto.createHash("md5").update(email).digest("hex");
-      const merge: Record<string, string> = {};
-      if (firstName) merge.FNAME = firstName;
-      if (lastName) merge.LNAME = lastName;
-      if (phone) merge.PHONE = phone; // requires a PHONE merge field on the audience
-      const r = await fetch(`https://${MC_DC}.api.mailchimp.com/3.0/lists/${MC_LIST}/members/${hash}`, {
+    const hash = crypto.createHash("md5").update(email).digest("hex");
+    const url = `https://${MC_DC}.api.mailchimp.com/3.0/lists/${MC_LIST}/members/${hash}`;
+    const auth = "Basic " + Buffer.from("any:" + MC_KEY).toString("base64");
+    const put = async (merge: Record<string, string>) => {
+      const r = await fetch(url, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Basic " + Buffer.from("any:" + MC_KEY).toString("base64"),
-        },
+        headers: { "Content-Type": "application/json", Authorization: auth },
         body: JSON.stringify({
           email_address: email,
           status_if_new: "subscribed",
@@ -66,9 +62,32 @@ export default async function handler(req: any, res: any) {
           tags: [source],
         }),
       });
+      const text = await r.text().catch(() => "");
+      return { ok: r.ok, status: r.status, text };
+    };
+    try {
+      const full: Record<string, string> = {};
+      if (firstName) full.FNAME = firstName;
+      if (lastName) full.LNAME = lastName;
+      if (phone) full.PHONE = phone;
+      let r = await put(full);
+      // A missing/invalid merge field (commonly PHONE) 400s the whole contact —
+      // retry without phone, then with email only, so name+email always sync.
+      if (!r.ok && r.status === 400 && phone) {
+        const noPhone = { ...full };
+        delete noPhone.PHONE;
+        r = await put(noPhone);
+      }
+      if (!r.ok && r.status === 400) r = await put({});
       mailchimp = r.ok ? "ok" : `error_${r.status}`;
-    } catch {
+      if (!r.ok) {
+        mcDetail = r.text.slice(0, 300);
+        console.error("[subscribe] mailchimp failed", r.status, r.text);
+      }
+    } catch (e) {
       mailchimp = "error";
+      mcDetail = e instanceof Error ? e.message : String(e);
+      console.error("[subscribe] mailchimp exception", e);
     }
   }
 
@@ -120,5 +139,5 @@ export default async function handler(req: any, res: any) {
     } catch { /* CAPI is best-effort */ }
   }
 
-  return res.status(200).json({ ok: true, mailchimp, event_id: eventId });
+  return res.status(200).json({ ok: true, mailchimp, mc_detail: mcDetail || undefined, event_id: eventId });
 }
