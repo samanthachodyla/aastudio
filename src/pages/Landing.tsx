@@ -8,10 +8,9 @@ import landingHtml from "./landing.html?raw";
 // Before Aug 1 2026 the waitlist page shows; from launch, the live homepage.
 const pageHtml = isLaunched() ? toLiveLanding(landingHtml) : landingHtml;
 
-// Waitlist endpoint — a Google Apps Script Web App that appends each signup to a
-// Google Sheet AND emails cara@allegoryartconsulting.com. Paste the deployed
-// "/exec" web-app URL here (see landing/README-waitlist.md for the 5-min setup).
-const WAITLIST_ENDPOINT = "https://script.google.com/macros/s/AKfycbzGAf1SwVp5TM6j2rajwBFlyEFJf9NAKmECu9haZt_E7X5iuEqpabWG2tfu3QN2qz4/exec";
+// Signups POST to our own /api/subscribe function, which writes to Mailchimp
+// (system of record), forwards to the Google Sheet as backup, and fires the
+// Meta CAPI Lead. See api/subscribe.ts.
 
 /**
  * Public marketing landing page at "/".
@@ -59,10 +58,6 @@ export default function Landing() {
           return;
         }
         const btn = form.querySelector<HTMLButtonElement>("button");
-        if (!WAITLIST_ENDPOINT) {
-          if (msg) { msg.className = "signup-msg err"; msg.textContent = "Sign-up isn't connected yet — please email hello@allegoryartstudio.com."; }
-          return;
-        }
         if (btn) { btn.disabled = true; btn.textContent = "Sending…"; }
         if (msg) { msg.className = "signup-msg"; msg.textContent = ""; }
         // Capture UTM tags from the URL so each signup carries its campaign/post.
@@ -80,15 +75,14 @@ export default function Landing() {
         // GA4 event lands on the same user as the browser.
         const gaCookie = cookie("_ga");
         const gaClientId = gaCookie ? gaCookie.split(".").slice(-2).join(".") : "";
-        fetch(WAITLIST_ENDPOINT, {
+        fetch("/api/subscribe", {
           method: "POST",
-          mode: "no-cors",
-          body: new URLSearchParams({
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
             email,
             first_name: firstName,
             last_name: lastName,
             phone,
-            name: [firstName, lastName].filter(Boolean).join(" "),
             source: formSource,
             referrer: document.referrer || "",
             user_agent: navigator.userAgent,
@@ -97,16 +91,16 @@ export default function Landing() {
             utm_campaign: qs.get("utm_campaign") || "",
             utm_content: qs.get("utm_content") || "",
             utm_term: qs.get("utm_term") || "",
-            // For Meta Conversions API (server-side), forwarded by the endpoint:
+            // Shared with the server so the CAPI Lead de-dupes with the Pixel:
             event_id: eventId,
             event_source_url: window.location.href,
             fbp: cookie("_fbp"),
             fbc: cookie("_fbc"),
-            // For the GA4 Measurement Protocol (server-side):
             ga_client_id: gaClientId,
           }),
         })
-          .then(() => {
+          .then(async (res) => {
+            if (!res.ok) throw new Error("subscribe failed");
             form.classList.add("done");
             if (msg) {
               msg.className = "signup-msg";
