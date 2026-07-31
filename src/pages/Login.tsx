@@ -83,10 +83,17 @@ const Login = () => {
         });
         if (error) throw error;
         // Add every new account to Mailchimp too (system of record), tagged
-        // "app-signup" so full signups are distinguishable from newsletter/popup
-        // leads. Best-effort — never blocks account creation.
+        // "app-signup". Fire CompleteRegistration on the browser Pixel AND
+        // (server-side) via CAPI, sharing one event_id so Meta de-dupes them.
+        // Best-effort — never blocks account creation.
         try {
           const [fn, ...rest] = name.trim().split(/\s+/).filter(Boolean);
+          const cookie = (n: string) => {
+            const m = document.cookie.match(new RegExp("(?:^|; )" + n + "=([^;]+)"));
+            return m ? decodeURIComponent(m[1]) : "";
+          };
+          const regEventId = (crypto as { randomUUID?: () => string }).randomUUID?.()
+            ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
           void fetch("/api/subscribe", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -96,9 +103,17 @@ const Login = () => {
               last_name: rest.join(" "),
               source: "app-signup",
               event_name: "CompleteRegistration",
+              event_id: regEventId,
               event_source_url: window.location.href,
+              fbp: cookie("_fbp"),
+              fbc: cookie("_fbc"),
             }),
           }).catch(() => {});
+          try {
+            (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq?.(
+              "track", "CompleteRegistration", { content_name: "app-signup" }, { eventID: regEventId },
+            );
+          } catch { /* analytics is best-effort */ }
         } catch { /* never block signup */ }
         if (!data.session) {
           // Email confirmation is enabled on the project — no session yet.
