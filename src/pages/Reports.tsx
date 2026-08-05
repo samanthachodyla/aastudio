@@ -46,18 +46,25 @@ const fmtWhen = (iso: string | null) =>
 const tierLabel = (tier: string) => (BETA_ALL_PRO ? "Pro · beta" : tier === "pro" ? "Pro" : "Starter");
 
 // Plan + billing cycle at a glance, from the subscriptions table.
+const ACTIVE_SUB = ["active", "comp", "trialing"];
 const planLabel = (plan: string | null, cycle: string | null, status: string | null): string => {
-  if (!status || ["inactive", "canceled", "incomplete", "unpaid"].includes(status)) return "—";
+  if (!status) return "—"; // no subscription row at all
   const t = plan === "pro" ? "Pro" : plan === "starter" ? "Starter" : "";
   const cyc = cycle === "annual" ? "Annual" : cycle === "monthly" ? "Monthly" : "";
-  const tag = status === "comp" ? "Comp"
-    : status === "trialing" ? "Trial"
+  if (ACTIVE_SUB.includes(status)) {
+    const tag = status === "comp" ? "Comp" : status === "trialing" ? "Trial" : cyc;
+    if (!t) return cyc ? `Active · ${cyc}` : "Active";
+    return tag ? `${t} · ${tag}` : t;
+  }
+  // Has a row but isn't active — surface the real state (a follow-up signal:
+  // "incomplete" = tried to pay, "canceled" = churned, etc.).
+  const state = status === "incomplete" ? "Incomplete"
     : status === "past_due" ? "Past due"
-    : cyc;
-  // Subscription exists but the plan isn't labelled (e.g. no metadata) — still
-  // surface that they're active rather than showing a blank "—".
-  if (!t) return status === "active" ? (cyc ? `Active · ${cyc}` : "Active") : status.charAt(0).toUpperCase() + status.slice(1);
-  return tag ? `${t} · ${tag}` : t;
+    : status === "canceled" ? "Canceled"
+    : status === "unpaid" ? "Unpaid"
+    : status === "inactive" ? "Inactive"
+    : status.charAt(0).toUpperCase() + status.slice(1);
+  return t ? `${t} · ${state}` : state;
 };
 
 const Reports = () => {
@@ -301,9 +308,14 @@ const Reports = () => {
                   {(() => {
                     const label = planLabel(r.plan, r.cycle, r.subStatus);
                     if (label === "—") return <span className="text-muted-foreground">—</span>;
-                    const isPro = r.plan === "pro";
+                    const active = ACTIVE_SUB.includes(r.subStatus || "");
+                    const cls = !active
+                      ? "bg-muted text-muted-foreground" // incomplete / canceled / past due
+                      : r.plan === "pro"
+                      ? "bg-primary/10 text-primary"
+                      : "bg-muted text-foreground/70";
                     return (
-                      <span className={`inline-block text-[11px] font-medium tracking-wide rounded-sm px-2 py-0.5 whitespace-nowrap ${isPro ? "bg-primary/10 text-primary" : "bg-muted text-foreground/70"}`}>
+                      <span className={`inline-block text-[11px] font-medium tracking-wide rounded-sm px-2 py-0.5 whitespace-nowrap ${cls}`}>
                         {label}
                       </span>
                     );
