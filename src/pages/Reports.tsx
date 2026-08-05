@@ -19,6 +19,7 @@ interface UserAgg {
   plan: string | null;
   cycle: string | null;
   subStatus: string | null;
+  joined: string | null;
   lastActive: string | null;
   pageViews: number;
   activeMinutes: number;
@@ -47,13 +48,15 @@ const tierLabel = (tier: string) => (BETA_ALL_PRO ? "Pro · beta" : tier === "pr
 // Plan + billing cycle at a glance, from the subscriptions table.
 const planLabel = (plan: string | null, cycle: string | null, status: string | null): string => {
   if (!status || ["inactive", "canceled", "incomplete", "unpaid"].includes(status)) return "—";
-  const t = plan === "pro" ? "Pro" : plan === "starter" ? "Starter" : "—";
+  const t = plan === "pro" ? "Pro" : plan === "starter" ? "Starter" : "";
+  const cyc = cycle === "annual" ? "Annual" : cycle === "monthly" ? "Monthly" : "";
   const tag = status === "comp" ? "Comp"
     : status === "trialing" ? "Trial"
     : status === "past_due" ? "Past due"
-    : cycle === "annual" ? "Annual"
-    : cycle === "monthly" ? "Monthly"
-    : "";
+    : cyc;
+  // Subscription exists but the plan isn't labelled (e.g. no metadata) — still
+  // surface that they're active rather than showing a blank "—".
+  if (!t) return status === "active" ? (cyc ? `Active · ${cyc}` : "Active") : status.charAt(0).toUpperCase() + status.slice(1);
   return tag ? `${t} · ${tag}` : t;
 };
 
@@ -115,6 +118,7 @@ const Reports = () => {
           plan: subByUser.get(p.id)?.plan ?? null,
           cycle: subByUser.get(p.id)?.cycle ?? null,
           subStatus: subByUser.get(p.id)?.status ?? null,
+          joined: p.created_at ?? null,
           lastActive: p.last_seen_at || lastFromUsage,
           pageViews: views.length,
           activeMinutes: heartbeats.length,
@@ -335,7 +339,47 @@ const Reports = () => {
             </p>
           </div>
 
-          {/* Survey responses */}
+          {/* Membership & activity — works for every member (not just beta) */}
+          <div className="hairline-card p-5">
+            <div className="eyebrow mb-3">Membership &amp; activity</div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+              <div>
+                <div className="text-xs text-muted-foreground mb-0.5">Plan</div>
+                <div>{planLabel(selectedUser.plan, selectedUser.cycle, selectedUser.subStatus)}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-0.5">Joined</div>
+                <div>{fmtWhen(selectedUser.joined)}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-0.5">Last active</div>
+                <div>{fmtWhen(selectedUser.lastActive)}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-0.5">Active time</div>
+                <div className="tabular-nums">{fmtMinutes(selectedUser.activeMinutes)}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-0.5">Page views</div>
+                <div className="tabular-nums">{selectedUser.pageViews}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-0.5">Artworks</div>
+                <div className="tabular-nums">{selectedUser.artworks}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-0.5">Invoices</div>
+                <div className="tabular-nums">{selectedUser.invoices}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-0.5">Contacts</div>
+                <div className="tabular-nums">{selectedUser.contacts}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Survey responses — beta demographics only; hidden when there's none */}
+          {(selectedUser.age != null || selectedUser.zip || selectedUser.desiredFeatures.length > 0) && (
           <div className="hairline-card p-5">
             <div className="eyebrow mb-3">Survey responses</div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
@@ -353,6 +397,7 @@ const Reports = () => {
               </div>
             </div>
           </div>
+          )}
 
           {/* Time by section */}
           {selectedUser.timeByPath.length > 0 && (
