@@ -108,6 +108,15 @@ export default async function handler(req: any, res: any) {
     return data?.user_id ?? null;
   };
 
+  // Manually comped accounts (free Pro granted in the DB) must never be
+  // downgraded by a Stripe event — e.g. an old incomplete/canceled subscription
+  // cleaning itself up would otherwise wipe out their access.
+  const isComped = async (userId: string): Promise<boolean> => {
+    const { data } = await supabase
+      .from("subscriptions").select("status").eq("user_id", userId).maybeSingle();
+    return data?.status === "comp";
+  };
+
   try {
     switch (event.type) {
       case "checkout.session.completed": {
@@ -129,7 +138,7 @@ export default async function handler(req: any, res: any) {
         const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
         if (customerId) {
           const userId = await resolveUserId(sub, customerId);
-          if (userId) {
+          if (userId && !(await isComped(userId))) {
             const row = rowFromSubscription(userId, customerId, sub);
             if (event.type === "customer.subscription.deleted") row.status = "canceled";
             await supabase.from("subscriptions").upsert(row, { onConflict: "user_id" });
