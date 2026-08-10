@@ -51,6 +51,7 @@ export default async function handler(req: any, res: any) {
       .eq("user_id", user.id)
       .maybeSingle();
 
+    const hadCustomer = !!subRow?.stripe_customer_id;
     let customerId = subRow?.stripe_customer_id as string | undefined;
     if (!customerId) {
       const customer = await stripe.customers.create({
@@ -61,6 +62,16 @@ export default async function handler(req: any, res: any) {
       await supabase
         .from("subscriptions")
         .upsert({ user_id: user.id, stripe_customer_id: customerId, status: "inactive" }, { onConflict: "user_id" });
+    }
+
+    // Guard against double-charging: if this customer already has a live
+    // subscription, NEVER open a new Checkout — a second session would create a
+    // second subscription and charge them again. This also closes the window
+    // right after payment, before our webhook has recorded the subscription.
+    if (hadCustomer && customerId) {
+      const existing = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 20 });
+      const live = existing.data.find((s) => ["active", "trialing", "past_due"].includes(s.status));
+      if (live) return res.status(200).json({ alreadySubscribed: true });
     }
 
     const session = await stripe.checkout.sessions.create({

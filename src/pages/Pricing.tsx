@@ -118,6 +118,12 @@ const Pricing = () => {
         body: JSON.stringify({ plan, cycle }),
       });
       const json = await res.json();
+      // Already subscribed — don't start a second checkout (avoids double charges).
+      if (json.alreadySubscribed) {
+        toast.success("You're already subscribed — taking you to your studio.");
+        window.location.href = "/dashboard";
+        return;
+      }
       if (json.url) { window.location.href = json.url; return; }
       toast.error(json.detail || json.error || "Couldn't start checkout. Please try again.");
     } catch {
