@@ -57,8 +57,39 @@ export default async function handler(req: any, res: any) {
         if (!userId) return res.status(500).json({ error: error.message });
         const upd = await supabase.auth.admin.updateUserById(userId, { password, email_confirm: true });
         if (upd.error) return res.status(500).json({ error: upd.error.message });
+      } else {
+        userId = data.user?.id ?? null;
       }
     }
+
+    // Record the subscription now so access is immediate — don't wait on the
+    // webhook. Skip if they already have another live subscription (safety).
+    try {
+      const subId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
+      const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id;
+      if (userId && subId && customerId) {
+        const { data: existing } = await supabase
+          .from("subscriptions").select("stripe_subscription_id,status").eq("user_id", userId).maybeSingle();
+        const hasOther = existing
+          && ["active", "trialing", "comp", "past_due"].includes(existing.status)
+          && existing.stripe_subscription_id && existing.stripe_subscription_id !== subId;
+        if (!hasOther) {
+          const sub = await stripe.subscriptions.retrieve(subId);
+          await supabase.from("subscriptions").upsert({
+            user_id: userId,
+            stripe_customer_id: customerId,
+            stripe_subscription_id: sub.id,
+            plan: sub.metadata?.plan || session.metadata?.plan || null,
+            cycle: sub.metadata?.cycle || session.metadata?.cycle || null,
+            status: sub.status,
+            current_period_end: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null,
+            cancel_at_period_end: !!sub.cancel_at_period_end,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: "user_id" });
+        }
+      }
+    } catch { /* the webhook will still record it */ }
+
     return res.status(200).json({ ok: true, email });
   } catch (e: unknown) {
     return res.status(500).json({ error: e instanceof Error ? e.message : "Unknown error" });
