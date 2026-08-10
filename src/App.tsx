@@ -25,6 +25,7 @@ const Terms = lazy(() => import("./pages/Terms.tsx"));
 const Privacy = lazy(() => import("./pages/Privacy.tsx"));
 const Cookies = lazy(() => import("./pages/Cookies.tsx"));
 const Reports = lazy(() => import("./pages/Reports.tsx"));
+const Welcome = lazy(() => import("./pages/Welcome.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 import { TierGate } from "./components/TierGate";
 import { AuthProvider } from "./lib/auth";
@@ -55,6 +56,7 @@ const App = () => (
               {/* Public */}
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/welcome" element={<Welcome />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />

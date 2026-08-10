@@ -195,6 +195,37 @@ export default function Landing() {
       popForm?.addEventListener("submit", onPopSubmit);
     }
 
+    // ---- Pay-first: homepage plan buttons open Stripe Checkout directly, with
+    // the cycle from the monthly/annual toggle. Falls back to /login?mode=signup
+    // (the anchor's href) if checkout can't start.
+    const planButtons = Array.from(root.querySelectorAll<HTMLAnchorElement>("a[data-plan]"));
+    const onPlanClick = async (e: Event) => {
+      const el = e.currentTarget as HTMLAnchorElement;
+      const plan = el.getAttribute("data-plan");
+      if (!plan) return;
+      e.preventDefault();
+      const cycle = root.querySelector<HTMLInputElement>("#ba")?.checked ? "annual" : "monthly";
+      const original = el.textContent;
+      el.textContent = "Loading…";
+      el.style.pointerEvents = "none";
+      try {
+        const res = await fetch("/api/stripe/checkout-guest", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ plan, cycle }),
+        });
+        const json = await res.json();
+        if (json.url) { window.location.href = json.url; return; }
+        throw new Error(json.error || "no url");
+      } catch {
+        window.location.href = el.getAttribute("href") || "/login?mode=signup";
+      } finally {
+        el.textContent = original;
+        el.style.pointerEvents = "";
+      }
+    };
+    planButtons.forEach((b) => b.addEventListener("click", onPlanClick));
+
     return () => {
       submitBindings.forEach(([form, h]) => form.removeEventListener("submit", h));
       window.removeEventListener("resize", aasFit);
@@ -207,6 +238,7 @@ export default function Landing() {
       document.removeEventListener("keydown", onPopKey);
       popCloseEls.forEach((el) => el.removeEventListener("click", closePopup));
       popForm?.removeEventListener("submit", onPopSubmit);
+      planButtons.forEach((b) => b.removeEventListener("click", onPlanClick));
     };
   }, []);
 

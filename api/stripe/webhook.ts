@@ -117,14 +117,61 @@ export default async function handler(req: any, res: any) {
     return data?.status === "comp";
   };
 
+  // Resolve (or create) the auth user for a pay-first "guest" checkout, keyed by
+  // the email Stripe collected. Scans the admin user list (fine at this scale).
+  const getUserIdByEmail = async (email: string): Promise<string | null> => {
+    for (let page = 1; page <= 25; page++) {
+      const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 200 });
+      if (error || !data?.users?.length) return null;
+      const u = data.users.find((x) => (x.email || "").toLowerCase() === email);
+      if (u) return u.id;
+      if (data.users.length < 200) return null;
+    }
+    return null;
+  };
+
   try {
     switch (event.type) {
       case "checkout.session.completed": {
         const s = event.data.object as Stripe.Checkout.Session;
-        const userId = s.metadata?.user_id;
         const subId = typeof s.subscription === "string" ? s.subscription : s.subscription?.id;
         const customerId = typeof s.customer === "string" ? s.customer : s.customer?.id;
+        const email = (s.customer_details?.email || "").toLowerCase().trim();
+
+        // Resolve the account. Logged-in checkouts carry user_id in metadata;
+        // pay-first (guest) checkouts don't, so create/link the account by email.
+        let userId: string | null = s.metadata?.user_id || null;
+        if (!userId && email) {
+          userId = await getUserIdByEmail(email);
+          if (!userId) {
+            const { data } = await supabase.auth.admin.createUser({ email, email_confirm: true });
+            userId = data?.user?.id ?? null;
+          }
+        }
+
         if (userId && subId && customerId) {
+          // Never double-charge: if this account already has a live subscription
+          // that ISN'T this one, cancel this new one and refund it.
+          const { data: existing } = await supabase
+            .from("subscriptions").select("stripe_subscription_id, status").eq("user_id", userId).maybeSingle();
+          const dup = existing
+            && ["active", "trialing", "comp", "past_due"].includes(existing.status)
+            && existing.stripe_subscription_id
+            && existing.stripe_subscription_id !== subId;
+          if (dup) {
+            try { await stripe.subscriptions.cancel(subId); } catch { /* best-effort */ }
+            try {
+              const invId = typeof s.invoice === "string" ? s.invoice : s.invoice?.id;
+              if (invId) {
+                const inv = await stripe.invoices.retrieve(invId);
+                const pi = typeof inv.payment_intent === "string" ? inv.payment_intent : inv.payment_intent?.id;
+                if (pi) await stripe.refunds.create({ payment_intent: pi });
+              }
+            } catch { /* best-effort refund; flag in Stripe if it fails */ }
+            console.error("[webhook] duplicate subscription auto-canceled + refunded", { userId, subId });
+            break; // leave the existing good subscription untouched
+          }
+
           const sub = await stripe.subscriptions.retrieve(subId);
           await supabase.from("subscriptions").upsert(rowFromSubscription(userId, customerId, sub), { onConflict: "user_id" });
         }
