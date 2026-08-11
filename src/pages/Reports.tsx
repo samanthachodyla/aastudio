@@ -4,6 +4,10 @@ import { useIsAdmin, fetchAdminDataset, type AdminDataset } from "@/lib/admin";
 import { fmtMoney } from "@/lib/store";
 import { labelForPath } from "@/lib/labels";
 import { BETA_ALL_PRO } from "@/lib/tier";
+import { supabase } from "@/integrations/supabase/client";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface PathTime {
   path: string;
@@ -66,6 +70,37 @@ const planLabel = (plan: string | null, cycle: string | null, status: string | n
     : status.charAt(0).toUpperCase() + status.slice(1);
   return t ? `${t} · ${state}` : state;
 };
+
+// Private admin notes on a member — editable, saved to the member_notes table.
+function MemberNotes({ userId, initial }: { userId: string; initial: string }) {
+  const [text, setText] = useState(initial);
+  const [saving, setSaving] = useState(false);
+  useEffect(() => { setText(initial); }, [userId, initial]);
+  const save = async () => {
+    setSaving(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any)
+      .from("member_notes")
+      .upsert({ user_id: userId, notes: text, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
+    setSaving(false);
+    if (error) toast.error("Couldn't save notes — is the member_notes table set up?");
+    else toast.success("Notes saved.");
+  };
+  return (
+    <div className="hairline-card p-5">
+      <div className="eyebrow mb-3">Notes</div>
+      <Textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Private notes about this member — plan changes, comps, follow-ups, anything worth remembering…"
+        rows={4}
+      />
+      <div className="mt-3">
+        <Button size="sm" onClick={save} disabled={saving}>{saving ? "Saving…" : "Save notes"}</Button>
+      </div>
+    </div>
+  );
+}
 
 const Reports = () => {
   const { isAdmin, loading: adminLoading } = useIsAdmin();
@@ -169,6 +204,7 @@ const Reports = () => {
   const maxFeatureCount = featureCounts[0]?.count ?? 0;
 
   const selectedUser = rows.find((r) => r.id === selected) || null;
+  const selectedNotes = data?.notes?.find((n) => n.user_id === selected)?.notes ?? "";
   const selectedArtworks = data?.artworks.filter((a) => a.user_id === selected) ?? [];
   const selectedInvoices = data?.invoices.filter((i) => i.user_id === selected) ?? [];
   const selectedContacts = data?.contacts.filter((c) => c.user_id === selected) ?? [];
@@ -389,6 +425,9 @@ const Reports = () => {
               </div>
             </div>
           </div>
+
+          {/* Private admin notes on this member */}
+          <MemberNotes userId={selectedUser.id} initial={selectedNotes} />
 
           {/* Survey responses — beta demographics only; hidden when there's none */}
           {(selectedUser.age != null || selectedUser.zip || selectedUser.desiredFeatures.length > 0) && (

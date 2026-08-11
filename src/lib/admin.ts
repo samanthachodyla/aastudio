@@ -62,6 +62,7 @@ export interface AdminDataset {
   contacts: { user_id: string; id: string; name: string; type: string | null; email: string | null }[];
   opportunities: { user_id: string; id: string }[];
   subscriptions: { user_id: string; plan: string | null; cycle: string | null; status: string | null }[];
+  notes: { user_id: string; notes: string | null }[];
 }
 
 /** Pull everything the Reports page needs in one shot (admin-scoped by RLS). */
@@ -101,6 +102,16 @@ export async function fetchAdminDataset(): Promise<AdminDataset> {
       : p;
   });
 
+  // Admin member notes live behind a small table + policy; tolerate its absence
+  // so Reports keeps working before that SQL is applied.
+  const notes = await db
+    .from("member_notes")
+    .select("user_id,notes")
+    .then(
+      (r: { data: { user_id: string; notes: string | null }[] | null; error: unknown }) => (r.error ? [] : r.data ?? []),
+      () => [],
+    );
+
   return {
     profiles: mergedProfiles,
     usage: usage.data ?? [],
@@ -109,5 +120,6 @@ export async function fetchAdminDataset(): Promise<AdminDataset> {
     contacts: contacts.data ?? [],
     opportunities: opportunities.data ?? [],
     subscriptions: subscriptions.data ?? [],
+    notes,
   };
 }
