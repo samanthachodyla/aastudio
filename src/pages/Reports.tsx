@@ -107,6 +107,28 @@ const Reports = () => {
   const [data, setData] = useState<AdminDataset | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
+  const [resyncing, setResyncing] = useState(false);
+
+  // Reconcile everyone's access with Stripe (heals paid-but-locked-out drift).
+  const resync = async () => {
+    setResyncing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error("Please sign in again."); return; }
+      const res = await fetch("/api/admin/resync", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) { toast.error(json.error || "Resync failed."); return; }
+      toast.success(`Resynced from Stripe — ${json.synced} member(s) updated.`);
+      fetchAdminDataset().then(setData).catch(() => {});
+    } catch {
+      toast.error("Couldn't reach the resync service.");
+    } finally {
+      setResyncing(false);
+    }
+  };
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -311,6 +333,12 @@ const Reports = () => {
       </div>
 
       {/* Members table */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="eyebrow">Members</div>
+        <Button size="sm" variant="outline" onClick={resync} disabled={resyncing} title="Reconcile every member's access with Stripe">
+          {resyncing ? "Resyncing…" : "Resync from Stripe"}
+        </Button>
+      </div>
       <div className="hairline-card overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
