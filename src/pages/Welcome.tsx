@@ -44,6 +44,22 @@ export default function Welcome() {
         setBusy(false);
         return;
       }
+      // Fire the Meta Pixel Purchase from the browser, sharing the event id
+      // (purchase_<sid>) with the server-side CAPI Purchase from the Stripe
+      // webhook so Meta de-dupes them into one conversion. (The Mailchimp add
+      // happened server-side in finish-signup — no browser dependency.)
+      try {
+        const PRICE: Record<string, number> = {
+          "starter:monthly": 25, "starter:annual": 240,
+          "pro:monthly": 55, "pro:annual": 528,
+        };
+        const value = PRICE[`${json.plan}:${json.cycle}`];
+        (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq?.(
+          "track", "Purchase",
+          { value, currency: "USD", content_name: `${json.plan}-${json.cycle}` },
+          { eventID: `purchase_${sid}` },
+        );
+      } catch { /* analytics is best-effort */ }
       // Account is ready — sign them straight in.
       const { error } = await supabase.auth.signInWithPassword({ email: json.email, password });
       if (error) {

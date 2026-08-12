@@ -4,8 +4,42 @@
 // signs them in. Foolproof: no email round-trip is required to get into the app.
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+import crypto from "crypto";
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://czbzunpabgmwpldkrcex.supabase.co";
+
+// Mailchimp: add every paying member to the audience (system of record). Tagged
+// "customer" so paid members are distinguishable from marketing leads. Idempotent
+// PUT to the member hash — safe to call again on retries. Best-effort only.
+const MC_KEY = process.env.MAILCHIMP_API_KEY || "";
+const MC_LIST = process.env.MAILCHIMP_AUDIENCE_ID || "";
+const MC_DC = process.env.MAILCHIMP_SERVER_PREFIX || (MC_KEY.includes("-") ? MC_KEY.split("-").pop()! : "");
+async function addToMailchimp(email: string, firstName: string, lastName: string): Promise<void> {
+  if (!MC_KEY || !MC_LIST || !MC_DC || !email) return;
+  const hash = crypto.createHash("md5").update(email.toLowerCase()).digest("hex");
+  const url = `https://${MC_DC}.api.mailchimp.com/3.0/lists/${MC_LIST}/members/${hash}`;
+  const auth = "Basic " + Buffer.from("any:" + MC_KEY).toString("base64");
+  const merge: Record<string, string> = {};
+  if (firstName) merge.FNAME = firstName;
+  if (lastName) merge.LNAME = lastName;
+  const put = (m: Record<string, string>) =>
+    fetch(url, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: auth },
+      body: JSON.stringify({
+        email_address: email,
+        status_if_new: "subscribed",
+        ...(Object.keys(m).length ? { merge_fields: m } : {}),
+        tags: ["customer"],
+      }),
+    });
+  try {
+    const r = await put(merge);
+    // A bad merge field 400s the whole contact — retry with email only so the
+    // paying member always lands in the audience.
+    if (!r.ok && r.status === 400) await put({});
+  } catch { /* Mailchimp is best-effort — never block signup */ }
+}
 
 // Resolve an auth user id from an email (scans the admin user list — fine at this
 // scale). Used to avoid creating a duplicate when the webhook already made them.
@@ -43,6 +77,10 @@ export default async function handler(req: any, res: any) {
     }
     const email = (session.customer_details?.email || "").toLowerCase().trim();
     if (!email) return res.status(400).json({ error: "No email found on the checkout." });
+    // Name for Mailchimp + the browser to greet them (Stripe collects it).
+    const fullName = (session.customer_details?.name || "").trim();
+    const [firstName, ...restName] = fullName.split(/\s+/).filter(Boolean);
+    const lastName = restName.join(" ");
 
     const supabase = createClient(SUPABASE_URL, svc);
     let userId = await getUserIdByEmail(supabase, email);
@@ -90,7 +128,16 @@ export default async function handler(req: any, res: any) {
       }
     } catch { /* the webhook will still record it */ }
 
-    return res.status(200).json({ ok: true, email });
+    // Add the paying member to Mailchimp (best-effort; never blocks sign-in).
+    await addToMailchimp(email, firstName || "", lastName);
+
+    return res.status(200).json({
+      ok: true,
+      email,
+      name: fullName,
+      plan: session.metadata?.plan || null,
+      cycle: session.metadata?.cycle || null,
+    });
   } catch (e: unknown) {
     return res.status(500).json({ error: e instanceof Error ? e.message : "Unknown error" });
   }

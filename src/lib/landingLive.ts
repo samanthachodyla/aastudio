@@ -17,8 +17,11 @@ export function toLiveLanding(html: string): string {
   out = out.split('Launching August 1st <span class="bar">|</span> Join the list &amp; get first access')
     .join('Now live <span class="bar">|</span> Start managing your studio today');
 
-  // Every "first access" call-to-action anchor now opens the create-account form.
-  out = out.split('href="#signup"').join('href="/login?mode=signup"');
+  // Every "first access" call-to-action anchor now scrolls to the pricing plans,
+  // where choosing a plan opens Stripe Checkout. Payment comes first — no account
+  // is created until checkout is paid (see Welcome.tsx / finish-signup), so these
+  // never deep-link to an account-first form.
+  out = out.split('href="#signup"').join('href="#pricing"');
   out = out.split('>Get first access</a>').join('>Get started</a>');
 
   // Pricing section: retire the remaining pre-launch "reserve a spot" framing.

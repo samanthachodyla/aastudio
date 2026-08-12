@@ -196,8 +196,9 @@ export default function Landing() {
     }
 
     // ---- Pay-first: homepage plan buttons open Stripe Checkout directly, with
-    // the cycle from the monthly/annual toggle. Falls back to /login?mode=signup
-    // (the anchor's href) if checkout can't start.
+    // the cycle from the monthly/annual toggle. If checkout can't start we keep
+    // the visitor on the pricing section (the anchor's #pricing href) — we never
+    // create an account before payment.
     const planButtons = Array.from(root.querySelectorAll<HTMLAnchorElement>("a[data-plan]"));
     const onPlanClick = async (e: Event) => {
       const el = e.currentTarget as HTMLAnchorElement;
@@ -218,7 +219,7 @@ export default function Landing() {
         if (json.url) { window.location.href = json.url; return; }
         throw new Error(json.error || "no url");
       } catch {
-        window.location.href = el.getAttribute("href") || "/login?mode=signup";
+        window.location.href = el.getAttribute("href") || "#pricing";
       } finally {
         el.textContent = original;
         el.style.pointerEvents = "";

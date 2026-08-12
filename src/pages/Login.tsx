@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Seo } from "@/components/Seo";
 import { toast } from "sonner";
 
-type Mode = "signin" | "signup" | "forgot";
+type Mode = "signin" | "forgot";
 
 /** Turn raw Supabase auth errors into something a non-technical user understands. */
 const friendlyError = (message: string): string => {
@@ -16,29 +16,27 @@ const friendlyError = (message: string): string => {
     return "Your email isn't confirmed yet. Check your inbox for the confirmation link (or ask the studio to confirm you).";
   if (/invalid login credentials/i.test(message))
     return "That email or password isn't right. Try again, or use “Forgot password?”.";
-  if (/user already registered/i.test(message))
-    return "An account with this email already exists — try signing in instead.";
   return message;
 };
 
+/**
+ * Sign-in only. Accounts are created pay-first: a visitor chooses a plan on the
+ * homepage → Stripe Checkout → they set a password on /welcome once payment
+ * clears. There is deliberately NO sign-up form here, so no account can exist
+ * without a paid subscription. New visitors are pointed at the homepage pricing.
+ */
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { session, loading } = useAuth();
 
-  // Landing "Get started" CTAs deep-link here with ?mode=signup so new artists
-  // land straight on the create-account form.
-  const startedAsSignup = new URLSearchParams(location.search).get("mode") === "signup";
-  const [mode, setMode] = useState<Mode>(startedAsSignup ? "signup" : "signin");
+  const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // New sign-ups go straight to pricing to choose a plan; returning users go to
-  // wherever they were headed (default their dashboard).
-  const from =
-    (location.state as { from?: string } | null)?.from ?? (startedAsSignup ? "/pricing" : "/dashboard");
+  // Returning users go wherever they were headed (default their dashboard).
+  const from = (location.state as { from?: string } | null)?.from ?? "/dashboard";
 
   // If already authenticated, bounce away from the login screen.
   useEffect(() => {
@@ -71,56 +69,9 @@ const Login = () => {
     if (mode === "forgot") return sendReset();
     setBusy(true);
     try {
-      if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-        if (error) throw error;
-        // Navigation handled by the effect once the session lands.
-      } else {
-        const { data, error } = await supabase.auth.signUp({
-          email: email.trim(),
-          password,
-          options: { data: { full_name: name.trim() } },
-        });
-        if (error) throw error;
-        // Add every new account to Mailchimp too (system of record), tagged
-        // "app-signup". Fire CompleteRegistration on the browser Pixel AND
-        // (server-side) via CAPI, sharing one event_id so Meta de-dupes them.
-        // Best-effort — never blocks account creation.
-        try {
-          const [fn, ...rest] = name.trim().split(/\s+/).filter(Boolean);
-          const cookie = (n: string) => {
-            const m = document.cookie.match(new RegExp("(?:^|; )" + n + "=([^;]+)"));
-            return m ? decodeURIComponent(m[1]) : "";
-          };
-          const regEventId = (crypto as { randomUUID?: () => string }).randomUUID?.()
-            ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-          void fetch("/api/subscribe", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: email.trim(),
-              first_name: fn || "",
-              last_name: rest.join(" "),
-              source: "app-signup",
-              event_name: "CompleteRegistration",
-              event_id: regEventId,
-              event_source_url: window.location.href,
-              fbp: cookie("_fbp"),
-              fbc: cookie("_fbc"),
-            }),
-          }).catch(() => {});
-          try {
-            (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq?.(
-              "track", "CompleteRegistration", { content_name: "app-signup" }, { eventID: regEventId },
-            );
-          } catch { /* analytics is best-effort */ }
-        } catch { /* never block signup */ }
-        if (!data.session) {
-          // Email confirmation is enabled on the project — no session yet.
-          toast.success("Check your email to confirm your account, then sign in.");
-          setMode("signin");
-        }
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) throw error;
+      // Navigation handled by the effect once the session lands.
     } catch (err: unknown) {
       toast.error(err instanceof Error ? friendlyError(err.message) : "Something went wrong");
     } finally {
@@ -128,10 +79,8 @@ const Login = () => {
     }
   };
 
-  const heading =
-    mode === "signin" ? "Sign in" : mode === "signup" ? "Sign up" : "Reset password";
-  const eyebrow =
-    mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your studio" : "We'll email you a link";
+  const heading = mode === "signin" ? "Sign in" : "Reset password";
+  const eyebrow = mode === "signin" ? "Welcome back" : "We'll email you a link";
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -157,18 +106,6 @@ const Login = () => {
             <h1 className="font-display text-3xl tracking-tight mb-6">{heading}</h1>
 
             <form onSubmit={submit} className="grid gap-4">
-              {mode === "signup" && (
-                <div>
-                  <Label>Full name</Label>
-                  <Input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    maxLength={100}
-                    placeholder="e.g. Maya Ortiz"
-                    autoComplete="name"
-                  />
-                </div>
-              )}
               <div>
                 <Label>Email</Label>
                 <Input
@@ -185,15 +122,13 @@ const Login = () => {
                 <div>
                   <div className="flex items-center justify-between">
                     <Label>Password</Label>
-                    {mode === "signin" && (
-                      <button
-                        type="button"
-                        className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
-                        onClick={() => setMode("forgot")}
-                      >
-                        Forgot password?
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
+                      onClick={() => setMode("forgot")}
+                    >
+                      Forgot password?
+                    </button>
                   </div>
                   <Input
                     type="password"
@@ -202,34 +137,13 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                    autoComplete="current-password"
                   />
                 </div>
               )}
               <Button type="submit" className="rounded-sm mt-1" disabled={busy}>
-                {busy
-                  ? "One moment…"
-                  : mode === "signin"
-                  ? "Sign in"
-                  : mode === "signup"
-                  ? "Create account"
-                  : "Send reset link"}
+                {busy ? "One moment…" : mode === "signin" ? "Sign in" : "Send reset link"}
               </Button>
-
-              {mode === "signup" && (
-                <p className="text-[11px] leading-relaxed text-muted-foreground text-center">
-                  By creating an account, you agree to our{" "}
-                  <a
-                    href="/terms"
-                    target="_blank"
-                    rel="noopener"
-                    className="underline underline-offset-2 hover:text-foreground"
-                  >
-                    Terms &amp; Conditions
-                  </a>
-                  .
-                </p>
-              )}
             </form>
           </div>
 
@@ -242,27 +156,16 @@ const Login = () => {
               >
                 Back to sign in
               </button>
-            ) : mode === "signin" ? (
-              <>
-                New here?{" "}
-                <button
-                  type="button"
-                  className="text-foreground underline underline-offset-4 hover:opacity-70"
-                  onClick={() => setMode("signup")}
-                >
-                  Create an account
-                </button>
-              </>
             ) : (
               <>
-                Already have an account?{" "}
-                <button
-                  type="button"
+                New here?{" "}
+                <a
+                  href="/#pricing"
                   className="text-foreground underline underline-offset-4 hover:opacity-70"
-                  onClick={() => setMode("signin")}
                 >
-                  Sign in
-                </button>
+                  Choose your plan
+                </a>{" "}
+                to get started.
               </>
             )}
           </div>
