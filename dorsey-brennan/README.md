@@ -29,6 +29,29 @@ Inquire   → booking calendar AND project form, one page, two doors
 
 ---
 
+## The palette
+
+All six swatches, each with a job. A site built only on the dark one wastes a palette
+you already did the work to build.
+
+| Swatch | Hex | Job |
+|---|---|---|
+| Oxblood | `#4d0c0c` | Primary dark ground, header, footer |
+| Red | `#bd0b0b` | Wordmark, and headings **on cream** |
+| Yellow | `#f8c135` | Hover state and reserved accents — **only on dark** |
+| Cream | `#fff0c8` | Subheadings on dark, **and the closing section's ground** |
+| Sage | `#b2b192` | Ground for About |
+| Pale blue | `#b6ccd7` | Ground for the templates band |
+
+Type colors: body `#f5efdd`, nav/links `#925c50` → `#f8c135` on hover.
+
+Measured contrast decides which color sits on which ground: red and brown pass on cream
+(5.8:1 and 4.8:1) but fail on dark (2.3:1 and 2.8:1); yellow is the reverse, brilliant
+on dark (9.2:1) and invisible on every light ground. Sage and blue need dark text. The
+build guide has the full table.
+
+---
+
 ## The three things that decide the schedule
 
 **1. Get the Core plan, not Basic.** Basic blocks custom CSS, and custom CSS is what

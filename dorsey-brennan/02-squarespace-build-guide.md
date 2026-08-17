@@ -89,19 +89,49 @@ nobody finds a half-built site before September 9. You'll take it off launch mor
 
 ## Step 2 — Colors and type
 
-**Website → Site Styles → Colors.** Build one palette and let every section inherit it:
+**Website → Site Styles → Colors.**
 
-| Slot | Hex |
-|---|---|
-| Background | `#310909` |
-| Heading / accent | `#bd0b0b` |
-| Subheading | `#fff0c8` |
-| Body text | `#f5efdd` |
-| Link / nav | `#925c50` |
-| Link hover / highlight | `#f8c135` |
+You have **six** brand colors, and all six should do work. A site built on only the
+dark one flattens a palette you already took the trouble to build.
 
-Set every section to the **darkest** theme so the whole site sits on oxblood and the
-photographs are the only bright things on screen.
+| Your swatch | Hex | Its job on the site |
+|---|---|---|
+| Oxblood | `#4d0c0c` | The primary dark ground — Welcome, Projects, header, footer |
+| Red | `#bd0b0b` | The wordmark, and headings **on cream** |
+| Yellow | `#f8c135` | Hover state, and the small reserved accents |
+| Cream | `#fff0c8` | Subheadings on dark — **and a page ground of its own** |
+| Sage | `#b2b192` | Ground for the About section |
+| Pale blue | `#b6ccd7` | Ground for the templates band |
+
+Plus your two type colors: body `#f5efdd`, nav/links `#925c50`.
+
+**Build three color themes**, not one, and assign them section by section:
+
+| Theme | Background | Headings | Body | Links |
+|---|---|---|---|---|
+| **Dark** | `#4d0c0c` | `#fff0c8` | `#f5efdd` | `#925c50` → `#f8c135` |
+| **Sage / Blue** | `#b2b192` / `#b6ccd7` | `#4d0c0c` | `#4d0c0c` | `#4d0c0c` |
+| **Cream** | `#fff0c8` | `#bd0b0b` | `#4d0c0c` | `#925c50` |
+
+Most sections use Dark. Sage grounds About, blue grounds the templates band, and cream
+closes the page — red script on cream, the way your brand book opens. That rhythm is
+already in your own materials; it just wasn't in the first draft of this guide.
+
+> **Two corrections to what I gave you first.** I had used `#310909` as the site
+> background — that's the background of your Canva *slides*, not one of your six
+> swatches. Your declared dark is `#4d0c0c`, and that's what everything is built on
+> now. And sage and pale blue weren't used at all. They are now.
+
+**A contrast note you'll want before you paint anything.** Your red reads at only
+2.3:1 on the dark ground, and your nav brown at 2.8:1 — both below the 4.5:1 that small
+text needs. On cream, red hits 5.8:1 and brown hits 4.8:1, and both pass comfortably.
+That's why red belongs on the cream ground rather than the dark one. Yellow is the
+reverse: 9.2:1 on dark, invisible on all three light grounds. Keep it for hover.
+
+The nav brown is the one real tension, since your hover effect needs a dark header.
+I've kept `#925c50` exactly as you specified; §3 of the CSS has a one-line swap to
+`#bd8b7b` — same hue, 5.2:1 — if you'd rather it pass. Your call, and there's a case
+for either.
 
 **Site Styles → Fonts:**
 - Headings → **Ovo**
@@ -142,13 +172,19 @@ of the CSS. If you skip this, your last section will sit slightly behind the foo
 Build the sections in your hierarchy order. For each one: add section → set background
 image → set the **media overlay** to around 35–45%.
 
-| Section | Layout |
-|---|---|
-| Hero | Full-bleed photo, full viewport height, no text |
-| Welcome. | Text left, photo right |
-| The Philosophy. | Full-bleed photo background, text centered, verse line breaks intact |
-| Projects. | 3–5 image grid, each linking to a project gallery |
-| About. | Portrait photo left, text right |
+| Section | Ground | Layout |
+|---|---|---|
+| Hero | photo | Full-bleed, full viewport height, no text |
+| Welcome. | oxblood | Text left, photo right |
+| The Philosophy. | photo + scrim | Full-bleed photo, text left, verse line breaks intact |
+| Projects. | oxblood | 3–5 image grid, each linking to a project gallery |
+| About. | **sage** | Portrait photo left, text right |
+| Templates band | **pale blue** | One short paragraph and a button |
+| Closing | **cream** | Crest, one line, "books open," Inquire button |
+
+The grounds are the point. Three dark sections in a row and then sage arrives — that
+tonal shift is what keeps a photo-heavy page from feeling like one long scroll, and
+every color in it is already yours.
 
 **About the text-on-photo look.** Your mockup puts body copy directly over a busy
 photograph, and in the mockup it's genuinely hard to read — the paragraph under "The

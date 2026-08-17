@@ -14,19 +14,38 @@
    Change a color once here and it changes everywhere below.
    -------------------------------------------------------------------------- */
 
+/* The six declared brand swatches, plus the two type colors from your spec.
+   Nothing on this site uses a color that isn't in this block. */
+
 :root {
-  --db-red:      #bd0b0b;  /* the wordmark red */
-  --db-oxblood:  #310909;  /* page background — the deep one from your brand file */
+  /* --- the six brand swatches --- */
+  --db-red:      #bd0b0b;  /* wordmark, and headings on cream */
+  --db-yellow:   #f8c135;  /* hover state, and reserved accents */
+  --db-cream:    #fff0c8;  /* subheadings on dark — AND a page ground */
+  --db-oxblood:  #4d0c0c;  /* the primary dark ground */
+  --db-sage:     #b2b192;  /* a page ground */
+  --db-blue:     #b6ccd7;  /* a page ground */
+
+  /* --- the two type colors from your spec --- */
+  --db-body:     #f5efdd;  /* body text on dark */
   --db-brown:    #925c50;  /* nav + links, resting state */
-  --db-yellow:   #f8c135;  /* nav + links, HOVER state */
-  --db-cream:    #fff0c8;  /* subheadings — "Welcome." "The Philosophy." */
-  --db-body:     #f5efdd;  /* body text */
-  --db-sage:     #b2b192;
-  --db-blue:     #b6ccd7;
 
   --db-header-h: 132px;    /* measure yours and update — see §3 */
   --db-footer-h: 96px;
 }
+
+/* GROUND RULES — which text color goes on which background.
+   Ratios are measured; anything below 4.5:1 is called out.
+
+     ON OXBLOOD #4d0c0c   body 13.3 ✓   cream 13.5 ✓   yellow 9.2 ✓
+                          brown 2.8 ✗   red 2.3 ✗
+     ON SAGE    #b2b192   oxblood 7.0 ✓  (light text fails here — use dark)
+     ON BLUE    #b6ccd7   oxblood 9.2 ✓  (light text fails here — use dark)
+     ON CREAM   #fff0c8   oxblood 13.5 ✓  red 5.8 ✓   brown 4.8 ✓
+
+   Two takeaways worth knowing: your red belongs on cream, not on dark —
+   which is exactly how your brand book uses it. And sage and blue need
+   dark text, never cream. */
 
 
 /* --------------------------------------------------------------------------
@@ -84,7 +103,14 @@ p, .sqs-block-html p {
   backdrop-filter: blur(6px);
 }
 
-/* THE NAV HOVER YOU ASKED FOR — brown, going yellow */
+/* THE NAV HOVER YOU ASKED FOR — brown, going yellow.
+
+   One thing to know: #925c50 on the oxblood ground measures 2.8:1, which is
+   under the 4.5:1 threshold for text this small. The hover is brilliant (9.2:1)
+   — it's the resting state that's dim, and on some screens it will be hard to
+   read. I've kept your exact color as the default because you specified it.
+   If you'd rather have it pass, swap in #bd8b7b below: same hue, 5.2:1, and the
+   yellow hover still reads as an ignition. One line, your call. */
 .header-nav-item a,
 .header-nav-folder-item a,
 .header-menu-nav-item a {
@@ -176,9 +202,9 @@ p, .sqs-block-html p {
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(49, 9, 9, 0.55) 0%,
-    rgba(49, 9, 9, 0.25) 38%,
-    rgba(49, 9, 9, 0.70) 100%
+    rgba(77, 12, 12, 0.60) 0%,
+    rgba(77, 12, 12, 0.28) 38%,
+    rgba(77, 12, 12, 0.74) 100%
   );
   pointer-events: none;
 }
@@ -190,9 +216,9 @@ p, .sqs-block-html p {
   inset: 0;
   background: linear-gradient(
     90deg,
-    rgba(49, 9, 9, 0.72) 0%,
-    rgba(49, 9, 9, 0.35) 45%,
-    rgba(49, 9, 9, 0) 78%
+    rgba(77, 12, 12, 0.88) 0%,
+    rgba(77, 12, 12, 0.62) 42%,
+    rgba(77, 12, 12, 0) 84%
   );
   pointer-events: none;
 }
@@ -202,6 +228,74 @@ p, .sqs-block-html p {
 @media screen and (max-width: 767px) {
   .db-hero { min-height: 88vh; }
 }
+
+
+/* --------------------------------------------------------------------------
+   5b. THE LIGHT GROUNDS — sage, pale blue, and cream
+   Two of your six colors had no job in the first draft. They do now.
+
+   In Squarespace: build these as normal sections, then set the section's
+   background COLOR (Edit section → Background → Color) to the hex below, and
+   set the section's color theme to a LIGHT theme so text defaults to dark.
+   These rules then correct the specific text colors.
+   -------------------------------------------------------------------------- */
+
+/* Sage — for the About section. Your brand book uses a sage ground already. */
+.db-ground-sage {
+  background-color: var(--db-sage) !important;
+}
+.db-ground-sage,
+.db-ground-sage p,
+.db-ground-sage h1, .db-ground-sage h2, .db-ground-sage h3 {
+  color: var(--db-oxblood) !important;   /* 7.0:1 */
+}
+
+/* Pale blue — for the templates / shop band. The "approachable for a whole
+   new generation" section, and the only cool color you own. Use it once. */
+.db-ground-blue {
+  background-color: var(--db-blue) !important;
+}
+.db-ground-blue,
+.db-ground-blue p,
+.db-ground-blue h1, .db-ground-blue h2, .db-ground-blue h3 {
+  color: var(--db-oxblood) !important;   /* 9.2:1 */
+}
+
+/* Cream — for the closing section, and for the pre-launch holding page.
+   This is the one ground where your red script belongs. */
+.db-ground-cream {
+  background-color: var(--db-cream) !important;
+}
+.db-ground-cream,
+.db-ground-cream p {
+  color: var(--db-oxblood) !important;   /* 13.5:1 */
+}
+.db-ground-cream h1,
+.db-ground-cream h2,
+.db-ground-cream h3 {
+  color: var(--db-red) !important;       /* 5.8:1 — red finally has a home */
+}
+.db-ground-cream a:not(.sqs-block-button-element) {
+  color: var(--db-brown) !important;     /* 4.8:1 — brown passes here */
+}
+
+/* Buttons need to flip on light grounds, or they vanish. */
+.db-ground-sage .sqs-block-button-element,
+.db-ground-blue .sqs-block-button-element,
+.db-ground-cream .sqs-block-button-element {
+  border-color: var(--db-oxblood) !important;
+  color: var(--db-oxblood) !important;
+}
+.db-ground-sage .sqs-block-button-element:hover,
+.db-ground-blue .sqs-block-button-element:hover,
+.db-ground-cream .sqs-block-button-element:hover {
+  background-color: var(--db-oxblood) !important;
+  color: var(--db-cream) !important;
+  border-color: var(--db-oxblood) !important;
+}
+
+/* Yellow is invisible on all three light grounds (1.0–1.5:1). Never put it
+   there — keep it for hover on dark, where it earns its keep at 9.2:1. */
 
 
 /* --------------------------------------------------------------------------
