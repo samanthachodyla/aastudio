@@ -94,44 +94,63 @@ nobody finds a half-built site before September 9. You'll take it off launch mor
 You have **six** brand colors, and all six should do work. A site built on only the
 dark one flattens a palette you already took the trouble to build.
 
+**The site is light.** Photographs are the background of the whole page — they sit
+fixed while the writing scrolls over them, which is the "entire background is photos"
+idea from your brief. The flat brand colors appear as a few resting places between the
+photography, not as the ground everything sits on.
+
 | Your swatch | Hex | Its job on the site |
 |---|---|---|
-| Oxblood | `#4d0c0c` | The primary dark ground — Welcome, Projects, header, footer |
 | Red | `#bd0b0b` | The wordmark, and headings **on cream** |
-| Yellow | `#f8c135` | Hover state, and the small reserved accents |
-| Cream | `#fff0c8` | Subheadings on dark — **and a page ground of its own** |
+| Brown | `#925c50` | Nav and links, resting state |
+| Yellow | `#f8c135` | The hover — **as a block behind the word**, see below |
+| Cream | `#fff0c8` | The header and footer veil, subheads on photos, closing ground |
+| Body | `#f5efdd` | Body text on photos, and the page's own light ground |
 | Sage | `#b2b192` | Ground for the About section |
 | Pale blue | `#b6ccd7` | Ground for the templates band |
+| Oxblood | `#4d0c0c` | **Text** on all the light grounds — not a background |
 
-Plus your two type colors: body `#f5efdd`, nav/links `#925c50`.
-
-**Build three color themes**, not one, and assign them section by section:
+**Build three color themes** and assign them section by section:
 
 | Theme | Background | Headings | Body | Links |
 |---|---|---|---|---|
-| **Dark** | `#4d0c0c` | `#fff0c8` | `#f5efdd` | `#925c50` → `#f8c135` |
+| **Photo** | image + scrim | `#fff0c8` | `#f5efdd` | `#fff0c8` |
 | **Sage / Blue** | `#b2b192` / `#b6ccd7` | `#4d0c0c` | `#4d0c0c` | `#4d0c0c` |
 | **Cream** | `#fff0c8` | `#bd0b0b` | `#4d0c0c` | `#925c50` |
 
-Most sections use Dark. Sage grounds About, blue grounds the templates band, and cream
-closes the page — red script on cream, the way your brand book opens. That rhythm is
-already in your own materials; it just wasn't in the first draft of this guide.
+Most of the page is Photo. Sage grounds About, blue grounds the templates band, and
+cream closes it — red script on cream, the way your brand book opens.
 
-> **Two corrections to what I gave you first.** I had used `#310909` as the site
-> background — that's the background of your Canva *slides*, not one of your six
-> swatches. Your declared dark is `#4d0c0c`, and that's what everything is built on
-> now. And sage and pale blue weren't used at all. They are now.
+> **Corrections to earlier drafts of this guide.** I first built the site on a dark
+> `#310909` ground. That hex is the background of your Canva *slides*, not one of your
+> swatches — and more importantly the whole dark direction was wrong. Your mockup is
+> light. Oxblood `#4d0c0c` is now a text color, sage and pale blue are real grounds,
+> and photography carries the page.
 
-**A contrast note you'll want before you paint anything.** Your red reads at only
-2.3:1 on the dark ground, and your nav brown at 2.8:1 — both below the 4.5:1 that small
-text needs. On cream, red hits 5.8:1 and brown hits 4.8:1, and both pass comfortably.
-That's why red belongs on the cream ground rather than the dark one. Yellow is the
-reverse: 9.2:1 on dark, invisible on all three light grounds. Keep it for hover.
+### The contrast table, and the one thing it forces
 
-The nav brown is the one real tension, since your hover effect needs a dark header.
-I've kept `#925c50` exactly as you specified; §3 of the CSS has a one-line swap to
-`#bd8b7b` — same hue, 5.2:1 — if you'd rather it pass. Your call, and there's a case
-for either.
+Measured against each ground. This is what decides where every color can go:
+
+| | on photo + scrim | on cream | on sage | on blue |
+|---|---|---|---|---|
+| Cream `#fff0c8` | **8.0–9.6 ✓** | — | 1.9 ✗ | 1.5 ✗ |
+| Body `#f5efdd` | **7.9–9.0 ✓** | — | 1.9 ✗ | 1.5 ✗ |
+| Oxblood `#4d0c0c` | — | **13.5 ✓** | **7.0 ✓** | **9.2 ✓** |
+| Red `#bd0b0b` | — | **5.8 ✓** | 3.0 ✗ | 3.9 ✗ |
+| Brown `#925c50` | — | **4.75 ✓** | 2.5 ✗ | 3.3 ✗ |
+| Yellow `#f8c135` | — | 1.5 ✗ | 1.3 ✗ | 1.0 ✗ |
+
+**Which means your nav hover needs one change, and I want to be straight about it.**
+You asked for links that turn bright yellow on hover. On a light page yellow text
+measures 1.5:1 — not dim, invisible. And brown can't move to a dark header instead:
+brown is dark enough that even on pure black it caps at 3.87:1, so it never passes
+there either. The two colors only coexist on a mid-dark bar, which is exactly what you
+just asked me to get rid of.
+
+So the yellow moved from the letters to behind them. Hover a link and a yellow block
+arrives, with the word going deep red over it at 9.2:1. Bright yellow is still what
+appears the instant you hover — it just also works. If you'd rather have the letters
+themselves turn yellow, §3 of the CSS has the one-line swap, commented and ready.
 
 **Site Styles → Fonts:**
 - Headings → **Ovo**
@@ -174,17 +193,23 @@ image → set the **media overlay** to around 35–45%.
 
 | Section | Ground | Layout |
 |---|---|---|
-| Hero | photo | Full-bleed, full viewport height, no text |
-| Welcome. | oxblood | Text left, photo right |
-| The Philosophy. | photo + scrim | Full-bleed photo, text left, verse line breaks intact |
-| Projects. | oxblood | 3–5 image grid, each linking to a project gallery |
+| Opening | photo | Full viewport, no text — the photographs speak first |
+| Welcome. | photo + scrim left | Text column left |
+| The Philosophy. | photo + scrim right | Text column right, verse line breaks intact |
+| Projects. | photo + scrim center | Four-image strip, each linking to a gallery |
 | About. | **sage** | Portrait photo left, text right |
 | Templates band | **pale blue** | One short paragraph and a button |
 | Closing | **cream** | Crest, one line, "books open," Inquire button |
 
-The grounds are the point. Three dark sections in a row and then sage arrives — that
-tonal shift is what keeps a photo-heavy page from feeling like one long scroll, and
-every color in it is already yours.
+Photography carries the top two-thirds; then sage arrives and the page changes
+temperature. That shift is what keeps a photo-heavy scroll from reading as one long
+image, and every color in it is already yours.
+
+**Set the photo background in Squarespace:** each section gets its own background
+image, and the `.db-scrim` class handles legibility. If you want the single fixed
+photo backdrop the prototype uses — one image staying put while everything scrolls
+over it — set the section background image and turn on **Fixed** in the background
+options rather than giving each section its own.
 
 **About the text-on-photo look.** Your mockup puts body copy directly over a busy
 photograph, and in the mockup it's genuinely hard to read — the paragraph under "The

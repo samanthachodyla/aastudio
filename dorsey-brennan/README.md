@@ -31,24 +31,26 @@ Inquire   → booking calendar AND project form, one page, two doors
 
 ## The palette
 
-All six swatches, each with a job. A site built only on the dark one wastes a palette
-you already did the work to build.
+**The site is light.** Photographs are the background of the whole page — fixed, with
+the writing scrolling over them. The flat brand colors are resting places between the
+photography, not the ground everything sits on.
 
 | Swatch | Hex | Job |
 |---|---|---|
-| Oxblood | `#4d0c0c` | Primary dark ground, header, footer |
 | Red | `#bd0b0b` | Wordmark, and headings **on cream** |
-| Yellow | `#f8c135` | Hover state and reserved accents — **only on dark** |
-| Cream | `#fff0c8` | Subheadings on dark, **and the closing section's ground** |
+| Brown | `#925c50` | Nav and links, resting |
+| Yellow | `#f8c135` | The hover — as a block behind the word |
+| Cream | `#fff0c8` | Header/footer veil, subheads on photos, closing ground |
+| Body | `#f5efdd` | Body text on photos, and the page's light ground |
 | Sage | `#b2b192` | Ground for About |
 | Pale blue | `#b6ccd7` | Ground for the templates band |
+| Oxblood | `#4d0c0c` | **Text** on the light grounds — not a background |
 
-Type colors: body `#f5efdd`, nav/links `#925c50` → `#f8c135` on hover.
-
-Measured contrast decides which color sits on which ground: red and brown pass on cream
-(5.8:1 and 4.8:1) but fail on dark (2.3:1 and 2.8:1); yellow is the reverse, brilliant
-on dark (9.2:1) and invisible on every light ground. Sage and blue need dark text. The
-build guide has the full table.
+Measured contrast decides where each color can go. Cream and body text only work over
+photography with a scrim (8.0–9.6:1). Red and brown only work on cream (5.8:1, 4.75:1).
+Oxblood is the text color for sage, blue, and cream. Yellow can't be text on anything
+light — 1.5:1 — which is why the hover puts it *behind* the word instead. The build
+guide has the full table and the reasoning.
 
 ---
 
@@ -121,10 +123,12 @@ Marked `[BRACKETS]` throughout the copy deck. The ones that block a page:
 
 ## A design note worth reading before you build
 
-Your mockup puts body copy directly over a photograph, and in the mockup itself the
-paragraph under "The Philosophy" is genuinely hard to read — it disappears into the
-bed and the wall behind it. The instinct is right and the look is right; it just needs
-a scrim. Section 5 of the CSS gives you a gradient that darkens the top and bottom of a
-photo while leaving its middle clean, so text sits on a readable field and the
-photograph still fills the screen. The prototype shows it working — the Philosophy
-section keeps the full-bleed photo and stays legible.
+Your mockup places cream text over the light passages of a photograph, and it works
+there because you positioned each line over the dark parts by hand — the oak cabinet,
+the shadow beside the bed. That's a real eye, and it's also fragile: swap the photo and
+the sentence vanishes.
+
+Section 5 of the CSS does the same job automatically. Not a box — a soft warm shadow
+that's solid where the words sit and gone before the edges, so the page still reads
+light and airy. Cream holds 8.0–9.6:1 across the area where text lands, at any
+photograph you drop behind it. The prototype shows it working.
