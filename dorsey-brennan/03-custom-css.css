@@ -1,0 +1,345 @@
+/* ==========================================================================
+   DORSEY BRENNAN — Squarespace 7.1 Custom CSS
+   Paste into: Website → Website Tools → Custom CSS
+   Requires the Core plan or higher (Basic does not allow custom CSS).
+
+   Written for Squarespace 7.1 / Fluid Engine. Squarespace occasionally renames
+   its internal IDs; if a block below does nothing, see the note at the very
+   bottom of this file for how to check the name in thirty seconds.
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   1. BRAND TOKENS
+   Change a color once here and it changes everywhere below.
+   -------------------------------------------------------------------------- */
+
+:root {
+  --db-red:      #bd0b0b;  /* the wordmark red */
+  --db-oxblood:  #310909;  /* page background — the deep one from your brand file */
+  --db-brown:    #925c50;  /* nav + links, resting state */
+  --db-yellow:   #f8c135;  /* nav + links, HOVER state */
+  --db-cream:    #fff0c8;  /* subheadings — "Welcome." "The Philosophy." */
+  --db-body:     #f5efdd;  /* body text */
+  --db-sage:     #b2b192;
+  --db-blue:     #b6ccd7;
+
+  --db-header-h: 132px;    /* measure yours and update — see §3 */
+  --db-footer-h: 96px;
+}
+
+
+/* --------------------------------------------------------------------------
+   2. TYPE
+   Ovo is a Google Font and is already in Squarespace — set it in Site Styles,
+   not here. This section only handles the things Site Styles can't reach.
+   -------------------------------------------------------------------------- */
+
+/* Subheadings — Weiss italic, cream. Your "Welcome." / "The Philosophy." */
+h2, h3, .db-subhead {
+  font-style: italic;
+  color: var(--db-cream);
+  letter-spacing: 0.01em;
+}
+
+/* Body copy */
+p, .sqs-block-html p {
+  color: var(--db-body);
+  line-height: 1.75;
+}
+
+/* Small caps location/label lines — "INTERIORS — SCRANTON, PENNA." */
+.db-eyebrow {
+  font-family: 'Ovo', serif;
+  color: var(--db-yellow);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.72rem;
+}
+
+/* Your line breaks are part of the writing. Stop Squarespace from
+   collapsing them on narrow screens. */
+.db-verse p {
+  white-space: pre-line;
+  margin-bottom: 0;
+}
+
+
+/* --------------------------------------------------------------------------
+   3. FIXED HEADER
+   First: turn on the built-in option — Edit → click the header → gear icon →
+   Fixed Position. Do that BEFORE relying on the CSS below, which only styles it.
+   -------------------------------------------------------------------------- */
+
+#header {
+  background-color: transparent;      /* let the photos show through */
+  transition: background-color 0.4s ease;
+}
+
+/* Once you've scrolled off the hero, fade in a scrim so the nav stays readable
+   over lighter photos. Squarespace adds .shrink after ~50px of scroll. */
+#header.shrink,
+.header--menu-open #header {
+  background-color: rgba(49, 9, 9, 0.92);
+  backdrop-filter: blur(6px);
+}
+
+/* THE NAV HOVER YOU ASKED FOR — brown, going yellow */
+.header-nav-item a,
+.header-nav-folder-item a,
+.header-menu-nav-item a {
+  font-family: 'Ovo', serif !important;
+  color: var(--db-brown) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.8rem;
+  background-image: none !important;   /* kills Squarespace's default underline */
+  transition: color 0.35s ease;
+}
+
+.header-nav-item a:hover,
+.header-nav-folder-item a:hover,
+.header-menu-nav-item a:hover {
+  color: var(--db-yellow) !important;
+}
+
+/* The current page stays yellow so you always know where you are */
+.header-nav-item--active a {
+  color: var(--db-yellow) !important;
+}
+
+/* Wordmark sizing */
+.header-title-logo img {
+  max-height: 62px;
+  width: auto;
+}
+@media screen and (max-width: 767px) {
+  .header-title-logo img { max-height: 40px; }
+}
+
+
+/* --------------------------------------------------------------------------
+   4. FIXED FOOTER
+   Squarespace has no built-in switch for this, so this is the real work.
+   Content scrolls underneath; the footer never moves.
+   -------------------------------------------------------------------------- */
+
+#footer-sections {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 900;                        /* above content, below the mobile menu */
+  background-color: var(--db-oxblood);
+  border-top: 1px solid rgba(245, 239, 221, 0.14);
+}
+
+/* Reserve the space the footer occupies, or your last section hides behind it
+   forever and you'll think you deleted it. */
+#sections {
+  padding-bottom: var(--db-footer-h);
+}
+
+/* Footer links get the same brown → yellow treatment */
+#footer-sections a {
+  font-family: 'Ovo', serif !important;
+  color: var(--db-brown) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  background-image: none !important;
+  transition: color 0.35s ease;
+}
+#footer-sections a:hover {
+  color: var(--db-yellow) !important;
+}
+
+/* On phones a pinned footer eats a third of the screen. Let it scroll normally
+   below 768px — nobody will miss it, and the site stays usable. */
+@media screen and (max-width: 767px) {
+  #footer-sections { position: relative; z-index: auto; }
+  #sections { padding-bottom: 0; }
+}
+
+
+/* --------------------------------------------------------------------------
+   5. FULL-BLEED PHOTO SECTIONS + LEGIBILITY SCRIM
+   Your mockup puts body copy directly on a photograph. It looks beautiful and
+   it is genuinely hard to read. This keeps the look and fixes the reading.
+
+   Add the class "db-scrim" to any section: Edit section → gear → Advanced →
+   or simply apply it site-wide by deleting the ".db-scrim" prefix below.
+   -------------------------------------------------------------------------- */
+
+.db-scrim .section-background::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(49, 9, 9, 0.55) 0%,
+    rgba(49, 9, 9, 0.25) 38%,
+    rgba(49, 9, 9, 0.70) 100%
+  );
+  pointer-events: none;
+}
+
+/* A softer alternative — darkens only behind the text column, left side */
+.db-scrim-left .section-background::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(49, 9, 9, 0.72) 0%,
+    rgba(49, 9, 9, 0.35) 45%,
+    rgba(49, 9, 9, 0) 78%
+  );
+  pointer-events: none;
+}
+
+/* Full-viewport hero */
+.db-hero { min-height: 100vh; }
+@media screen and (max-width: 767px) {
+  .db-hero { min-height: 88vh; }
+}
+
+
+/* --------------------------------------------------------------------------
+   6. BUTTONS
+   -------------------------------------------------------------------------- */
+
+.sqs-block-button-element {
+  font-family: 'Ovo', serif !important;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.75rem !important;
+  border-radius: 0 !important;         /* nothing on this site is rounded */
+  border: 1px solid var(--db-brown) !important;
+  background-color: transparent !important;
+  color: var(--db-body) !important;
+  padding: 1.05em 2.4em !important;
+  transition: color 0.35s ease, border-color 0.35s ease, background-color 0.35s ease;
+}
+
+.sqs-block-button-element:hover {
+  color: var(--db-oxblood) !important;
+  background-color: var(--db-yellow) !important;
+  border-color: var(--db-yellow) !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   7. PORTFOLIO GRID
+   -------------------------------------------------------------------------- */
+
+.grid-item .portfolio-title,
+.gallery-caption {
+  font-family: 'Ovo', serif;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--db-body);
+  font-size: 0.78rem;
+}
+
+/* Slow, quiet hover — the image lifts a little and warms */
+.grid-image, .gallery-grid-item img {
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.9s ease;
+}
+.grid-item:hover .grid-image,
+.gallery-grid-item:hover img {
+  transform: scale(1.03);
+  filter: saturate(1.06);
+}
+
+
+/* --------------------------------------------------------------------------
+   8. FORMS (the Inquire page)
+   -------------------------------------------------------------------------- */
+
+.form-wrapper .field-list .title {
+  font-family: 'Ovo', serif;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+  color: var(--db-brown);
+}
+
+.form-wrapper input[type="text"],
+.form-wrapper input[type="email"],
+.form-wrapper textarea,
+.form-wrapper select {
+  background-color: rgba(245, 239, 221, 0.06) !important;
+  border: 1px solid rgba(146, 92, 80, 0.55) !important;
+  border-radius: 0 !important;
+  color: var(--db-body) !important;
+  padding: 0.9em !important;
+  transition: border-color 0.3s ease;
+}
+
+.form-wrapper input:focus,
+.form-wrapper textarea:focus,
+.form-wrapper select:focus {
+  border-color: var(--db-yellow) !important;
+  outline: none !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   9. SHOP
+   -------------------------------------------------------------------------- */
+
+.ProductItem-details-title,
+.grid-title {
+  font-family: 'Ovo', serif !important;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.9rem !important;
+}
+
+.ProductItem-details-excerpt p { color: var(--db-body); }
+
+/* "Found a home." instead of a grey SOLD OUT badge */
+.product-mark.sold-out {
+  background: transparent !important;
+  color: var(--db-yellow) !important;
+  font-family: 'Ovo', serif;
+  text-transform: none;
+  letter-spacing: 0.08em;
+}
+
+
+/* --------------------------------------------------------------------------
+   10. ACCESSIBILITY — do not delete
+   Keyboard users need to see where they are, and some visitors get motion sick.
+   -------------------------------------------------------------------------- */
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--db-yellow);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+
+/* ==========================================================================
+   IF SOMETHING HERE DOES NOTHING
+
+   Squarespace renames internal IDs every so often. To check yours:
+   1. Open your live site in Chrome.
+   2. Right-click the footer → Inspect.
+   3. Look in the highlighted HTML for the nearest id="..." — it is probably
+      "footer-sections". If it says something else, swap that name in §4.
+
+   Same trick for the header (§3) and the main content wrapper (§4, "#sections").
+   Nothing in this file can break your site permanently — deleting it puts
+   everything back exactly as it was.
+   ========================================================================== */
