@@ -340,8 +340,28 @@ body, p, .sqs-block-html p {
    reads light and airy. Measured: cream holds 8.0–9.6:1 across the plateau
    where text sits, feathering to nothing well outside the text column.
 
-   Add "db-scrim" to a section, or drop the ".db-scrim" prefix to apply it
-   everywhere.
+   HOW TO APPLY IT — same catch as 5b, no class field in 7.1. In order:
+
+   1. TRY THE NATIVE OVERLAY FIRST. Edit → section → Background → with the
+      image selected there's a media overlay color and opacity. Set it to
+      #4d0c0c at 35–45%. That covers most sections, it's a slider you can
+      judge by eye, and it needs none of this.
+
+   2. IF A SECTION STILL DOESN'T READ — because the photo is bright exactly
+      where the words sit — use the gradient below, which darkens only the
+      text side and leaves the rest of the photograph clean. Target it by
+      section id (see 5b for how to find yours):
+
+        section[data-section-id="PASTE-YOURS"] .section-background::after {
+          content: "";
+          position: absolute;
+          top: 0; right: 0; bottom: 0; left: 0;
+          background: radial-gradient(ellipse 74% 64% at 32% 50%,
+            rgba(56, 24, 18, 0.82) 0%, rgba(56, 24, 18, 0.80) 46%,
+            rgba(56, 24, 18, 0.60) 66%, rgba(56, 24, 18, 0.24) 82%,
+            rgba(56, 24, 18, 0) 96%);
+          pointer-events: none;
+        }
    -------------------------------------------------------------------------- */
 
 .db-scrim .section-background::after {
@@ -396,12 +416,31 @@ body, p, .sqs-block-html p {
 
 /* --------------------------------------------------------------------------
    5b. THE LIGHT GROUNDS — sage, pale blue, and cream
-   Two of your six colors had no job in the first draft. They do now.
 
-   In Squarespace: build these as normal sections, then set the section's
-   background COLOR (Edit section → Background → Color) to the hex below, and
-   set the section's color theme to a LIGHT theme so text defaults to dark.
-   These rules then correct the specific text colors.
+   HOW TO ACTUALLY APPLY THESE. Squarespace 7.1 has no field for adding a
+   class to a section, so ".db-ground-sage" won't attach by itself. Two ways:
+
+   THE EASY WAY, and what I'd do first — skip these classes entirely. Set the
+   section's color theme natively: Edit → click the section → Background →
+   Color, and pick the theme built from your palette. No CSS involved, and you
+   can see it change as you click. Use the classes below only if a theme
+   won't give you the exact hex.
+
+   THE PRECISE WAY — target the section by its ID:
+     1. Open the live site, right-click the section, Inspect
+     2. On the <section> tag, copy data-section-id="65f3a1..."
+     3. Add a rule like this, pasting your own id:
+
+        section[data-section-id="PASTE-YOURS"] {
+          background-color: var(--db-sage) !important;
+        }
+        section[data-section-id="PASTE-YOURS"] h2,
+        section[data-section-id="PASTE-YOURS"] p {
+          color: var(--db-oxblood) !important;
+        }
+
+   The class rules below still work if you ever move to a setup that can add
+   classes, and they document the correct text color for each ground.
    -------------------------------------------------------------------------- */
 
 /* Sage — for the About section. Your brand book uses a sage ground already. */
