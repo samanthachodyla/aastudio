@@ -78,25 +78,41 @@
   --db-sub-size:  clamp(1.45rem, 2.6vw, 1.78rem);   /* 28px — your "20" */
 }
 
-/* Subheadings — Weiss ITALIC, cream #fff0c8. Your "Welcome." / "The Philosophy." */
+/* Your spec colors — subhead #fff0c8, body #f5efdd — are LIGHT colors, meant
+   for text sitting over a photograph. On a light page they must not be the
+   global default, or any untagged section renders cream on cream and looks
+   blank. So: dark text is the safe default, and your two colors switch on
+   inside .db-scrim sections, which is exactly where text meets photography. */
+
+/* Subheadings — Weiss ITALIC. Your "Welcome." / "The Philosophy." */
 h1, h2, h3, .db-subhead {
   font-family: 'Weiss', 'EB Garamond', Georgia, serif;
   font-style: italic;
   font-weight: 400;
   font-size: var(--db-sub-size);
-  color: var(--db-cream);
+  color: var(--db-oxblood);
   line-height: 1.24;
   letter-spacing: 0.01em;
   text-wrap: balance;
 }
 
-/* Body copy — Weiss regular, #f5efdd */
+/* Body copy — Weiss regular */
 body, p, .sqs-block-html p {
   font-family: 'Weiss', 'EB Garamond', Georgia, serif;
   font-style: normal;
   font-size: var(--db-body-size);
-  color: var(--db-body);
+  color: var(--db-oxblood);
   line-height: 1.75;
+}
+
+/* OVER A PHOTOGRAPH — your spec colors, exactly as written */
+.db-scrim h1, .db-scrim h2, .db-scrim h3, .db-scrim .db-subhead,
+.db-scrim-right h1, .db-scrim-right h2, .db-scrim-right h3,
+.db-scrim-left h1, .db-scrim-left h2, .db-scrim-left h3 {
+  color: var(--db-cream);              /* #fff0c8 — 8.0–9.6:1 on the scrim */
+}
+.db-scrim p, .db-scrim-right p, .db-scrim-left p {
+  color: var(--db-body);               /* #f5efdd — 7.9–9.0:1 on the scrim */
 }
 
 /* Nav, links, buttons and labels — Ovo, per your spec */
@@ -443,9 +459,9 @@ body, p, .sqs-block-html p {
   letter-spacing: 0.2em;
   font-size: 0.75rem !important;
   border-radius: 0 !important;         /* nothing on this site is rounded */
-  border: 1px solid var(--db-brown) !important;
+  border: 1px solid var(--db-oxblood) !important;
   background-color: transparent !important;
-  color: var(--db-body) !important;
+  color: var(--db-oxblood) !important;      /* the page is light — dark text */
   padding: 1.05em 2.4em !important;
   transition: color 0.35s ease, border-color 0.35s ease, background-color 0.35s ease;
 }
@@ -454,6 +470,13 @@ body, p, .sqs-block-html p {
   color: var(--db-oxblood) !important;
   background-color: var(--db-yellow) !important;
   border-color: var(--db-yellow) !important;
+}
+
+/* Buttons sitting ON a photograph flip to cream, since the scrim behind them
+   is dark. Put these inside a .db-scrim section. */
+.db-scrim .sqs-block-button-element {
+  border-color: rgba(255, 240, 200, 0.6) !important;
+  color: var(--db-cream) !important;
 }
 
 
@@ -466,7 +489,7 @@ body, p, .sqs-block-html p {
   font-family: 'Ovo', serif;
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  color: var(--db-body);
+  color: var(--db-oxblood);
   font-size: 0.78rem;
 }
 
@@ -497,18 +520,19 @@ body, p, .sqs-block-html p {
 .form-wrapper input[type="email"],
 .form-wrapper textarea,
 .form-wrapper select {
-  background-color: rgba(245, 239, 221, 0.06) !important;
-  border: 1px solid rgba(146, 92, 80, 0.55) !important;
+  background-color: rgba(255, 255, 255, 0.55) !important;
+  border: 1px solid rgba(77, 12, 12, 0.30) !important;
   border-radius: 0 !important;
-  color: var(--db-body) !important;
+  color: var(--db-oxblood) !important;
   padding: 0.9em !important;
-  transition: border-color 0.3s ease;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
 }
 
 .form-wrapper input:focus,
 .form-wrapper textarea:focus,
 .form-wrapper select:focus {
-  border-color: var(--db-yellow) !important;
+  border-color: var(--db-oxblood) !important;
+  background-color: rgba(255, 255, 255, 0.85) !important;
   outline: none !important;
 }
 
@@ -525,12 +549,12 @@ body, p, .sqs-block-html p {
   font-size: 0.9rem !important;
 }
 
-.ProductItem-details-excerpt p { color: var(--db-body); }
+.ProductItem-details-excerpt p { color: var(--db-oxblood); }
 
 /* "Found a home." instead of a grey SOLD OUT badge */
 .product-mark.sold-out {
   background: transparent !important;
-  color: var(--db-yellow) !important;
+  color: var(--db-brown) !important;      /* yellow disappears on light */
   font-family: 'Ovo', serif;
   text-transform: none;
   letter-spacing: 0.08em;
@@ -547,8 +571,9 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid var(--db-yellow);
+  outline: 2px solid var(--db-oxblood);
   outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgba(255, 240, 200, 0.9);  /* holds over photos too */
 }
 
 @media (prefers-reduced-motion: reduce) {
