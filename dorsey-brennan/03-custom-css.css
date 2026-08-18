@@ -6,6 +6,21 @@
    Written for Squarespace 7.1 / Fluid Engine. Squarespace occasionally renames
    its internal IDs; if a block below does nothing, see the note at the very
    bottom of this file for how to check the name in thirty seconds.
+
+   ONE THING TO KNOW IF YOU EDIT THIS. Squarespace doesn't run plain CSS — it
+   runs LESS, a preprocessor with its own functions, and a few of them share
+   names with real CSS. LESS grabs those first and then errors because it
+   wanted different arguments. The ones that bite:
+
+     saturate() contrast() greyscale() fade() spin() tint() shade()
+        -> wrap the value in ~"..." so LESS passes it through untouched,
+           e.g.  filter: ~"saturate(1.06)";
+
+     negative values in a shorthand, like  margin: 0 -5px
+        -> LESS may read the space-minus as subtraction and collapse it.
+           Avoid negatives in shorthands, or wrap them the same way.
+
+   Everything below is already written to stay clear of both.
    ========================================================================== */
 
 
@@ -75,7 +90,7 @@
 
 :root {
   --db-body-size: 1.0625rem;                        /* 17px — your "12" */
-  --db-sub-size:  clamp(1.45rem, 2.6vw, 1.78rem);   /* 28px — your "20" */
+  --db-sub-size:  ~"clamp(1.45rem, 2.6vw, 1.78rem)";   /* 28px — your "20" */
 }
 
 /* Your spec colors — subhead #fff0c8, body #f5efdd — are LIGHT colors, meant
@@ -207,7 +222,6 @@ body, p, .sqs-block-html p {
   letter-spacing: 0.22em;
   font-size: 0.8rem;
   padding: 0.45em 0.7em;
-  margin: -0.45em -0.7em;
   background-image: none !important;   /* kills Squarespace's default underline */
   transition: color 0.3s ease;
 }
@@ -216,7 +230,7 @@ body, p, .sqs-block-html p {
 .header-menu-nav-item a::before {
   content: "";
   position: absolute;
-  inset: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   z-index: -1;
   background-color: var(--db-yellow);
   opacity: 0;
@@ -236,7 +250,7 @@ body, p, .sqs-block-html p {
 
 /* The current page keeps a quiet yellow rule beneath it */
 .header-nav-item--active a {
-  box-shadow: inset 0 -2px 0 var(--db-yellow);
+  border-bottom: 2px solid var(--db-yellow);
 }
 
 /* WANT THE LETTERS THEMSELVES YELLOW INSTEAD? Delete the ::before rules above
@@ -290,14 +304,13 @@ body, p, .sqs-block-html p {
   text-transform: uppercase;
   letter-spacing: 0.24em;
   padding: 0.45em 0.7em;
-  margin: -0.45em -0.7em;
   background-image: none !important;
   transition: color 0.3s ease;
 }
 #footer-sections a::before {
   content: "";
   position: absolute;
-  inset: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   z-index: -1;
   background-color: var(--db-yellow);
   opacity: 0;
@@ -334,7 +347,7 @@ body, p, .sqs-block-html p {
 .db-scrim .section-background::after {
   content: "";
   position: absolute;
-  inset: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   background: radial-gradient(ellipse 74% 64% at 32% 50%,
     rgba(56, 24, 18, 0.82) 0%,
     rgba(56, 24, 18, 0.80) 46%,
@@ -349,7 +362,7 @@ body, p, .sqs-block-html p {
 .db-scrim-right .section-background::after {
   content: "";
   position: absolute;
-  inset: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   background: radial-gradient(ellipse 74% 64% at 68% 50%,
     rgba(56, 24, 18, 0.82) 0%,
     rgba(56, 24, 18, 0.80) 46%,
@@ -364,7 +377,7 @@ body, p, .sqs-block-html p {
 .db-scrim-left .section-background::after {
   content: "";
   position: absolute;
-  inset: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   background: linear-gradient(
     90deg,
     rgba(77, 12, 12, 0.88) 0%,
@@ -500,7 +513,7 @@ body, p, .sqs-block-html p {
 .grid-item:hover .grid-image,
 .gallery-grid-item:hover img {
   transform: scale(1.03);
-  filter: saturate(1.06);
+  filter: ~"saturate(1.06)";   /* ~"" = leave this alone, LESS */
 }
 
 
