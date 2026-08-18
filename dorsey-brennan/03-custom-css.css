@@ -21,8 +21,8 @@
   /* --- the six brand swatches --- */
   --db-red:      #bd0b0b;  /* wordmark, and headings on cream */
   --db-yellow:   #f8c135;  /* hover state, and reserved accents */
-  --db-cream:    #fff0c8;  /* subheadings on dark — AND a page ground */
-  --db-oxblood:  #4d0c0c;  /* the primary dark ground */
+  --db-cream:    #fff0c8;  /* subheads over photos, the header veil, a ground */
+  --db-oxblood:  #4d0c0c;  /* TEXT on the light grounds — not a background */
   --db-sage:     #b2b192;  /* a page ground */
   --db-blue:     #b6ccd7;  /* a page ground */
 
@@ -35,45 +35,101 @@
 }
 
 /* GROUND RULES — which text color goes on which background.
-   Ratios are measured; anything below 4.5:1 is called out.
+   The site is LIGHT: photographs carry the page and the flat colors are
+   resting places between them. Ratios measured; below 4.5:1 is called out.
 
-     ON OXBLOOD #4d0c0c   body 13.3 ✓   cream 13.5 ✓   yellow 9.2 ✓
-                          brown 2.8 ✗   red 2.3 ✗
-     ON SAGE    #b2b192   oxblood 7.0 ✓  (light text fails here — use dark)
-     ON BLUE    #b6ccd7   oxblood 9.2 ✓  (light text fails here — use dark)
-     ON CREAM   #fff0c8   oxblood 13.5 ✓  red 5.8 ✓   brown 4.8 ✓
+     ON PHOTO + SCRIM     cream 8.0–9.6 ✓   body 7.9–9.0 ✓
+     ON CREAM   #fff0c8   oxblood 13.5 ✓   red 5.8 ✓   brown 4.75 ✓
+     ON SAGE    #b2b192   oxblood 7.0 ✓   (cream 1.9 ✗ — never light text here)
+     ON BLUE    #b6ccd7   oxblood 9.2 ✓   (cream 1.5 ✗ — never light text here)
 
-   Two takeaways worth knowing: your red belongs on cream, not on dark —
-   which is exactly how your brand book uses it. And sage and blue need
-   dark text, never cream. */
+   Three takeaways. Your red belongs on cream — exactly how your brand book
+   uses it. Sage and blue need dark text, never cream. And yellow can't be
+   text on anything light (1.0–1.5), which is why the hover puts it behind
+   the word instead of in it. See §3. */
 
 
 /* --------------------------------------------------------------------------
    2. TYPE
-   Ovo is a Google Font and is already in Squarespace — set it in Site Styles,
-   not here. This section only handles the things Site Styles can't reach.
+
+   Three faces, three jobs, straight from your brand spec:
+
+     Parfumerie Script Text  the wordmark          — upload as a logo IMAGE
+     Ovo                     nav, links, buttons   — free Google Font, already
+                                                     in Squarespace's font list
+     Weiss                   subheads + body       — licensed; upload the WEB
+                                                     file in Site Styles → Fonts
+
+   Set Ovo and Weiss in Site Styles rather than here. This section handles the
+   parts Site Styles can't reach — the italic, the colors, and the proportion.
+
+   ON PROPORTION. Your spec gives the subheading 20 and the body 12, "for
+   proportion" — a ratio of 1.67. That's a restrained relationship, and it's
+   easy to lose in Squarespace, whose defaults run much larger. The two
+   variables below hold your ratio. Change --db-body and the subhead follows.
+
+   IF WEISS ISN'T READY. Set EB Garamond in Site Styles — free, already there,
+   same Renaissance bones and a true chancery italic. Nothing else changes;
+   swap in Weiss later and every rule below still applies.
    -------------------------------------------------------------------------- */
 
-/* Subheadings — Weiss italic, cream. Your "Welcome." / "The Philosophy." */
-h2, h3, .db-subhead {
-  font-style: italic;
-  color: var(--db-cream);
-  letter-spacing: 0.01em;
+:root {
+  --db-body-size: 1.0625rem;                        /* 17px — your "12" */
+  --db-sub-size:  clamp(1.45rem, 2.6vw, 1.78rem);   /* 28px — your "20" */
 }
 
-/* Body copy */
-p, .sqs-block-html p {
+/* Subheadings — Weiss ITALIC, cream #fff0c8. Your "Welcome." / "The Philosophy." */
+h1, h2, h3, .db-subhead {
+  font-family: 'Weiss', 'EB Garamond', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: var(--db-sub-size);
+  color: var(--db-cream);
+  line-height: 1.24;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+}
+
+/* Body copy — Weiss regular, #f5efdd */
+body, p, .sqs-block-html p {
+  font-family: 'Weiss', 'EB Garamond', Georgia, serif;
+  font-style: normal;
+  font-size: var(--db-body-size);
   color: var(--db-body);
   line-height: 1.75;
 }
 
-/* Small caps location/label lines — "INTERIORS — SCRANTON, PENNA." */
+/* Nav, links, buttons and labels — Ovo, per your spec */
+.header-nav-item a, .header-menu-nav-item a, #footer-sections a,
+.sqs-block-button-element, .db-eyebrow, .form-wrapper .field-list .title {
+  font-family: 'Ovo', Georgia, serif;
+}
+
+/* On the light grounds cream would vanish, so headings and body go dark
+   there. These come after the rules above deliberately — order matters. */
+.db-ground-sage h1, .db-ground-sage h2, .db-ground-sage h3,
+.db-ground-blue h1, .db-ground-blue h2, .db-ground-blue h3 {
+  color: var(--db-oxblood);
+}
+.db-ground-cream h1, .db-ground-cream h2, .db-ground-cream h3 {
+  color: var(--db-red);
+}
+.db-ground-sage p, .db-ground-blue p, .db-ground-cream p {
+  color: var(--db-oxblood);
+}
+
+/* Small caps location/label lines — "INTERIORS — SCRANTON, PENNA."
+   These sit over photographs, so they get a cream chip rather than yellow
+   text — yellow on a light photo measures about 1.4:1 and disappears. */
 .db-eyebrow {
   font-family: 'Ovo', serif;
-  color: var(--db-yellow);
+  color: var(--db-oxblood);
+  background: rgba(255, 240, 200, 0.88);
+  padding: 0.7em 1.1em;
+  display: inline-block;
   text-transform: uppercase;
-  letter-spacing: 0.22em;
-  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  font-size: 0.68rem;
 }
 
 /* Your line breaks are part of the writing. Stop Squarespace from
