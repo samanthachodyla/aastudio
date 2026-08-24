@@ -251,6 +251,14 @@ const Exhibitions = () => {
                       )}
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div>
+                          <Label className="eyebrow">Deadline</Label>
+                          <Input
+                            type="date"
+                            value={o.deadline || ""}
+                            onChange={(e) => updateOpportunity(o.id, { deadline: e.target.value })}
+                          />
+                        </div>
+                        <div>
                           <Label className="eyebrow">More info or application link</Label>
                           <Input
                             value={o.link || ""}

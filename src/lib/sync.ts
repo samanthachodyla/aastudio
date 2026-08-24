@@ -10,6 +10,7 @@
 // typed client here and map rows ourselves (camelCase <-> snake_case).
 // ============================================================================
 import { supabase } from "@/integrations/supabase/client";
+import { readOutbox, recordInsert, recordUpdate, recordDelete, resolve, pendingCount } from "@/lib/outbox";
 
 // Loosely-typed handle so we can hit the new tables without regenerated types.
 const db = supabase as unknown as {
@@ -61,22 +62,102 @@ let activeUserId: string | null = null;
 export function setActiveUserId(id: string | null) {
   activeUserId = id;
 }
+export function getActiveUserId() {
+  return activeUserId;
+}
 
-// ---- write-through helpers (fire-and-forget; callers surface failures) -----
+// Table name -> store collection key, for merging unsynced rows back on hydrate.
+const TABLE_TO_STORE_KEY: Record<string, string> = Object.fromEntries(
+  Object.entries(ENTITY_TABLES).map(([storeKey, table]) => [table, storeKey]),
+);
+
+// Broadcast the pending-write count so the sync-status banner can react. Fired
+// after every enqueue/resolve; the banner listens for "allegory:pending".
+function emitPending() {
+  try {
+    window.dispatchEvent(new CustomEvent("allegory:pending", { detail: pendingCount(activeUserId) }));
+  } catch { /* no window (SSR) — ignore */ }
+}
+
+// ---- write-through helpers -------------------------------------------------
+// Every write is recorded in the persistent outbox FIRST, attempted against
+// Supabase, then cleared from the outbox only once the server confirms it. A
+// write that fails stays in the outbox (surviving reloads) and is retried on the
+// next hydrate — so a failed write is never silently lost. Callers still get the
+// thrown error to surface a toast.
 export async function pushInsert(table: string, item: Record<string, any>) {
-  const row = { ...rowToDb(item), user_id: activeUserId };
+  const uid = activeUserId;
+  const storeKey = TABLE_TO_STORE_KEY[table] ?? table;
+  const opId = uid ? recordInsert(uid, table, storeKey, String(item.id), item) : "";
+  emitPending();
+  const row = { ...rowToDb(item), user_id: uid };
   const { error } = await db.from(table).insert(row);
   if (error) throw error;
+  if (uid) { resolve(uid, opId); emitPending(); }
 }
 
 export async function pushUpdate(table: string, id: string, patch: Record<string, any>) {
+  const uid = activeUserId;
+  const storeKey = TABLE_TO_STORE_KEY[table] ?? table;
+  const opId = uid ? recordUpdate(uid, table, storeKey, String(id), patch) : "";
+  emitPending();
   const { error } = await db.from(table).update(rowToDb(patch)).eq("id", id);
   if (error) throw error;
+  if (uid) { resolve(uid, opId); emitPending(); }
 }
 
 export async function pushDelete(table: string, id: string) {
+  const uid = activeUserId;
+  const storeKey = TABLE_TO_STORE_KEY[table] ?? table;
+  const opId = uid ? recordDelete(uid, table, storeKey, String(id)) : "";
+  emitPending();
   const { error } = await db.from(table).delete().eq("id", id);
   if (error) throw error;
+  if (uid) { resolve(uid, opId); emitPending(); }
+}
+
+// Merge any unsynced outbox rows into freshly-hydrated collections so a member
+// still sees work that hasn't reached the server yet. Mutates `collections`.
+export function overlayOutbox(userId: string, collections: Record<string, any[]>) {
+  for (const op of readOutbox(userId)) {
+    const list = (collections[op.storeKey] ||= []);
+    const idx = list.findIndex((r) => r.id === op.rowId);
+    if (op.kind === "delete") {
+      if (idx >= 0) list.splice(idx, 1);
+    } else if (op.kind === "insert") {
+      if (idx < 0) list.unshift(op.data); // client-shaped already (camelCase)
+      else list[idx] = { ...list[idx], ...op.data };
+    } else {
+      if (idx >= 0) list[idx] = { ...list[idx], ...op.data };
+    }
+  }
+  return collections;
+}
+
+// Retry every queued write against Supabase (fire-and-forget after hydrate).
+// Inserts use upsert so a partially-synced row can't collide on its primary key.
+export async function replayOutbox(userId: string) {
+  for (const op of readOutbox(userId)) {
+    try {
+      if (op.kind === "insert") {
+        const row = { ...rowToDb(op.data || {}), user_id: userId };
+        const { error } = await db.from(op.table).upsert(row, { onConflict: "id" });
+        if (error) throw error;
+      } else if (op.kind === "update") {
+        const { error } = await db.from(op.table).update(rowToDb(op.data || {})).eq("id", op.rowId);
+        if (error) throw error;
+      } else {
+        const { error } = await db.from(op.table).delete().eq("id", op.rowId);
+        if (error) throw error;
+      }
+      resolve(userId, op.opId);
+      emitPending();
+    } catch (e) {
+      // Still failing (e.g. the schema fix isn't applied yet) — keep it queued
+      // and try again on the next hydrate.
+      console.warn(`[sync] replay still failing for ${op.table}/${op.rowId}`, e);
+    }
+  }
 }
 
 // Single-row inbox connection (keyed by user_id).

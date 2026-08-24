@@ -1,8 +1,9 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
-import { setActiveUserId, importLocalDataIfNeeded, loadAllForUser } from "@/lib/sync";
+import { setActiveUserId, importLocalDataIfNeeded, loadAllForUser, overlayOutbox, replayOutbox } from "@/lib/sync";
 import { Button } from "@/components/ui/button";
+import { SyncStatusBanner } from "@/components/SyncStatusBanner";
 
 // Supabase/PostgREST errors are plain objects (not Error instances), so pull the
 // real message out of whatever shape we're handed — otherwise the screen just
@@ -45,7 +46,11 @@ export function DataGate({ children }: { children: ReactNode }) {
       try {
         await importLocalDataIfNeeded(user.id);
         const data = await loadAllForUser(user.id);
+        // Merge any writes that never reached the server so nothing looks lost,
+        // then retry them in the background.
+        overlayOutbox(user.id, data.collections);
         hydrateAll(data);
+        void replayOutbox(user.id);
       } catch (e) {
         console.error("[DataGate] hydration failed", e);
         setError(errMessage(e));
@@ -71,7 +76,11 @@ export function DataGate({ children }: { children: ReactNode }) {
               loadedFor.current = user.id;
               importLocalDataIfNeeded(user.id)
                 .then(() => loadAllForUser(user.id))
-                .then(hydrateAll)
+                .then((data) => {
+                  overlayOutbox(user.id, data.collections);
+                  hydrateAll(data);
+                  void replayOutbox(user.id);
+                })
                 .catch((e) => setError(errMessage(e)));
             }
           }}
@@ -90,5 +99,10 @@ export function DataGate({ children }: { children: ReactNode }) {
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <SyncStatusBanner />
+    </>
+  );
 }

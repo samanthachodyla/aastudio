@@ -7,10 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useUserProfile } from "@/lib/userProfile";
-import { supabase } from "@/integrations/supabase/client";
 
-// Submissions are delivered by the `send-studio-manager-message` edge function
-// (Resend) to the Studio Manager inbox, with the sender's address as reply-to.
+// Submissions are delivered by the /api/support serverless function, which
+// routes to the Studio Manager inbox (the same reliable channel used for
+// signups, plus a direct email when Resend is configured).
 
 const schema = z.object({
   subject: z.string().trim().min(1, "Subject required").max(200),
@@ -41,18 +41,15 @@ export function StudioManagerChat() {
     }
     setSending(true);
     try {
-      const { data, error } = await supabase.functions.invoke("send-studio-manager-message", {
-        body: { subject, message, name, email },
+      const res = await fetch("/api/support", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject, message, name, email, event_source_url: window.location.href }),
       });
-      if (error) {
-        let msg = "Couldn't send right now. Please try again.";
-        try {
-          const body = await (error as { context?: Response }).context?.json?.();
-          if (body?.error) msg = body.error;
-        } catch { /* keep default */ }
-        throw new Error(msg);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Couldn't send right now. Please try again.");
       }
-      if (data?.error) throw new Error(data.error);
       setSent(true);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Couldn't send right now. Please try again.");
