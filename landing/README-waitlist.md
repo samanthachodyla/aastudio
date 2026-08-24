@@ -1,5 +1,11 @@
 # Launch waitlist → Sheet + email + Meta CAPI + GA4 server-side
 
+This same Apps Script endpoint also receives the in-app **Studio Manager /
+support** form (posted server-side by `/api/support`). When `source === "support"`
+it logs the message to a **Support** tab and emails
+**cara@allegoryartconsulting.com** the full subject + message, with the artist's
+address as **reply-to** — see the `source === "support"` branch in `doPost`.
+
 The landing page's "Get first access" form posts each signup to a **Google Apps
 Script Web App** that you own. On every submission it:
 
@@ -62,6 +68,30 @@ function doPost(e) {
     var firstName = (p.first_name || "").toString().trim();
     var lastName  = (p.last_name  || "").toString().trim();
     var fullName  = (p.name || (firstName + " " + lastName)).toString().trim();
+    var source    = (p.source || "").toString().trim();
+
+    // ---- Studio Manager / support messages (from the in-app support form) ----
+    // These carry a subject + message and must reach Cara with the real content,
+    // reply-to the artist — not the waitlist template below.
+    if (source === "support" && email) {
+      var supSubject = (p.subject || "(no subject)").toString().trim();
+      var supMessage = (p.message || "").toString().trim();
+      var support = ss.getSheetByName("Support") || ss.insertSheet("Support");
+      if (support.getLastRow() === 0) {
+        support.appendRow(["Timestamp", "Name", "Email", "Subject", "Message"]);
+      }
+      support.appendRow([new Date(), fullName, email, supSubject, supMessage]);
+      MailApp.sendEmail({
+        to: NOTIFY,
+        replyTo: email,
+        subject: "[Studio Manager] " + supSubject + (fullName ? " — " + fullName : ""),
+        body: "New Studio Manager message\n\nFrom: " + (fullName || "—") + " <" + email + ">\n" +
+              "Subject: " + supSubject + "\n\n" + supMessage + "\n"
+      });
+      return ContentService.createTextOutput(JSON.stringify({ ok: true }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     if (email) {
       var ts = new Date();
       sheet.appendRow([ts, email, firstName, lastName, p.source || "", p.referrer || "", p.user_agent || ""]);
