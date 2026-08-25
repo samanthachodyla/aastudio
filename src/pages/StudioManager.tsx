@@ -113,6 +113,13 @@ const StudioManager = () => {
       <img src="/AAC_Brandmark-03_Emerald.png" alt="Allegory Studio" style={{ width: 48, height: "auto" }} className="mx-auto mb-6" />
       <StudioManagerChat />
 
+      <p className="text-center text-xs text-muted-foreground mt-4">
+        Technical questions? Email{" "}
+        <a href="mailto:hello@allegoryartstudio.com" className="underline hover:text-foreground">
+          hello@allegoryartstudio.com
+        </a>
+      </p>
+
       {/* Book a call */}
       <section className="mt-14">
         <div className="mb-4">
