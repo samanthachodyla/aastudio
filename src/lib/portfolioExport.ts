@@ -71,8 +71,15 @@ function plate(a: Artwork, opts: PortfolioOptions): string {
     ? `<span class="loc">${esc(a.location)}</span>`
     : "";
 
+  // Running header on every page: the artist's own logo (their invoice logo) if
+  // they have one, otherwise their name.
+  const header = opts.logo
+    ? `<img class="head-logo" src="${esc(opts.logo)}" alt="${esc(opts.artistName)}" />`
+    : (opts.artistName ? `<span class="head-name">${esc(opts.artistName)}</span>` : "");
+
   return `
     <section class="plate">
+      <div class="plate-head">${header}</div>
       ${img}
       <div class="caption">
         <h2 class="work-title">${esc(a.title) || "Untitled"}</h2>
@@ -82,24 +89,26 @@ function plate(a: Artwork, opts: PortfolioOptions): string {
           <div class="tags">${avail}${loc}</div>
         </div>
       </div>
-      <div class="plate-brand">${esc(opts.artistName || "Allegory Art Studio")}</div>
+      <div class="plate-brand">Allegory Art Studio</div>
     </section>`;
 }
 
 function coverPage(opts: PortfolioOptions, count: number): string {
-  const logo = opts.logo
-    ? `<img class="cover-logo" src="${esc(opts.logo)}" alt="" />`
-    : `<div class="cover-wordmark">allegory</div>`;
+  // Top of the document: the artist's own logo (their invoice logo) if present.
+  const logo = opts.logo ? `<img class="cover-logo" src="${esc(opts.logo)}" alt="${esc(opts.artistName)}" />` : "";
   const contact = opts.contact ? `<div class="cover-contact">${esc(opts.contact)}</div>` : "";
   const worksLabel = `${count} ${count === 1 ? "work" : "works"}`;
   return `
     <section class="cover">
-      ${logo}
-      <div class="cover-artist">${esc(opts.artistName) || "Available Works"}</div>
-      <div class="cover-rule"></div>
-      <div class="cover-title">${esc(opts.title || "Available Works")}</div>
-      <div class="cover-sub">${worksLabel}</div>
-      ${contact}
+      <div class="cover-main">
+        ${logo}
+        <div class="cover-artist">${esc(opts.artistName) || "Available Works"}</div>
+        <div class="cover-rule"></div>
+        <div class="cover-title">${esc(opts.title || "Available Works")}</div>
+        <div class="cover-sub">${worksLabel}</div>
+        ${contact}
+      </div>
+      <div class="cover-foot">Allegory Art Studio</div>
     </section>`;
 }
 
@@ -130,14 +139,17 @@ export function buildPortfolioHtml(opts: PortfolioOptions): string {
 
   /* ---- Cover ---- */
   .cover {
-    height: 100vh; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; text-align: center;
-    padding: 1in; page-break-after: always;
+    height: 100vh; display: flex; flex-direction: column; text-align: center;
+    padding: 0.9in 1in 0.55in; page-break-after: always;
   }
-  .cover-logo { max-height: 84px; max-width: 260px; object-fit: contain; margin-bottom: 28px; }
-  .cover-wordmark {
-    font-family: "Cormorant Garamond", Georgia, serif; font-size: 30px;
-    letter-spacing: 0.02em; color: var(--forest); margin-bottom: 26px;
+  .cover-main {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .cover-logo { max-height: 96px; max-width: 300px; object-fit: contain; margin-bottom: 30px; }
+  .cover-foot {
+    text-transform: uppercase; letter-spacing: 0.24em; font-size: 9px;
+    color: var(--muted); padding-top: 12px;
   }
   .cover-artist {
     font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500;
@@ -159,7 +171,13 @@ export function buildPortfolioHtml(opts: PortfolioOptions): string {
   /* ---- Plate (one work per page) ---- */
   .plate {
     height: 100vh; display: flex; flex-direction: column;
-    padding: 0.75in 0.85in 0.6in; page-break-after: always; position: relative;
+    padding: 0.6in 0.85in 0.6in; page-break-after: always; position: relative;
+  }
+  .plate-head { text-align: center; margin-bottom: 14px; min-height: 18px; }
+  .head-logo { max-height: 42px; max-width: 220px; object-fit: contain; }
+  .head-name {
+    font-family: "Cormorant Garamond", Georgia, serif; font-size: 15px;
+    letter-spacing: 0.02em; color: var(--ink);
   }
   .plate-img {
     flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center;
