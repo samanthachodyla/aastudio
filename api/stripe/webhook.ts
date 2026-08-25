@@ -123,7 +123,8 @@ export default async function handler(req: any, res: any) {
     for (let page = 1; page <= 25; page++) {
       const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 200 });
       if (error || !data?.users?.length) return null;
-      const u = data.users.find((x) => (x.email || "").toLowerCase() === email);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const u = data.users.find((x: any) => (x.email || "").toLowerCase() === email);
       if (u) return u.id;
       if (data.users.length < 200) return null;
     }
