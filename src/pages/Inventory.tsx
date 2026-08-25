@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Plus, Search, Download, Trash2, Upload, X, ImageIcon, Boxes, Handshake } from "lucide-react";
+import { Plus, Search, Download, Trash2, Upload, X, ImageIcon, Boxes, Handshake, FileText } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useStore, fmtMoney } from "@/lib/store";
 import type { Artwork } from "@/lib/types";
@@ -15,7 +15,12 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ConsignmentsView } from "@/components/ConsignmentsView";
 import { toast } from "sonner";
 import { parseCsv } from "@/lib/csv";
+import { exportPortfolioPdf } from "@/lib/portfolioExport";
+import { useUserProfile } from "@/lib/userProfile";
 import type { ArtworkStatus } from "@/lib/types";
+
+// Default statuses for a collector-facing "available works" portfolio.
+const defaultPortfolioStatuses: ArtworkStatus[] = ["in_studio", "on_consignment"];
 
 const exportableStatuses: { value: ArtworkStatus; label: string }[] = [
   { value: "in_studio", label: "In studio" },
@@ -38,6 +43,7 @@ const statuses: { value: ArtworkStatus | "all"; label: string }[] = [
 
 const Inventory = () => {
   const { artworks, addArtwork, updateArtwork, deleteArtwork, contacts, addContact } = useStore();
+  const { fullName, email, invoiceLogo } = useUserProfile();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<ArtworkStatus | "all">("all");
   const [open, setOpen] = useState(false);
@@ -85,6 +91,42 @@ const Inventory = () => {
   const [exportStatuses, setExportStatuses] = useState<ArtworkStatus[]>(
     exportableStatuses.map(s => s.value)
   );
+
+  // Portfolio (PDF) export state.
+  const [portfolioOpen, setPortfolioOpen] = useState(false);
+  const [portfolioStatuses, setPortfolioStatuses] = useState<ArtworkStatus[]>(defaultPortfolioStatuses);
+  const [portfolioTitle, setPortfolioTitle] = useState("Available Works");
+  const [showPrices, setShowPrices] = useState(true);
+  const [showLocation, setShowLocation] = useState(false);
+
+  const togglePortfolioStatus = (s: ArtworkStatus) => {
+    setPortfolioStatuses(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
+  };
+
+  const exportPortfolio = () => {
+    const selected = new Set(portfolioStatuses);
+    const data = artworks.filter(a => selected.has(a.status));
+    if (data.length === 0) {
+      toast.error("No works match the selected statuses.");
+      return;
+    }
+    const ok = exportPortfolioPdf({
+      artworks: data,
+      artistName: fullName || "",
+      logo: invoiceLogo || undefined,
+      contact: email || undefined,
+      title: portfolioTitle.trim() || "Available Works",
+      showPrices,
+      showLocation,
+      statusLabels: Object.fromEntries(exportableStatuses.map(s => [s.value, s.label])),
+    });
+    if (!ok) {
+      toast.error("Please allow pop-ups for this site, then try the export again.");
+      return;
+    }
+    toast.success(`Portfolio ready — choose “Save as PDF” in the print dialog.`);
+    setPortfolioOpen(false);
+  };
 
   const importArtworks = (rows: Omit<Artwork, "id" | "createdAt">[]) => {
     rows.forEach(r => addArtwork(r));
@@ -178,6 +220,63 @@ const Inventory = () => {
                   <Button variant="outline" size="sm" onClick={() => setExportOpen(false)}>Cancel</Button>
                   <Button size="sm" onClick={exportCSV} disabled={exportStatuses.length === 0} className="gap-2">
                     <Download className="h-3.5 w-3.5" /> Download
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={portfolioOpen} onOpenChange={setPortfolioOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <FileText className="h-3.5 w-3.5" /> Export portfolio
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Export artwork portfolio</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  A polished, on-brand PDF to send collectors, galleries, and stores.
+                </p>
+                <div className="space-y-1.5">
+                  <Label className="eyebrow text-[10px]">Title</Label>
+                  <Input
+                    value={portfolioTitle}
+                    onChange={(e) => setPortfolioTitle(e.target.value)}
+                    maxLength={60}
+                    placeholder="Available Works"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="eyebrow text-[10px]">Include works with status</Label>
+                  {exportableStatuses.map(s => (
+                    <label key={s.value} className="flex items-center gap-3 text-sm cursor-pointer">
+                      <Checkbox
+                        checked={portfolioStatuses.includes(s.value)}
+                        onCheckedChange={() => togglePortfolioStatus(s.value)}
+                      />
+                      {s.label}
+                    </label>
+                  ))}
+                </div>
+                <div className="space-y-2 border-t border-border pt-3">
+                  <label className="flex items-center gap-3 text-sm cursor-pointer">
+                    <Checkbox checked={showPrices} onCheckedChange={(v) => setShowPrices(!!v)} />
+                    Show prices
+                  </label>
+                  <label className="flex items-center gap-3 text-sm cursor-pointer">
+                    <Checkbox checked={showLocation} onCheckedChange={(v) => setShowLocation(!!v)} />
+                    Show location <span className="text-muted-foreground text-xs">(gallery / collector)</span>
+                  </label>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Opens a print view — choose <span className="font-medium">Save as PDF</span> as the destination.
+                </p>
+                <div className="flex justify-end gap-2 pt-1">
+                  <Button variant="outline" size="sm" onClick={() => setPortfolioOpen(false)}>Cancel</Button>
+                  <Button size="sm" onClick={exportPortfolio} disabled={portfolioStatuses.length === 0} className="gap-2">
+                    <FileText className="h-3.5 w-3.5" /> Create PDF
                   </Button>
                 </div>
               </div>
