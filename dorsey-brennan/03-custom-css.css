@@ -45,8 +45,6 @@
   --db-body:     #f5efdd;  /* body text on dark */
   --db-brown:    #925c50;  /* nav + links, resting state */
 
-  --db-header-h: 132px;    /* measure yours and update — see §3 */
-  --db-footer-h: 96px;
 }
 
 /* GROUND RULES — which text color goes on which background.
@@ -177,23 +175,17 @@ body, p, .sqs-block-html p {
    Fixed Position. Do that BEFORE relying on the CSS below, which only styles it.
    -------------------------------------------------------------------------- */
 
-/* A CREAM veil, not a dark one. The page reads light, and both the red
-   wordmark (5.7:1) and the brown nav (4.75:1) land on their best ground. */
+/* Fully transparent — the photograph runs to the top edge. The nav's
+   legibility now depends on the photo behind it: if the links go faint,
+   raise that section's background overlay toward 50%, or choose a hero
+   whose top third has some depth. */
 #header {
-  background: linear-gradient(180deg,
-    rgba(255, 240, 200, 0.95) 0%,
-    rgba(255, 240, 200, 0.80) 62%,
-    rgba(255, 240, 200, 0) 100%);
-  transition: background 0.5s ease;
+  background: transparent;
 }
 
-#header.shrink,
-.header--menu-open #header {
-  background: linear-gradient(180deg,
-    rgba(255, 240, 200, 0.98) 0%,
-    rgba(255, 240, 200, 0.94) 74%,
-    rgba(255, 240, 200, 0.55) 100%);
-  backdrop-filter: blur(6px);
+#header.shrink {
+  background: transparent;
+  backdrop-filter: none;
 }
 
 /* THE NAV HOVER — brown, and yellow arrives on hover.
@@ -272,58 +264,36 @@ body, p, .sqs-block-html p {
 
 
 /* --------------------------------------------------------------------------
-   4. FIXED FOOTER
-   Squarespace has no built-in switch for this, so this is the real work.
-   Content scrolls underneath; the footer never moves.
+   4. FOOTER
+   Scrolls normally with the page. Solid oxblood — and on this dark ground
+   the yellow-letter hover you originally wanted actually works: 9.2:1.
    -------------------------------------------------------------------------- */
 
 #footer-sections {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 900;                        /* above content, below the mobile menu */
-  background: linear-gradient(0deg,
-    rgba(255, 240, 200, 0.96) 0%,
-    rgba(255, 240, 200, 0.82) 66%,
-    rgba(255, 240, 200, 0) 100%);
+  background-color: var(--db-oxblood);
 }
 
-/* Reserve the space the footer occupies, or your last section hides behind it
-   forever and you'll think you deleted it. */
 #sections {
-  padding-bottom: var(--db-footer-h);
+  padding-bottom: 0;
 }
 
-/* Footer links get the same treatment as the nav */
 #footer-sections a {
-  position: relative;
-  display: inline-block;
   font-family: 'Ovo', serif !important;
-  color: var(--db-brown) !important;
+  color: var(--db-cream) !important;
   text-transform: uppercase;
   letter-spacing: 0.24em;
-  padding: 0.45em 0.7em;
   background-image: none !important;
   transition: color 0.3s ease;
 }
-#footer-sections a::before {
-  content: "";
-  position: absolute;
-  top: 0; right: 0; bottom: 0; left: 0;
-  z-index: -1;
-  background-color: var(--db-yellow);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-#footer-sections a:hover { color: var(--db-oxblood) !important; }
-#footer-sections a:hover::before { opacity: 1; }
 
-/* On phones a pinned footer eats a third of the screen. Let it scroll normally
-   below 768px — nobody will miss it, and the site stays usable. */
-@media screen and (max-width: 767px) {
-  #footer-sections { position: relative; z-index: auto; }
-  #sections { padding-bottom: 0; }
+#footer-sections a:hover {
+  color: var(--db-yellow) !important;
+}
+
+/* Footer body text and headings, cream on the oxblood ground */
+#footer-sections p,
+#footer-sections h1, #footer-sections h2, #footer-sections h3 {
+  color: var(--db-body);
 }
 
 
