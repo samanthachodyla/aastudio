@@ -232,6 +232,19 @@ body, p, .sqs-block-html p {
   .header-title-logo img { max-height: 84px !important; }
 }
 
+/* Pull the wordmark and the nav together. Most of a stubborn gap is usually
+   transparent padding inside the logo PNG itself — upload a tightly-cropped
+   export first, then tune the -14px below: more negative = closer. */
+#header .header-title {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+#header .header-nav,
+#header .header-nav-wrapper {
+  margin-top: -14px;
+  padding-top: 0 !important;
+}
+
 
 /* --------------------------------------------------------------------------
    4. FOOTER
