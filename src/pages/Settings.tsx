@@ -164,7 +164,9 @@ const Settings = () => {
           </div>
         </section>
 
-        {/* Developer tier switcher */}
+        {/* Developer tier switcher — DEV builds only. In production, tier access is
+            derived from the real subscription, never a client-side toggle. */}
+        {import.meta.env.DEV && (
         <section className="hairline-card p-6 border-dashed">
           <div className="eyebrow mb-2">Developer · Tier switcher</div>
           <h3 className="font-display text-xl mb-2 tracking-tight">Preview tier experience</h3>
@@ -189,6 +191,7 @@ const Settings = () => {
             </Button>
           </div>
         </section>
+        )}
 
         {/* Legal */}
         <section className="hairline-card p-6">

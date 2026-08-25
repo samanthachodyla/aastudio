@@ -1,9 +1,18 @@
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { DataGate } from "@/components/DataGate";
 import { BETA_ALL_PRO } from "@/lib/tier";
 import { useSubscription, hasActiveAccess } from "@/lib/subscription";
+import { supabase } from "@/integrations/supabase/client";
+
+function LoaderScreen({ label = "Loading your studio…" }: { label?: string }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="eyebrow text-muted-foreground animate-pulse">{label}</div>
+    </div>
+  );
+}
 
 /** Gates its children behind a valid Supabase session, redirecting to /login otherwise.
  *  After the beta ends (BETA_ALL_PRO = false) it also requires an active
@@ -13,17 +22,53 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   const location = useLocation();
   const { subscription, loaded, fetch } = useSubscription();
 
+  const justCheckedOut = new URLSearchParams(location.search).get("checkout") === "success";
+  const [finalizing, setFinalizing] = useState(justCheckedOut);
+  const finalizeRan = useRef(false);
+
   // Load the user's subscription once they're signed in.
   useEffect(() => {
     if (session && !loaded) fetch();
   }, [session, loaded, fetch]);
 
+  // After returning from Stripe Checkout, finalize the subscription synchronously
+  // (server record) and poll as a fallback, so a just-paid customer is never
+  // bounced to /pricing while the async webhook is still in flight.
+  useEffect(() => {
+    if (!session || !justCheckedOut || finalizeRan.current) return;
+    finalizeRan.current = true;
+    let cancelled = false;
+
+    const sid = new URLSearchParams(window.location.search).get("sid") || "";
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+    (async () => {
+      // 1) Immediate server-side record (does not depend on the webhook).
+      try {
+        const access = (await supabase.auth.getSession()).data.session?.access_token;
+        if (sid && access) {
+          await window.fetch("/api/stripe/sync-subscription", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${access}` },
+            body: JSON.stringify({ sid }),
+          });
+        }
+      } catch { /* fall through to polling */ }
+
+      // 2) Refetch, briefly polling as a fallback for webhook-only timing.
+      for (let i = 0; i < 8 && !cancelled; i++) {
+        await fetch();
+        if (hasActiveAccess(useSubscription.getState().subscription)) break;
+        await sleep(1200);
+      }
+      if (!cancelled) setFinalizing(false);
+    })();
+
+    return () => { cancelled = true; };
+  }, [session, justCheckedOut, fetch]);
+
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="eyebrow text-muted-foreground animate-pulse">Loading your studio…</div>
-      </div>
-    );
+    return <LoaderScreen />;
   }
 
   if (!session) {
@@ -38,13 +83,13 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   const ALWAYS_ALLOWED = ["/pricing", "/settings"];
   if (!BETA_ALL_PRO && !ALWAYS_ALLOWED.includes(location.pathname)) {
     if (!loaded) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <div className="eyebrow text-muted-foreground animate-pulse">Loading your studio…</div>
-        </div>
-      );
+      return <LoaderScreen />;
     }
     if (!hasActiveAccess(subscription)) {
+      // Just returned from checkout — finalize (above) rather than bounce.
+      if (justCheckedOut && finalizing) {
+        return <LoaderScreen label="Finalizing your subscription…" />;
+      }
       return <Navigate to="/pricing" replace state={{ needsPlan: true }} />;
     }
   }
