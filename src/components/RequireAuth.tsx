@@ -47,10 +47,10 @@ export function RequireAuth({ children }: { children: ReactNode }) {
       try {
         const access = (await supabase.auth.getSession()).data.session?.access_token;
         if (sid && access) {
-          await window.fetch("/api/stripe/sync-subscription", {
+          await window.fetch("/api/stripe/checkout", {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${access}` },
-            body: JSON.stringify({ sid }),
+            body: JSON.stringify({ action: "sync", sid }),
           });
         }
       } catch { /* fall through to polling */ }

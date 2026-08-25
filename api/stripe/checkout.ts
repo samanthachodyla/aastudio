@@ -35,14 +35,47 @@ export default async function handler(req: any, res: any) {
     const user = ures.user;
 
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
+    const stripe = new Stripe(secret);
+
+    // Finalize a just-completed checkout synchronously (called on return from
+    // Stripe Checkout) so the member isn't bounced to /pricing while the async
+    // webhook is still in flight. Handled here rather than in its own endpoint to
+    // stay within the Hobby plan's 12-serverless-function limit.
+    if (body.action === "sync") {
+      const sid = String(body.sid || "").trim();
+      if (!sid) return res.status(400).json({ error: "Missing checkout reference." });
+      const session = await stripe.checkout.sessions.retrieve(sid);
+      // Only record a session that this user actually paid for.
+      if (session.metadata?.user_id && session.metadata.user_id !== user.id) {
+        return res.status(403).json({ error: "This checkout doesn't belong to you." });
+      }
+      if (session.payment_status !== "paid" && session.status !== "complete") {
+        return res.status(202).json({ pending: true });
+      }
+      const subId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
+      const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id;
+      if (!subId || !customerId) return res.status(202).json({ pending: true });
+      const sub = await stripe.subscriptions.retrieve(subId);
+      await supabase.from("subscriptions").upsert({
+        user_id: user.id,
+        stripe_customer_id: customerId,
+        stripe_subscription_id: sub.id,
+        plan: sub.metadata?.plan || session.metadata?.plan || null,
+        cycle: sub.metadata?.cycle || session.metadata?.cycle || null,
+        status: sub.status,
+        current_period_end: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null,
+        cancel_at_period_end: !!sub.cancel_at_period_end,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id" });
+      return res.status(200).json({ ok: true, status: sub.status });
+    }
+
     const plan = String(body.plan || "");
     const cycle = String(body.cycle || "");
     const price = PRICE_IDS[`${plan}:${cycle}`];
     if (!price) {
       return res.status(400).json({ error: "Unknown plan", detail: `No price configured for ${plan}/${cycle}` });
     }
-
-    const stripe = new Stripe(secret);
 
     // Reuse an existing Stripe customer for this user if we have one.
     const { data: subRow } = await supabase
