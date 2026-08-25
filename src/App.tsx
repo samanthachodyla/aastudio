@@ -26,6 +26,7 @@ const Privacy = lazy(() => import("./pages/Privacy.tsx"));
 const Cookies = lazy(() => import("./pages/Cookies.tsx"));
 const Reports = lazy(() => import("./pages/Reports.tsx"));
 const Welcome = lazy(() => import("./pages/Welcome.tsx"));
+const SharedPortfolio = lazy(() => import("./pages/SharedPortfolio.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 import { TierGate } from "./components/TierGate";
 import { AuthProvider } from "./lib/auth";
@@ -61,6 +62,8 @@ const App = () => (
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/cookies" element={<Cookies />} />
+              {/* Public shared portfolio (read-only, no auth) */}
+              <Route path="/p/:slug" element={<SharedPortfolio />} />
 
               {/* Authenticated app */}
               <Route path="/dashboard" element={<RequireAuth><Index /></RequireAuth>} />

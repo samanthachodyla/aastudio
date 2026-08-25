@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Plus, Search, Download, Trash2, Upload, X, ImageIcon, Boxes, Handshake, FileText } from "lucide-react";
+import { Plus, Search, Download, Trash2, Upload, X, ImageIcon, Boxes, Handshake, FileText, Link2, Copy, Check } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useStore, fmtMoney } from "@/lib/store";
 import type { Artwork } from "@/lib/types";
@@ -16,6 +16,7 @@ import { ConsignmentsView } from "@/components/ConsignmentsView";
 import { toast } from "sonner";
 import { parseCsv } from "@/lib/csv";
 import { exportPortfolioPdf } from "@/lib/portfolioExport";
+import { createSharedPortfolio } from "@/lib/sharePortfolio";
 import { useUserProfile } from "@/lib/userProfile";
 import type { ArtworkStatus } from "@/lib/types";
 
@@ -98,6 +99,9 @@ const Inventory = () => {
   const [portfolioTitle, setPortfolioTitle] = useState("Available Works");
   const [showPrices, setShowPrices] = useState(true);
   const [showLocation, setShowLocation] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [shareUrl, setShareUrl] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const togglePortfolioStatus = (s: ArtworkStatus) => {
     setPortfolioStatuses(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
@@ -126,6 +130,44 @@ const Inventory = () => {
     }
     toast.success(`Portfolio ready — choose “Save as PDF” in the print dialog.`);
     setPortfolioOpen(false);
+  };
+
+  const createShare = async () => {
+    const selected = new Set(portfolioStatuses);
+    const data = artworks.filter(a => selected.has(a.status));
+    if (data.length === 0) {
+      toast.error("No works match the selected statuses.");
+      return;
+    }
+    setSharing(true);
+    setShareUrl("");
+    try {
+      const { url } = await createSharedPortfolio({
+        artworks: data,
+        artistName: fullName || "",
+        contact: email || undefined,
+        title: portfolioTitle.trim() || "Available Works",
+        showPrices,
+        showLocation,
+        statusLabels: Object.fromEntries(exportableStatuses.map(s => [s.value, s.label])),
+      });
+      setShareUrl(url);
+      toast.success("Shareable link created.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't create the link.");
+    } finally {
+      setSharing(false);
+    }
+  };
+
+  const copyShare = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      toast.error("Copy failed — select the link and copy it manually.");
+    }
   };
 
   const importArtworks = (rows: Omit<Artwork, "id" | "createdAt">[]) => {
@@ -225,7 +267,7 @@ const Inventory = () => {
               </div>
             </DialogContent>
           </Dialog>
-          <Dialog open={portfolioOpen} onOpenChange={setPortfolioOpen}>
+          <Dialog open={portfolioOpen} onOpenChange={(o) => { setPortfolioOpen(o); if (!o) { setShareUrl(""); setCopied(false); } }}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
                 <FileText className="h-3.5 w-3.5" /> Export portfolio
@@ -233,11 +275,11 @@ const Inventory = () => {
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>Export artwork portfolio</DialogTitle>
+                <DialogTitle>Share artwork portfolio</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  A polished, on-brand PDF to send collectors, galleries, and stores.
+                  A polished, on-brand PDF or shareable link to send collectors, galleries, and stores.
                 </p>
                 <div className="space-y-1.5">
                   <Label className="eyebrow text-[10px]">Title</Label>
@@ -271,10 +313,29 @@ const Inventory = () => {
                   </label>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Opens a print view — choose <span className="font-medium">Save as PDF</span> as the destination.
+                  <span className="font-medium">PDF</span> opens a print view — choose “Save as PDF”.
+                  A <span className="font-medium">link</span> is a live web page anyone can open.
                 </p>
-                <div className="flex justify-end gap-2 pt-1">
+                {shareUrl && (
+                  <div className="space-y-1.5 border-t border-border pt-3">
+                    <Label className="eyebrow text-[10px]">Shareable link</Label>
+                    <div className="flex gap-2">
+                      <Input readOnly value={shareUrl} onFocus={(e) => e.currentTarget.select()} className="text-xs" />
+                      <Button size="sm" variant="outline" onClick={copyShare} className="gap-1.5 shrink-0">
+                        {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                        {copied ? "Copied" : "Copy"}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Anyone with this link can view these works. Create a new link anytime to refresh it.
+                    </p>
+                  </div>
+                )}
+                <div className="flex flex-wrap justify-end gap-2 pt-1">
                   <Button variant="outline" size="sm" onClick={() => setPortfolioOpen(false)}>Cancel</Button>
+                  <Button variant="outline" size="sm" onClick={createShare} disabled={sharing || portfolioStatuses.length === 0} className="gap-2">
+                    <Link2 className="h-3.5 w-3.5" /> {sharing ? "Creating…" : "Create link"}
+                  </Button>
                   <Button size="sm" onClick={exportPortfolio} disabled={portfolioStatuses.length === 0} className="gap-2">
                     <FileText className="h-3.5 w-3.5" /> Create PDF
                   </Button>
