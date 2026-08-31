@@ -229,16 +229,17 @@ body, p, .sqs-block-html p {
   .header-title-logo img { max-height: 84px !important; }
 }
 
-/* Pull the wordmark and the nav together. Most of a stubborn gap is usually
-   transparent padding inside the logo PNG itself — upload a tightly-cropped
-   export first, then tune the -14px below: more negative = closer. */
+/* Space between the wordmark and the nav. One dial: raise the 18px for
+   more air, lower it for less; negative values pull them overlapping-close.
+   (With the tightly-cropped logo PNG this is now the true gap — the old
+   export's transparent padding used to add invisible space on top.) */
 #header .header-title {
   margin-bottom: 0 !important;
   padding-bottom: 0 !important;
 }
 #header .header-nav,
 #header .header-nav-wrapper {
-  margin-top: -14px;
+  margin-top: 18px;
   padding-top: 0 !important;
 }
 
