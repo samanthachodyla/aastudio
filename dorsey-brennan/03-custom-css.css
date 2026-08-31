@@ -188,9 +188,9 @@ body, p, .sqs-block-html p {
   backdrop-filter: none;
 }
 
-/* THE NAV — brand red, steady. No color change on hover; instead a warm
-   yellow glow blooms behind the letters. Red also happens to be the more
-   readable choice here: 5.8:1 over light grounds vs the brown's 4.75:1. */
+/* THE NAV — red letters that turn yellow on hover. No glow, no underline.
+   Yellow's visibility here depends entirely on the photo behind it and the
+   overlay on that section — judge it on the real pages. */
 
 .header-nav-item a,
 .header-nav-folder-item a,
@@ -203,22 +203,19 @@ body, p, .sqs-block-html p {
   font-size: 0.8rem;
   padding: 0.45em 0.7em;
   background-image: none !important;   /* kills Squarespace's default underline */
-  transition: text-shadow 0.35s ease;
+  transition: color 0.3s ease;
 }
 
 .header-nav-item a:hover,
 .header-nav-folder-item a:hover,
 .header-menu-nav-item a:hover {
-  color: var(--db-red) !important;     /* stays red */
-  text-shadow:
-    0 0 6px  rgba(248, 193, 53, 0.95),
-    0 0 16px rgba(248, 193, 53, 0.75),
-    0 0 34px rgba(248, 193, 53, 0.5);
+  color: var(--db-yellow) !important;
 }
 
-/* The current page keeps a quiet yellow rule beneath it */
+/* No marker on the current page — the nav stays uniform */
 .header-nav-item--active a {
-  border-bottom: 2px solid var(--db-yellow);
+  border-bottom: none;
+  background-image: none !important;
 }
 
 /* Wordmark sizing — the number to play with is the max-height. The header
