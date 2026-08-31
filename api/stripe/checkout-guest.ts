@@ -31,7 +31,10 @@ export default async function handler(req: any, res: any) {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price, quantity: 1 }],
-      allow_promotion_codes: true,
+      // Promo codes only on monthly plans. Guards against a "100% off once"
+      // coupon (e.g. the Labor Day first-month-free code) being applied to an
+      // annual plan, where the single free invoice would be a whole free year.
+      allow_promotion_codes: cycle !== "annual",
       billing_address_collection: "auto",
       success_url: `${APP_URL}/welcome?sid={CHECKOUT_SESSION_ID}`,
       cancel_url: `${APP_URL}/?checkout=cancel`,
