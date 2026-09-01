@@ -15,7 +15,7 @@ export function toLiveLanding(html: string): string {
 
   // Announcement marquee: waitlist message → live message.
   out = out.split('Launching August 1st <span class="bar">|</span> Join the list &amp; get first access')
-    .join('Now live <span class="bar">|</span> Start managing your studio today');
+    .join('Labor Day special is now live <span class="bar">|</span> First month free with code LABORDAY');
 
   // Every "first access" call-to-action anchor now scrolls to the pricing plans,
   // where choosing a plan opens Stripe Checkout. Payment comes first — no account
