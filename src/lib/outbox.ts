@@ -135,3 +135,20 @@ export function resolve(userId: string, opId: string): void {
   const ops = readOutbox(userId).filter((o) => o.opId !== opId);
   write(userId, ops);
 }
+
+/**
+ * Drop every pending DELETE op for a user and report how many were removed.
+ *
+ * Used on hydrate. A delete only stays queued if it FAILED to reach the server,
+ * which means the row still exists in the database. Re-applying that delete on
+ * load hid the row from the member while their data sat safely on the server —
+ * and a later successful retry could actually wipe it. Dropping stuck deletes on
+ * load keeps the data (the safe direction) and clears the stuck queue. Inserts
+ * and updates carry unsynced DATA, so they are never touched here.
+ */
+export function dropPendingDeletes(userId: string): number {
+  const ops = readOutbox(userId);
+  const kept = ops.filter((o) => o.kind !== "delete");
+  if (kept.length !== ops.length) write(userId, kept);
+  return ops.length - kept.length;
+}

@@ -10,7 +10,7 @@
 // typed client here and map rows ourselves (camelCase <-> snake_case).
 // ============================================================================
 import { supabase } from "@/integrations/supabase/client";
-import { readOutbox, recordInsert, recordUpdate, recordDelete, resolve, pendingCount } from "@/lib/outbox";
+import { readOutbox, recordInsert, recordUpdate, recordDelete, resolve, pendingCount, dropPendingDeletes } from "@/lib/outbox";
 
 // Loosely-typed handle so we can hit the new tables without regenerated types.
 const db = supabase as unknown as {
@@ -118,16 +118,22 @@ export async function pushDelete(table: string, id: string) {
 
 // Merge any unsynced outbox rows into freshly-hydrated collections so a member
 // still sees work that hasn't reached the server yet. Mutates `collections`.
+//
+// Stale/failed DELETE ops are dropped first and never applied: a delete only
+// survives to hydrate if it failed to reach the server, so the row still exists
+// in the database — re-applying it here is exactly what made a member's saved
+// inventory "disappear" from view while it sat safe on the server (and a later
+// retry could have wiped it). Dropping them keeps the data and clears the stuck
+// queue. Only unsynced inserts/updates (which carry real data) are merged.
 export function overlayOutbox(userId: string, collections: Record<string, any[]>) {
+  dropPendingDeletes(userId);
   for (const op of readOutbox(userId)) {
     const list = (collections[op.storeKey] ||= []);
     const idx = list.findIndex((r) => r.id === op.rowId);
-    if (op.kind === "delete") {
-      if (idx >= 0) list.splice(idx, 1);
-    } else if (op.kind === "insert") {
+    if (op.kind === "insert") {
       if (idx < 0) list.unshift(op.data); // client-shaped already (camelCase)
       else list[idx] = { ...list[idx], ...op.data };
-    } else {
+    } else if (op.kind === "update") {
       if (idx >= 0) list[idx] = { ...list[idx], ...op.data };
     }
   }
