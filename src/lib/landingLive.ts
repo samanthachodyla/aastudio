@@ -41,7 +41,7 @@ export function toLiveLanding(html: string): string {
   // the login form. (The pricing "Get started" buttons are what open sign-up.)
   out = out.replace(/<form class="signup"[\s\S]*?<\/form>/g,
     '<div class="signup">' +
-    '<a class="btn btn-solid" href="#pricing">Start your studio</a>' +
+    '<a class="btn btn-solid" href="#pricing" data-open-picker>Start your studio</a>' +
     '<a class="btn btn-ghost" href="/login" style="margin-left:8px">Sign in</a>' +
     '</div>');
 
