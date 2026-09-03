@@ -123,12 +123,13 @@
 .allegory-lp .hero .trust .star{color:var(--gold);letter-spacing:2px}
 .allegory-lp .hero-tag{display:inline-block;font-family:var(--font-b);font-size:14px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--sage)}
 /* hero: real studio photo behind a heavy cream wash (replaces the CSS mockup) */
-.allegory-lp .hero{overflow:hidden}
-.allegory-lp .hero .hero-photo{position:absolute;inset:0;z-index:0;background:url("/C2ACE3BE-81B3-45FD-A6E3-7973F4E6B681.png") center 40%/cover no-repeat}
-.allegory-lp .hero .hero-wash{position:absolute;inset:0;z-index:1;background:var(--bg);opacity:.86}
-.allegory-lp .hero>.wrap{position:relative;z-index:2}
+.allegory-lp .hero{overflow:hidden;min-height:560px;display:flex;align-items:center}
+.allegory-lp .hero .hero-photo{position:absolute;inset:0;z-index:0;background:url("/C2ACE3BE-81B3-45FD-A6E3-7973F4E6B681.png") 66% 36%/cover no-repeat}
+.allegory-lp .hero .hero-wash{position:absolute;inset:0;z-index:1;background:var(--bg);opacity:.80}
+.allegory-lp .hero>.wrap{position:relative;z-index:2;width:100%}
 .allegory-lp .hero .hero-grid{grid-template-columns:1fr}
-.allegory-lp .hero .reveal{max-width:600px}
+.allegory-lp .hero .reveal{max-width:560px}
+@media(max-width:900px){.allegory-lp .hero{min-height:0;display:block}}
 /* hero device mock */
 .allegory-lp .device{
   background:var(--card);border:1px solid var(--line);border-radius:6px;
