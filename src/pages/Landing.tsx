@@ -227,73 +227,6 @@ export default function Landing() {
     };
     planButtons.forEach((b) => b.addEventListener("click", onPlanClick));
 
-    // ---- Plan picker: "Start your studio" -> choose plan + cycle -> Stripe ----
-    const picker = root.querySelector<HTMLElement>("#plan-picker");
-    const pkPriceEl = root.querySelector<HTMLElement>("#pk-price");
-    const pkPerEl = root.querySelector<HTMLElement>("#pk-per");
-    const pkDescEl = root.querySelector<HTMLElement>("#pk-desc");
-    const pkContinue = root.querySelector<HTMLAnchorElement>("#pk-continue");
-    const PK_PRICE: Record<string, { m: string; a: string }> = {
-      starter: { m: "$25", a: "$240" },
-      pro: { m: "$55", a: "$528" },
-    };
-    const PK_DESC: Record<string, string> = {
-      starter: "The core studio: inventory, sales & finance, deadlines, contacts, and your daily dashboard.",
-      pro: "Everything in Starter, plus Profile Vault, Communications, Marketing, smart pricing, and a real arts administrator.",
-    };
-    let pkPlan = "starter";
-    let pkCycle: "monthly" | "annual" = "monthly";
-    const pkRender = () => {
-      if (pkPriceEl) pkPriceEl.textContent = pkCycle === "annual" ? PK_PRICE[pkPlan].a : PK_PRICE[pkPlan].m;
-      if (pkPerEl) pkPerEl.textContent = pkCycle === "annual" ? "/year" : "/month";
-      if (pkDescEl) pkDescEl.textContent = PK_DESC[pkPlan];
-      root.querySelectorAll<HTMLElement>("[data-pk-plan]").forEach((b) =>
-        b.classList.toggle("active", b.getAttribute("data-pk-plan") === pkPlan));
-      root.querySelectorAll<HTMLElement>("[data-pk-cycle]").forEach((b) =>
-        b.classList.toggle("active", b.getAttribute("data-pk-cycle") === pkCycle));
-    };
-    const openPicker = (e?: Event) => { e?.preventDefault(); picker?.classList.add("open"); document.body.style.overflow = "hidden"; };
-    const closePicker = () => { picker?.classList.remove("open"); document.body.style.overflow = ""; };
-    const onPkPlan = (e: Event) => { pkPlan = (e.currentTarget as HTMLElement).getAttribute("data-pk-plan") || "starter"; pkRender(); };
-    const onPkCycle = (e: Event) => { pkCycle = ((e.currentTarget as HTMLElement).getAttribute("data-pk-cycle") as "monthly" | "annual") || "monthly"; pkRender(); };
-    const onPkBackdrop = (e: MouseEvent) => { if (e.target === picker) closePicker(); };
-    const onPkKey = (e: KeyboardEvent) => { if (e.key === "Escape") closePicker(); };
-    const onPkContinue = async (e: Event) => {
-      e.preventDefault();
-      if (!pkContinue) return;
-      const original = pkContinue.textContent;
-      pkContinue.textContent = "Loading…";
-      pkContinue.style.pointerEvents = "none";
-      try {
-        const res = await fetch("/api/stripe/checkout-guest", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ plan: pkPlan, cycle: pkCycle }),
-        });
-        const json = await res.json();
-        if (json.url) { window.location.href = json.url; return; }
-        throw new Error(json.error || "no url");
-      } catch {
-        closePicker();
-        window.location.href = "#pricing";
-      } finally {
-        pkContinue.textContent = original;
-        pkContinue.style.pointerEvents = "";
-      }
-    };
-    const pkOpenEls = Array.from(root.querySelectorAll<HTMLElement>("[data-open-picker]"));
-    const pkCloseEls = Array.from(root.querySelectorAll<HTMLElement>("[data-close-picker]"));
-    const pkPlanEls = Array.from(root.querySelectorAll<HTMLElement>("[data-pk-plan]"));
-    const pkCycleEls = Array.from(root.querySelectorAll<HTMLElement>("[data-pk-cycle]"));
-    pkOpenEls.forEach((el) => el.addEventListener("click", openPicker));
-    pkCloseEls.forEach((el) => el.addEventListener("click", closePicker));
-    pkPlanEls.forEach((el) => el.addEventListener("click", onPkPlan));
-    pkCycleEls.forEach((el) => el.addEventListener("click", onPkCycle));
-    picker?.addEventListener("click", onPkBackdrop);
-    document.addEventListener("keydown", onPkKey);
-    pkContinue?.addEventListener("click", onPkContinue);
-    pkRender();
-
     return () => {
       submitBindings.forEach(([form, h]) => form.removeEventListener("submit", h));
       window.removeEventListener("resize", aasFit);
@@ -307,13 +240,6 @@ export default function Landing() {
       popCloseEls.forEach((el) => el.removeEventListener("click", closePopup));
       popForm?.removeEventListener("submit", onPopSubmit);
       planButtons.forEach((b) => b.removeEventListener("click", onPlanClick));
-      pkOpenEls.forEach((el) => el.removeEventListener("click", openPicker));
-      pkCloseEls.forEach((el) => el.removeEventListener("click", closePicker));
-      pkPlanEls.forEach((el) => el.removeEventListener("click", onPkPlan));
-      pkCycleEls.forEach((el) => el.removeEventListener("click", onPkCycle));
-      picker?.removeEventListener("click", onPkBackdrop);
-      document.removeEventListener("keydown", onPkKey);
-      pkContinue?.removeEventListener("click", onPkContinue);
     };
   }, []);
 

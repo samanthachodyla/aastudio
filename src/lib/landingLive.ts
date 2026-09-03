@@ -37,11 +37,14 @@ export function toLiveLanding(html: string): string {
   // Both the hero and the final CTA sit on light (cream) backgrounds, so the
   // secondary button is a ghost outline — btn-light would be cream-on-cream and
   // effectively invisible.
-  // "Start your studio" scrolls down to the pricing options; "Sign in" goes to
-  // the login form. (The pricing "Get started" buttons are what open sign-up.)
+  // "Start your studio" (data-plan="starter") opens Stripe Checkout directly for
+  // Studio Starter monthly via the same a[data-plan] handler the pricing buttons
+  // use (falling back to the #pricing section if checkout can't start). "Sign in"
+  // goes to the login form. The pricing section below is where visitors switch
+  // plan/cycle if they want something other than the Starter monthly default.
   out = out.replace(/<form class="signup"[\s\S]*?<\/form>/g,
     '<div class="signup">' +
-    '<a class="btn btn-solid" href="#pricing" data-open-picker>Start your studio</a>' +
+    '<a class="btn btn-solid" href="#pricing" data-plan="starter">Start your studio</a>' +
     '<a class="btn btn-ghost" href="/login" style="margin-left:8px">Sign in</a>' +
     '</div>');
 

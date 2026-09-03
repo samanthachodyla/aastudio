@@ -122,34 +122,9 @@
 .allegory-lp .hero .trust{margin-top:6px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:10px}
 .allegory-lp .hero .trust .star{color:var(--gold);letter-spacing:2px}
 .allegory-lp .hero-tag{display:inline-block;font-family:var(--font-b);font-size:14px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--sage)}
-/* hero: real studio photo behind a heavy cream wash (replaces the CSS mockup) */
-.allegory-lp .hero{overflow:hidden;min-height:560px;display:flex;align-items:center}
-.allegory-lp .hero .hero-photo{position:absolute;inset:0;z-index:0;background:url("/C2ACE3BE-81B3-45FD-A6E3-7973F4E6B681.png") 66% 36%/cover no-repeat}
-.allegory-lp .hero .hero-wash{position:absolute;inset:0;z-index:1;background:var(--bg);opacity:.80}
-.allegory-lp .hero>.wrap{position:relative;z-index:2;width:100%}
+/* hero: single column (dashboard mockup removed; a video may go here later) */
 .allegory-lp .hero .hero-grid{grid-template-columns:1fr}
 .allegory-lp .hero .reveal{max-width:560px}
-@media(max-width:900px){.allegory-lp .hero{min-height:0;display:block}}
-/* Plan picker modal ("Start your studio" -> choose plan -> Stripe) */
-.allegory-lp .pk-overlay{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(17,40,28,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
-.allegory-lp .pk-overlay.open{display:flex}
-.allegory-lp .pk-card{background:var(--bg);border:1px solid var(--line);border-radius:6px;max-width:460px;width:100%;padding:30px 28px 24px;position:relative;box-shadow:0 24px 60px rgba(17,40,28,.28)}
-.allegory-lp .pk-close{position:absolute;top:12px;right:14px;background:none;border:none;cursor:pointer;font-size:24px;line-height:1;color:var(--muted);padding:4px}
-.allegory-lp .pk-close:hover{color:var(--ink)}
-.allegory-lp .pk-eyebrow{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--sage);font-weight:600}
-.allegory-lp .pk-h{font-family:var(--font-d);font-size:28px;margin:6px 0 18px;line-height:1.1}
-.allegory-lp .pk-seg{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:11px}
-.allegory-lp .pk-seg button{flex:1;background:var(--card);border:none;padding:11px 8px;font-family:var(--font-b);font-size:13px;color:var(--ink);cursor:pointer;transition:background .15s,color .15s;letter-spacing:.02em}
-.allegory-lp .pk-seg button+button{border-left:1px solid var(--line)}
-.allegory-lp .pk-seg button.active{background:var(--forest);color:var(--bg)}
-.allegory-lp .pk-save{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.8;margin-left:5px}
-.allegory-lp .pk-price{display:flex;align-items:baseline;gap:8px;margin:18px 0 8px}
-.allegory-lp .pk-price .cur{font-family:var(--font-d);font-size:52px;line-height:1;color:var(--ink)}
-.allegory-lp .pk-price .per{font-size:14px;color:var(--muted)}
-.allegory-lp .pk-desc{font-size:13.5px;color:var(--ink-2);line-height:1.5;min-height:60px;margin-bottom:16px}
-.allegory-lp .pk-card .btn{width:100%;padding:15px}
-.allegory-lp .pk-note{font-size:12px;color:var(--muted);text-align:center;margin-top:13px;line-height:1.6}
-.allegory-lp .pk-note a{color:var(--sage);text-decoration:underline}
 /* hero device mock */
 .allegory-lp .device{
   background:var(--card);border:1px solid var(--line);border-radius:6px;
@@ -460,8 +435,6 @@
 <!-- ===== Hero ===== -->
 <div class="opening">
 <header class="hero" id="signup">
-  <div class="hero-photo" aria-hidden="true"></div>
-  <div class="hero-wash" aria-hidden="true"></div>
   <div class="wrap hero-grid">
     <div class="reveal">
       <span class="hero-tag">Launching August 1</span>
@@ -815,26 +788,6 @@
     <div class="micro">Launching August 1</div>
   </div>
 </section>
-<!-- ===== Plan picker (Start your studio -> choose plan -> Stripe) ===== -->
-<div class="pk-overlay" id="plan-picker" role="dialog" aria-modal="true" aria-label="Choose your plan">
-  <div class="pk-card">
-    <button class="pk-close" type="button" data-close-picker aria-label="Close">&times;</button>
-    <div class="pk-eyebrow">Start your studio</div>
-    <div class="pk-h">Choose your plan</div>
-    <div class="pk-seg" role="group" aria-label="Plan">
-      <button type="button" data-pk-plan="starter" class="active">Studio Starter</button>
-      <button type="button" data-pk-plan="pro">Studio Pro</button>
-    </div>
-    <div class="pk-seg" role="group" aria-label="Billing cycle">
-      <button type="button" data-pk-cycle="monthly" class="active">Monthly</button>
-      <button type="button" data-pk-cycle="annual">Annual <span class="pk-save">Save 20%</span></button>
-    </div>
-    <div class="pk-price"><span class="cur" id="pk-price">$25</span><span class="per" id="pk-per">/month</span></div>
-    <div class="pk-desc" id="pk-desc">The core studio: inventory, sales &amp; finance, deadlines, contacts, and your daily dashboard.</div>
-    <a class="btn btn-solid" id="pk-continue" href="#pricing">Continue to checkout</a>
-    <div class="pk-note">No account needed until you pay &middot; secure checkout by Stripe.<br />Have a code? Add it at checkout. Already a member? <a href="/login">Sign in</a></div>
-  </div>
-</div>
 <!-- ===== Footer ===== -->
 <footer class="foot">
   <div class="wrap">
