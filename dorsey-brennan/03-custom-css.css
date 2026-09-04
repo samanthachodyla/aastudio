@@ -243,50 +243,19 @@ body, p, .sqs-block-html p {
 
 
 /* --------------------------------------------------------------------------
-   4. FOOTER
-   Flush with the page — no colored band. It inherits whatever ground the
-   page ends on, so its text is dark and its links match the nav's red.
-   If a color still shows, the footer section has its own background set in
-   the editor: Edit → click the footer → Background → clear it / lightest
-   theme.
+   4. FOOTER — REMOVED ENTIRELY
+   Nothing in the footer renders, bands included. Note this hides everything
+   that lived there (the TikTok / Instagram / Substack links too) — rebuild
+   those as a normal section at the bottom of a page if wanted. To bring the
+   footer back someday, delete the display:none rule below.
    -------------------------------------------------------------------------- */
 
 #footer-sections {
-  background: transparent !important;
+  display: none !important;
 }
 
 #sections {
   padding-bottom: 0;
-}
-
-#footer-sections a {
-  font-family: 'Ovo', serif !important;
-  color: var(--db-red) !important;
-  text-transform: uppercase;
-  letter-spacing: 0.24em;
-  background-image: none !important;
-  transition: color 0.3s ease;
-}
-
-/* Hover darkens rather than going yellow — yellow vanishes on a light
-   ground (1.5:1). Swap --db-oxblood for --db-yellow here if the ground
-   behind your footer ends up dark. */
-#footer-sections a:hover {
-  color: var(--db-oxblood) !important;
-}
-
-#footer-sections p,
-#footer-sections h1, #footer-sections h2, #footer-sections h3 {
-  color: var(--db-oxblood);
-}
-
-/* The footer's inner sections paint their own theme color one layer deeper
-   than the container — clear those too, or a colored band survives. */
-#footer-sections .page-section,
-#footer-sections .section-background,
-#footer-sections .section-border {
-  background: transparent !important;
-  background-color: transparent !important;
 }
 
 
