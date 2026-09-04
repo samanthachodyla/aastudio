@@ -280,6 +280,15 @@ body, p, .sqs-block-html p {
   color: var(--db-oxblood);
 }
 
+/* The footer's inner sections paint their own theme color one layer deeper
+   than the container — clear those too, or a colored band survives. */
+#footer-sections .page-section,
+#footer-sections .section-background,
+#footer-sections .section-border {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
 
 /* --------------------------------------------------------------------------
    5. TEXT ON PHOTOGRAPHS — the feathered scrim
