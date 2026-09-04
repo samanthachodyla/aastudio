@@ -246,12 +246,15 @@ body, p, .sqs-block-html p {
 
 /* --------------------------------------------------------------------------
    4. FOOTER
-   Scrolls normally with the page. Solid oxblood — and on this dark ground
-   the yellow-letter hover you originally wanted actually works: 9.2:1.
+   Flush with the page — no colored band. It inherits whatever ground the
+   page ends on, so its text is dark and its links match the nav's red.
+   If a color still shows, the footer section has its own background set in
+   the editor: Edit → click the footer → Background → clear it / lightest
+   theme.
    -------------------------------------------------------------------------- */
 
 #footer-sections {
-  background-color: var(--db-oxblood);
+  background: transparent !important;
 }
 
 #sections {
@@ -260,21 +263,23 @@ body, p, .sqs-block-html p {
 
 #footer-sections a {
   font-family: 'Ovo', serif !important;
-  color: var(--db-cream) !important;
+  color: var(--db-red) !important;
   text-transform: uppercase;
   letter-spacing: 0.24em;
   background-image: none !important;
   transition: color 0.3s ease;
 }
 
+/* Hover darkens rather than going yellow — yellow vanishes on a light
+   ground (1.5:1). Swap --db-oxblood for --db-yellow here if the ground
+   behind your footer ends up dark. */
 #footer-sections a:hover {
-  color: var(--db-yellow) !important;
+  color: var(--db-oxblood) !important;
 }
 
-/* Footer body text and headings, cream on the oxblood ground */
 #footer-sections p,
 #footer-sections h1, #footer-sections h2, #footer-sections h3 {
-  color: var(--db-body);
+  color: var(--db-oxblood);
 }
 
 
@@ -469,17 +474,23 @@ body, p, .sqs-block-html p {
   transition: color 0.35s ease, border-color 0.35s ease, background-color 0.35s ease;
 }
 
+/* Hover inverts: dark red fills in, the writing goes cream */
 .sqs-block-button-element:hover {
-  color: var(--db-oxblood) !important;
-  background-color: var(--db-yellow) !important;
-  border-color: var(--db-yellow) !important;
+  color: var(--db-cream) !important;
+  background-color: var(--db-oxblood) !important;
+  border-color: var(--db-oxblood) !important;
 }
 
 /* Buttons sitting ON a photograph flip to cream, since the scrim behind them
-   is dark. Put these inside a .db-scrim section. */
+   is dark. Same inverted hover. */
 .db-scrim .sqs-block-button-element {
   border-color: rgba(255, 240, 200, 0.6) !important;
   color: var(--db-cream) !important;
+}
+.db-scrim .sqs-block-button-element:hover {
+  color: var(--db-cream) !important;
+  background-color: var(--db-oxblood) !important;
+  border-color: var(--db-oxblood) !important;
 }
 
 
