@@ -188,9 +188,7 @@ body, p, .sqs-block-html p {
   backdrop-filter: none;
 }
 
-/* THE NAV — red letters that turn yellow on hover. No glow, no underline.
-   Yellow's visibility here depends entirely on the photo behind it and the
-   overlay on that section — judge it on the real pages. */
+/* THE NAV — red letters that deepen to dark red on hover. */
 
 .header-nav-item a,
 .header-nav-folder-item a,
@@ -209,7 +207,7 @@ body, p, .sqs-block-html p {
 .header-nav-item a:hover,
 .header-nav-folder-item a:hover,
 .header-menu-nav-item a:hover {
-  color: var(--db-yellow) !important;
+  color: var(--db-oxblood) !important;
 }
 
 /* No marker on the current page — the nav stays uniform */
