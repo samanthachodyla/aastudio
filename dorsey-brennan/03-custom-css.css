@@ -461,7 +461,15 @@ body, p, .sqs-block-html p {
    6. BUTTONS
    -------------------------------------------------------------------------- */
 
-.sqs-block-button-element {
+/* Covers every button variant Squarespace makes — the block button, the
+   primary/secondary/tertiary types from Site Styles, and list-section
+   buttons. If one still shows a color of its own, it's coming from Site
+   Styles → Colors → that theme's "Primary Button" setting. */
+.sqs-block-button-element,
+.sqs-button-element--primary,
+.sqs-button-element--secondary,
+.sqs-button-element--tertiary,
+.list-item-content__button {
   font-family: 'Ovo', serif !important;
   text-transform: uppercase;
   letter-spacing: 0.2em;
@@ -475,7 +483,11 @@ body, p, .sqs-block-html p {
 }
 
 /* Hover inverts: dark red fills in, the writing goes cream */
-.sqs-block-button-element:hover {
+.sqs-block-button-element:hover,
+.sqs-button-element--primary:hover,
+.sqs-button-element--secondary:hover,
+.sqs-button-element--tertiary:hover,
+.list-item-content__button:hover {
   color: var(--db-cream) !important;
   background-color: var(--db-oxblood) !important;
   border-color: var(--db-oxblood) !important;
