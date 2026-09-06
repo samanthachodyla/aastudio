@@ -40,24 +40,54 @@ function prerenderLanding(): Plugin {
   };
 }
 
+// Emits a tiny version.json into the build output carrying this build's id. The
+// running app polls it (src/lib/appVersion.ts) to detect a newer deploy and
+// refresh onto it, so a shipped fix reaches even long-open tabs.
+function emitVersion(buildId: string): Plugin {
+  return {
+    name: "emit-version",
+    apply: "build",
+    generateBundle() {
+      this.emitFile({
+        type: "asset",
+        fileName: "version.json",
+        source: JSON.stringify({ buildId }),
+      });
+    },
+  };
+}
+
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  server: {
-    host: "::",
-    port: 8080,
-    hmr: {
-      overlay: false,
+export default defineConfig(({ mode }) => {
+  // A unique id per build: the Vercel/GitHub commit sha when available (stable
+  // and meaningful), otherwise a timestamp. "dev" locally so the watcher no-ops.
+  const buildId =
+    mode === "development"
+      ? "dev"
+      : process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA || String(Date.now());
+
+  return {
+    server: {
+      host: "::",
+      port: 8080,
+      hmr: {
+        overlay: false,
+      },
     },
-  },
-  plugins: [
-    react(),
-    mode === "development" && componentTagger(),
-    prerenderLanding(),
-  ].filter(Boolean),
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+    define: {
+      __BUILD_ID__: JSON.stringify(buildId),
     },
-    dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
-  },
-}));
+    plugins: [
+      react(),
+      mode === "development" && componentTagger(),
+      prerenderLanding(),
+      emitVersion(buildId),
+    ].filter(Boolean),
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
+      dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
+    },
+  };
+});

@@ -34,6 +34,7 @@ import { AuthProvider } from "./lib/auth";
 import { RequireAuth } from "./components/RequireAuth";
 import { UsageTracker } from "./lib/usage";
 import { CookieConsent } from "./components/CookieConsent";
+import { UpdateBanner } from "./components/UpdateBanner";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <CookieConsent />
+      <UpdateBanner />
       <BrowserRouter>
         <AuthProvider>
           <UsageTracker />
