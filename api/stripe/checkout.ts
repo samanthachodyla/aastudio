@@ -116,10 +116,18 @@ export default async function handler(req: any, res: any) {
       // annual plan, where the single free invoice would be a whole free year.
       allow_promotion_codes: cycle !== "annual",
       billing_address_collection: "auto",
+      // 7-day free trial: the card is still collected up front (always), and
+      // Stripe charges the plan automatically when the trial ends. If somehow no
+      // card is on file at trial end, cancel rather than leaving an unpaid invoice.
+      payment_method_collection: "always",
       success_url: `${APP_URL}/dashboard?checkout=success&sid={CHECKOUT_SESSION_ID}&plan=${plan}&cycle=${cycle}`,
       cancel_url: `${APP_URL}/pricing?checkout=cancel`,
       metadata: { user_id: user.id, plan, cycle },
-      subscription_data: { metadata: { user_id: user.id, plan, cycle } },
+      subscription_data: {
+        trial_period_days: 7,
+        trial_settings: { end_behavior: { missing_payment_method: "cancel" } },
+        metadata: { user_id: user.id, plan, cycle },
+      },
     });
 
     return res.status(200).json({ url: session.url });

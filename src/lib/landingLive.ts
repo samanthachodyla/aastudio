@@ -15,7 +15,7 @@ export function toLiveLanding(html: string): string {
 
   // Announcement marquee: waitlist message → live message.
   out = out.split('Launching August 1st <span class="bar">|</span> Join the list &amp; get first access')
-    .join('Labor Day special is now live <span class="bar">|</span> First month free with code LABORDAY');
+    .join('Start your 7-day free trial <span class="bar">|</span> No commitment &mdash; cancel anytime');
 
   // Every "first access" call-to-action anchor now scrolls to the pricing plans,
   // where choosing a plan opens Stripe Checkout. Payment comes first — no account
@@ -26,7 +26,7 @@ export function toLiveLanding(html: string): string {
 
   // Pricing section: retire the remaining pre-launch "reserve a spot" framing.
   out = out.split('Join the launch list and get first access.')
-    .join('Choose your plan and start managing your studio today.');
+    .join('Start with a 7-day free trial — no commitment, cancel anytime.');
   out = out.split('>Reserve your spot</a>').join('>Get started</a>');
 
   // Hero eyebrow tag.

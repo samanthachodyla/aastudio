@@ -8,10 +8,10 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 /**
- * Post-checkout landing for the pay-first signup flow. Stripe has already taken
- * payment and created the customer; here the new member picks a password, which
- * finishes creating their account server-side, then we sign them in. No email
- * round-trip is needed to get into the app.
+ * Post-checkout landing for the pay-first signup flow. Stripe has captured the
+ * member's card and started their 7-day free trial; here the new member picks a
+ * password, which finishes creating their account server-side, then we sign them
+ * in. No email round-trip is needed to get into the app.
  */
 export default function Welcome() {
   const navigate = useNavigate();
@@ -82,7 +82,7 @@ export default function Welcome() {
         className="bg-primary text-[11px] tracking-[0.28em] uppercase text-center py-2 font-medium"
         style={{ color: "#032419" }}
       >
-        Payment received · Let's set up your studio
+        Your free trial is active · Let's set up your studio
       </div>
 
       <div className="flex-1 flex items-center justify-center px-6 py-12">
@@ -98,7 +98,7 @@ export default function Welcome() {
             <div className="eyebrow mb-2">You're in ✦</div>
             <h1 className="font-display text-3xl tracking-tight mb-2">Set your password</h1>
             <p className="text-sm text-muted-foreground mb-6">
-              Your subscription is active. Choose a password to finish creating your account and jump into your studio.
+              Your 7-day free trial is active — you won't be charged until it ends. Choose a password to finish creating your account and jump into your studio.
             </p>
 
             {!sid ? (
