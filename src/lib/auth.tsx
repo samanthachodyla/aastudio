@@ -3,6 +3,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserProfile } from "@/lib/userProfile";
 import { useSubscription } from "@/lib/subscription";
+import { saveFbMatch, clearFbMatch } from "@/lib/fbMatch";
 
 interface AuthState {
   session: Session | null;
@@ -50,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = async () => {
+    clearFbMatch(); // forget this member's identity for the Pixel on sign-out
     try {
       await supabase.auth.signOut();
     } catch (e) {
@@ -65,11 +67,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-/** Keep the local profile store's email in sync with the authenticated user. */
+/** Keep the local profile store's email in sync with the authenticated user, and
+ *  feed the Pixel's Advanced Matching so this member's PageViews carry their
+ *  email + a stable external id (lifts Event Match Quality). */
 function syncProfileEmail(user: User | null) {
   if (!user?.email) return;
   const { email, setProfile } = useUserProfile.getState();
   if (email !== user.email) setProfile({ email: user.email });
+  saveFbMatch({ em: user.email, external_id: user.id });
 }
 
 export function useAuth(): AuthState {

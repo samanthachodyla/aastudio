@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { saveFbMatch } from "@/lib/fbMatch";
 
 /**
  * Post-checkout landing for the pay-first signup flow. Stripe has captured the
@@ -43,6 +44,13 @@ export default function Welcome() {
         toast.error(json.error || "Couldn't finish setting up your account. Please try again.");
         setBusy(false);
         return;
+      }
+      // Set Advanced Matching from the just-created account BEFORE the Purchase
+      // fires, so this conversion (and their following PageViews) carry a hashed
+      // email + name — lifts Event Match Quality.
+      {
+        const [amFn, ...amRest] = String(json.name || "").trim().split(/\s+/).filter(Boolean);
+        saveFbMatch({ em: json.email, fn: amFn, ln: amRest.join(" ") });
       }
       // Fire the Meta Pixel Purchase from the browser, sharing the event id
       // (purchase_<sid>) with the server-side CAPI Purchase from the Stripe

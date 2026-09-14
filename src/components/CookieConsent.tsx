@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { clearFbMatch } from "@/lib/fbMatch";
 
 /**
  * Lightweight US-model cookie consent banner.
@@ -34,6 +35,12 @@ function applyConsent(choice: Choice) {
   try {
     w.fbq?.("consent", deny ? "revoke" : "grant");
   } catch { /* analytics is best-effort */ }
+  // Drop any stored Pixel Advanced Matching identity when the visitor opts out,
+  // and set the deny flag so index.html won't re-apply it on the next load.
+  if (deny) {
+    clearFbMatch();
+    try { w.__allegoryDenyAds = true; } catch { /* ignore */ }
+  }
   // Hard-stop GA collection when declined (belt-and-suspenders alongside Consent Mode).
   w["ga-disable-" + GA_ID] = deny;
 }

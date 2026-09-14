@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { Seo } from "@/components/Seo";
 import { isLaunched, toLiveLanding } from "@/lib/landingLive";
+import { saveFbMatch } from "@/lib/fbMatch";
 import landingHtml from "./landing.html?raw";
 
 // Before Aug 1 2026 the waitlist page shows; from launch, the live homepage.
@@ -60,6 +61,9 @@ export default function Landing() {
         const btn = form.querySelector<HTMLButtonElement>("button");
         if (btn) { btn.disabled = true; btn.textContent = "Sending…"; }
         if (msg) { msg.className = "signup-msg"; msg.textContent = ""; }
+        // Remember this lead for Pixel Advanced Matching so their PageViews (and
+        // this Lead) carry a hashed email + name — lifts Event Match Quality.
+        saveFbMatch({ em: email, fn: firstName, ln: lastName });
         // Capture UTM tags from the URL so each signup carries its campaign/post.
         const qs = new URLSearchParams(window.location.search);
         const formSource = form.getAttribute("data-source") || "landing";

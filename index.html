@@ -43,7 +43,13 @@
       'https://connect.facebook.net/en_US/fbevents.js');
       // Pause the Pixel up front if the visitor opted out (or GPC is on), then init.
       if (window.__allegoryDenyAds) { fbq('consent', 'revoke'); }
-      fbq('init', '1583309690064748');
+      // Advanced Matching: if we already know this visitor (a logged-in member or
+      // a returning lead), init the Pixel with their email/name/id so EVERY event
+      // — PageView included — carries it and Meta can match it. The Pixel hashes
+      // these client-side. Skipped for opted-out visitors. See src/lib/fbMatch.ts.
+      var __am = null;
+      try { if (!window.__allegoryDenyAds) __am = JSON.parse(localStorage.getItem('allegory.am') || 'null'); } catch (e) {}
+      fbq('init', '1583309690064748', __am || {});
       fbq('track', 'PageView');
     </script>
     <!-- End Meta Pixel Code -->
