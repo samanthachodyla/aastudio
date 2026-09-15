@@ -1,5 +1,5 @@
 import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Boxes, Receipt, CalendarClock, Users, MessageCircle, FolderLock, Inbox, Megaphone, Lock, Settings as SettingsIcon, Sparkles, LogOut, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Boxes, Receipt, CalendarClock, Users, MessageCircle, FolderLock, Inbox, Megaphone, Lock, Settings as SettingsIcon, Sparkles, LogOut, BarChart3, Instagram } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
@@ -157,16 +157,30 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {!collapsed && (
-          <div className="mt-auto px-4 py-4 text-[11px] text-muted-foreground leading-relaxed">
-            <div className="rule mb-3" />
-            <div className="mb-2">
-              <span className="eyebrow">Plan</span>
-              <div className="mt-1 text-foreground">Studio {tier === "pro" ? "Pro" : "Starter"}</div>
+        <div className="mt-auto">
+          {!collapsed && (
+            <div className="px-4 pt-4 text-[11px] text-muted-foreground leading-relaxed">
+              <div className="rule mb-3" />
+              <div className="mb-2">
+                <span className="eyebrow">Plan</span>
+                <div className="mt-1 text-foreground">Studio {tier === "pro" ? "Pro" : "Starter"}</div>
+              </div>
+              A studio manager for<br />working artists.
             </div>
-            A studio manager for<br />working artists.
-          </div>
-        )}
+          )}
+          <a
+            href="https://www.instagram.com/allegoryartstudio/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Allegory Art Studio on Instagram"
+            className={`flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors ${
+              collapsed ? "justify-center py-4" : "px-4 pt-3 pb-5 text-[11px]"
+            }`}
+          >
+            <Instagram className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+            {!collapsed && <span>@allegoryartstudio</span>}
+          </a>
+        </div>
       </SidebarContent>
     </Sidebar>
   );

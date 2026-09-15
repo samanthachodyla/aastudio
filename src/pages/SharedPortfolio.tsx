@@ -68,35 +68,37 @@ const SharedPortfolio = () => {
         )}
       </header>
 
-      {/* Gallery */}
-      <main className="max-w-5xl mx-auto px-6 pb-20">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+      {/* Gallery — each work as a row: image on the left, details beside it. */}
+      <main className="max-w-4xl mx-auto px-6 pb-20">
+        <div className="divide-y divide-border border-t border-border">
           {works.map((w, i) => (
-            <figure key={i} className="flex flex-col">
-              <div className="aspect-[4/5] w-full flex items-center justify-center bg-foreground/[0.03] border border-border overflow-hidden">
+            <figure key={i} className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10 py-10">
+              <div className="w-full sm:w-[46%] shrink-0 flex items-center justify-center">
                 {w.imageUrl ? (
-                  <img src={w.imageUrl} alt={w.title} className="max-w-full max-h-full object-contain" loading="lazy" />
+                  <img src={w.imageUrl} alt={w.title} className="max-w-full max-h-[60vh] object-contain" loading="lazy" />
                 ) : (
-                  <span className="font-display italic text-sm text-muted-foreground">Image on request</span>
+                  <div className="aspect-[4/5] w-full flex items-center justify-center bg-foreground/[0.03] border border-border">
+                    <span className="font-display italic text-sm text-muted-foreground">Image on request</span>
+                  </div>
                 )}
               </div>
-              <figcaption className="mt-3">
-                <div className="font-display italic text-lg leading-snug">{w.title || "Untitled"}</div>
-                <div className="text-xs text-muted-foreground mt-1">
+              <figcaption className="w-full sm:flex-1 text-center sm:text-left">
+                <div className="font-display italic text-2xl leading-snug">{w.title || "Untitled"}</div>
+                <div className="text-sm text-muted-foreground mt-2">
                   {[w.year, w.medium, w.dimensions, w.edition ? `Edition ${w.edition}` : ""]
                     .filter(Boolean)
                     .join("  ·  ")}
                 </div>
-                <div className="flex items-baseline justify-between gap-3 mt-2">
-                  {typeof w.price === "number" ? (
-                    <span className="font-display text-lg text-accent">{fmtMoney(w.price)}</span>
-                  ) : <span />}
+                {typeof w.price === "number" && (
+                  <div className="font-display text-2xl text-accent mt-4">{fmtMoney(w.price)}</div>
+                )}
+                <div className="mt-3">
                   <span className="eyebrow text-[9px] text-accent border border-accent/50 rounded-sm px-2 py-1">
                     {w.statusLabel}
                   </span>
                 </div>
                 {w.location && (
-                  <div className="text-[11px] italic text-muted-foreground mt-1">{w.location}</div>
+                  <div className="text-[11px] italic text-muted-foreground mt-2">{w.location}</div>
                 )}
               </figcaption>
             </figure>
