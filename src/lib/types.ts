@@ -172,11 +172,18 @@ export interface Expense {
 
 // ============== Dashboard To-Dos ==============
 // Local-only (persisted to localStorage, not server-backed).
+export type TodoPriority = 1 | 2 | 3 | 4;             // 1 = highest, 4 = none
+export type TodoRecurrence = "daily" | "weekly" | "monthly";
+
 export interface Todo {
   id: string;
   text: string;
   done: boolean;
   createdAt: string;
+  due?: string;                 // YYYY-MM-DD (local), optional
+  priority?: TodoPriority;      // defaults to 4 (none)
+  recurrence?: TodoRecurrence;  // repeats: completing it reschedules instead of archiving
+  completedAt?: string;
 }
 
 // ============== Profile Vault ==============

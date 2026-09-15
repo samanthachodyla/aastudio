@@ -9,6 +9,7 @@ import type {
 import {
   pushInsert, pushUpdate, pushDelete, pushInboxConnection, type HydratedData,
 } from "./sync";
+import { nextRecurrence } from "./todoParse";
 import { useAttachments } from "./attachments";
 
 interface State {
@@ -41,8 +42,9 @@ interface State {
   addCustomOpportunityType: (label: string) => void;
 
   todos: Todo[];                     // dashboard to-dos — persisted locally, not server-backed
-  addTodo: (text: string) => void;
+  addTodo: (input: string | Partial<Omit<Todo, "id" | "done" | "createdAt">> & { text: string }) => void;
   toggleTodo: (id: string) => void;
+  updateTodo: (id: string, patch: Partial<Omit<Todo, "id" | "createdAt">>) => void;
   deleteTodo: (id: string) => void;
   clearCompletedTodos: () => void;
 
@@ -172,14 +174,29 @@ export const useStore = create<State>()(
       },
 
       // To-dos are local-only (localStorage) — no write-through to Supabase.
-      addTodo: (text) => {
-        const v = text.trim();
+      addTodo: (input) => {
+        const src = typeof input === "string" ? { text: input } : input;
+        const v = (src.text || "").trim();
         if (!v) return;
-        const item: Todo = { id: uid(), text: v, done: false, createdAt: today() };
+        const item: Todo = {
+          id: uid(), text: v, done: false, createdAt: today(),
+          due: src.due, priority: src.priority, recurrence: src.recurrence,
+        };
         set({ todos: [...get().todos, item] });
       },
       toggleTodo: (id) => {
-        set({ todos: get().todos.map(t => t.id === id ? { ...t, done: !t.done } : t) });
+        set({
+          todos: get().todos.map(t => {
+            if (t.id !== id) return t;
+            // Completing a recurring task reschedules it and keeps it active,
+            // instead of marking it done (Todoist behavior).
+            if (!t.done && t.recurrence) return { ...t, due: nextRecurrence(t.due, t.recurrence) };
+            return { ...t, done: !t.done, completedAt: !t.done ? new Date().toISOString() : undefined };
+          }),
+        });
+      },
+      updateTodo: (id, patch) => {
+        set({ todos: get().todos.map(t => t.id === id ? { ...t, ...patch } : t) });
       },
       deleteTodo: (id) => {
         set({ todos: get().todos.filter(t => t.id !== id) });
