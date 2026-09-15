@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Plus, Search, Download, Trash2, Upload, X, ImageIcon, Boxes, Handshake, FileText, Link2, Copy, Check } from "lucide-react";
+import { Plus, Search, Download, Trash2, Upload, X, ImageIcon, Boxes, Handshake, FileText, Link2, Copy, Check, ArrowUp, ArrowDown } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useStore, fmtMoney } from "@/lib/store";
 import type { Artwork } from "@/lib/types";
@@ -42,11 +42,33 @@ const statuses: { value: ArtworkStatus | "all"; label: string }[] = [
   { value: "nfs", label: "NFS" },
 ];
 
+// ---- Inventory sorting ----
+type SortKey = "added" | "status" | "medium" | "price" | "year";
+const SORT_LABELS: { value: SortKey; label: string }[] = [
+  { value: "added", label: "Recently added" },
+  { value: "status", label: "Status" },
+  { value: "medium", label: "Medium" },
+  { value: "price", label: "Price" },
+  { value: "year", label: "Year" },
+];
+// A meaningful order for the "Status" sort (studio → out in the world → gone).
+// Custom statuses fall to the end and then sort alphabetically.
+const STATUS_ORDER: Record<string, number> = {
+  in_studio: 0, on_consignment: 1, in_transit: 2, in_storage: 3, loaned: 4, nfs: 5, sold: 6, donated: 7,
+};
+
+/** Kebab-case slug from a name, for export filenames. */
+function nameSlug(name: string): string {
+  return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
 const Inventory = () => {
   const { artworks, addArtwork, updateArtwork, deleteArtwork, contacts, addContact } = useStore();
   const { fullName, email, invoiceLogo } = useUserProfile();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<ArtworkStatus | "all">("all");
+  const [sortKey, setSortKey] = useState<SortKey>("added");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Artwork | null>(null);
 
@@ -93,25 +115,41 @@ const Inventory = () => {
     exportableStatuses.map(s => s.value)
   );
 
-  // Portfolio (PDF) export state.
+  // Portfolio (PDF) export state — the artist toggles exactly which pieces go in.
   const [portfolioOpen, setPortfolioOpen] = useState(false);
-  const [portfolioStatuses, setPortfolioStatuses] = useState<ArtworkStatus[]>(defaultPortfolioStatuses);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [portfolioTitle, setPortfolioTitle] = useState("Available Works");
   const [showPrices, setShowPrices] = useState(true);
-  const [showLocation, setShowLocation] = useState(false);
+  const [showLocation, setShowLocation] = useState(true);
   const [sharing, setSharing] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const togglePortfolioStatus = (s: ArtworkStatus) => {
-    setPortfolioStatuses(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
+  // Default the piece selection to "available" works (in studio / on consignment).
+  const defaultSelection = () =>
+    new Set(artworks.filter(a => defaultPortfolioStatuses.includes(a.status)).map(a => a.id));
+
+  const togglePiece = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
   };
+  const addStatusToSelection = (s: ArtworkStatus) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      artworks.filter(a => a.status === s).forEach(a => next.add(a.id));
+      return next;
+    });
+  };
+  const selectAllPieces = () => setSelectedIds(new Set(artworks.map(a => a.id)));
+  const clearPieces = () => setSelectedIds(new Set());
 
   const exportPortfolio = () => {
-    const selected = new Set(portfolioStatuses);
-    const data = artworks.filter(a => selected.has(a.status));
+    const data = artworks.filter(a => selectedIds.has(a.id));
     if (data.length === 0) {
-      toast.error("No works match the selected statuses.");
+      toast.error("Select at least one piece to export.");
       return;
     }
     const ok = exportPortfolioPdf({
@@ -133,10 +171,9 @@ const Inventory = () => {
   };
 
   const createShare = async () => {
-    const selected = new Set(portfolioStatuses);
-    const data = artworks.filter(a => selected.has(a.status));
+    const data = artworks.filter(a => selectedIds.has(a.id));
     if (data.length === 0) {
-      toast.error("No works match the selected statuses.");
+      toast.error("Select at least one piece to share.");
       return;
     }
     setSharing(true);
@@ -181,23 +218,43 @@ const Inventory = () => {
   };
 
   const filtered = useMemo(() => {
-    return artworks.filter(a => {
+    const list = artworks.filter(a => {
       if (filter !== "all" && a.status !== filter) return false;
       if (q && !`${a.title} ${a.medium} ${a.year}`.toLowerCase().includes(q.toLowerCase())) return false;
       return true;
     });
-  }, [artworks, q, filter]);
+    const dir = sortDir === "asc" ? 1 : -1;
+    const cmp = (a: Artwork, b: Artwork): number => {
+      switch (sortKey) {
+        case "price": return (a.price - b.price) * dir;
+        case "year": return (a.year - b.year) * dir;
+        case "medium": return (a.medium || "").localeCompare(b.medium || "") * dir;
+        case "status": {
+          const oa = STATUS_ORDER[a.status] ?? 99;
+          const ob = STATUS_ORDER[b.status] ?? 99;
+          if (oa !== ob) return (oa - ob) * dir;
+          return String(a.status).localeCompare(String(b.status)) * dir;
+        }
+        case "added":
+        default:
+          return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * dir;
+      }
+    };
+    return [...list].sort(cmp);
+  }, [artworks, q, filter, sortKey, sortDir]);
 
   const exportCSV = () => {
     const selected = new Set(exportStatuses);
     const data = artworks.filter(a => selected.has(a.status));
-    const header = ["Title", "Year", "Medium", "Dimensions", "Edition", "Price", "Status", "Location"];
-    const rows = data.map(a => [a.title, a.year, a.medium, a.dimensions, a.edition ?? "", a.price, a.status, a.location ?? ""]);
+    // Lead every row with the artist's name so the export is attributable.
+    const header = ["Artist", "Title", "Year", "Medium", "Dimensions", "Edition", "Price", "Status", "Location"];
+    const rows = data.map(a => [fullName || "", a.title, a.year, a.medium, a.dimensions, a.edition ?? "", a.price, a.status, a.location ?? ""]);
     const csv = [header, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = "allegory-inventory.csv"; a.click();
+    const slug = nameSlug(fullName);
+    a.href = url; a.download = `${slug ? slug + "-" : ""}inventory.csv`; a.click();
     URL.revokeObjectURL(url);
     setExportOpen(false);
   };
@@ -267,7 +324,7 @@ const Inventory = () => {
               </div>
             </DialogContent>
           </Dialog>
-          <Dialog open={portfolioOpen} onOpenChange={(o) => { setPortfolioOpen(o); if (!o) { setShareUrl(""); setCopied(false); } }}>
+          <Dialog open={portfolioOpen} onOpenChange={(o) => { setPortfolioOpen(o); if (o) { setSelectedIds(prev => prev.size ? prev : defaultSelection()); } else { setShareUrl(""); setCopied(false); } }}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
                 <FileText className="h-3.5 w-3.5" /> Export portfolio
@@ -291,16 +348,36 @@ const Inventory = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="eyebrow text-[10px]">Include works with status</Label>
-                  {exportableStatuses.map(s => (
-                    <label key={s.value} className="flex items-center gap-3 text-sm cursor-pointer">
-                      <Checkbox
-                        checked={portfolioStatuses.includes(s.value)}
-                        onCheckedChange={() => togglePortfolioStatus(s.value)}
-                      />
-                      {s.label}
-                    </label>
-                  ))}
+                  <div className="flex items-center justify-between">
+                    <Label className="eyebrow text-[10px]">Choose pieces</Label>
+                    <span className="text-[11px] text-muted-foreground">{selectedIds.size} of {artworks.length} selected</span>
+                  </div>
+                  {/* Quick bulk actions: all / none, or add every work of a status. */}
+                  <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                    <button type="button" onClick={selectAllPieces} className="px-2 py-1 rounded-sm border border-border text-muted-foreground hover:text-foreground hover:border-foreground transition-colors">All</button>
+                    <button type="button" onClick={clearPieces} className="px-2 py-1 rounded-sm border border-border text-muted-foreground hover:text-foreground hover:border-foreground transition-colors">None</button>
+                    {exportableStatuses.map(s => (
+                      <button key={s.value} type="button" onClick={() => addStatusToSelection(s.value)} title={`Add all ${s.label} works`} className="px-2 py-1 rounded-sm border border-border text-muted-foreground hover:text-foreground hover:border-foreground transition-colors">+ {s.label}</button>
+                    ))}
+                  </div>
+                  {/* The per-piece toggle list. */}
+                  <div className="max-h-56 overflow-y-auto rounded-sm border border-border divide-y divide-border">
+                    {artworks.length === 0 && (
+                      <div className="p-4 text-center text-xs text-muted-foreground italic">No works in your catalogue yet.</div>
+                    )}
+                    {artworks.map(a => (
+                      <label key={a.id} className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer hover:bg-surface/50">
+                        <Checkbox checked={selectedIds.has(a.id)} onCheckedChange={() => togglePiece(a.id)} />
+                        {a.imageUrl ? (
+                          <img src={a.imageUrl} alt="" className="h-8 w-8 shrink-0 object-cover rounded-sm border border-border" />
+                        ) : (
+                          <div className="h-8 w-8 shrink-0 rounded-sm border border-border bg-surface flex items-center justify-center text-muted-foreground"><ImageIcon className="h-3.5 w-3.5" /></div>
+                        )}
+                        <span className="flex-1 min-w-0 truncate font-display italic">{a.title || "Untitled"}</span>
+                        <StatusPill status={a.status} />
+                      </label>
+                    ))}
+                  </div>
                 </div>
                 <div className="space-y-2 border-t border-border pt-3">
                   <label className="flex items-center gap-3 text-sm cursor-pointer">
@@ -333,10 +410,10 @@ const Inventory = () => {
                 )}
                 <div className="flex flex-wrap justify-end gap-2 pt-1">
                   <Button variant="outline" size="sm" onClick={() => setPortfolioOpen(false)}>Cancel</Button>
-                  <Button variant="outline" size="sm" onClick={createShare} disabled={sharing || portfolioStatuses.length === 0} className="gap-2">
+                  <Button variant="outline" size="sm" onClick={createShare} disabled={sharing || selectedIds.size === 0} className="gap-2">
                     <Link2 className="h-3.5 w-3.5" /> {sharing ? "Creating…" : "Create link"}
                   </Button>
-                  <Button size="sm" onClick={exportPortfolio} disabled={portfolioStatuses.length === 0} className="gap-2">
+                  <Button size="sm" onClick={exportPortfolio} disabled={selectedIds.size === 0} className="gap-2">
                     <FileText className="h-3.5 w-3.5" /> Create PDF
                   </Button>
                 </div>
@@ -381,7 +458,25 @@ const Inventory = () => {
                 </button>
               ))}
             </div>
-            <span className="text-xs text-muted-foreground sm:ml-auto">{filtered.length} works</span>
+            <div className="flex items-center gap-2 sm:ml-auto">
+              <span className="eyebrow text-[10px] text-muted-foreground hidden sm:inline">Sort</span>
+              <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+                <SelectTrigger className="h-8 w-[150px] text-xs bg-card"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {SORT_LABELS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <button
+                type="button"
+                onClick={() => setSortDir(d => d === "asc" ? "desc" : "asc")}
+                title={sortDir === "asc" ? "Ascending — tap for descending" : "Descending — tap for ascending"}
+                aria-label="Toggle sort direction"
+                className="h-8 w-8 shrink-0 flex items-center justify-center rounded-sm border border-border bg-card text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {sortDir === "asc" ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />}
+              </button>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">{filtered.length} works</span>
+            </div>
           </div>
 
           {/* Desktop: full table */}
