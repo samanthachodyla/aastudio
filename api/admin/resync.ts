@@ -48,7 +48,6 @@ export default async function handler(req: any, res: any) {
 
     for await (const sub of stripe.subscriptions.list({ status: "all", limit: 100 })) {
       scanned++;
-      if (!LIVE.includes(sub.status)) continue;
       const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
       if (!customerId) continue;
 
@@ -69,7 +68,24 @@ export default async function handler(req: any, res: any) {
         }
         userId = await getUserIdByEmail(supabase, email);
       }
-      if (!userId) { unresolved++; continue; }
+      if (!userId) { if (LIVE.includes(sub.status)) unresolved++; continue; }
+
+      // Backfill the trial funnel on this member's row (all statuses). Sticky
+      // converted_at: set only when they actually converted, never cleared.
+      const iso = (u?: number | null) => (u ? new Date(u * 1000).toISOString() : null);
+      const trialPatch: Record<string, string | null> = {};
+      if (sub.trial_start) trialPatch.trial_started_at = iso(sub.trial_start);
+      const converted = !!sub.trial_start && (
+        ["active", "past_due"].includes(sub.status) ||
+        (sub.status === "canceled" && !!sub.canceled_at && !!sub.trial_end && sub.canceled_at > sub.trial_end)
+      );
+      if (converted) trialPatch.converted_at = iso(sub.trial_end);
+      if (sub.canceled_at) trialPatch.canceled_at = iso(sub.canceled_at);
+      if (Object.keys(trialPatch).length) {
+        try { await supabase.from("subscriptions").update(trialPatch).eq("user_id", userId); } catch { /* columns may not exist yet */ }
+      }
+
+      if (!LIVE.includes(sub.status)) continue;
 
       // Never overwrite a manual comp.
       const { data: existing } = await supabase

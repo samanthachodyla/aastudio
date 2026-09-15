@@ -41,6 +41,8 @@ interface UserAgg {
   revenue: number;      // total sales the member has tracked (sum of their invoices)
   mrr: number;          // monthly recurring revenue this member pays us
   lifecycle: Lifecycle; // engagement/billing stage, for filtering + health
+  trialStartedAt: string | null;
+  convertedAt: string | null;
 }
 
 // ---- Business metrics ----
@@ -293,6 +295,8 @@ const Reports = () => {
           revenue,
           mrr: monthlyValue(plan, cycle, subStatus),
           lifecycle: lifecycleOf(subStatus, lastActive, joined),
+          trialStartedAt: (sub as { trial_started_at?: string | null } | undefined)?.trial_started_at ?? null,
+          convertedAt: (sub as { converted_at?: string | null } | undefined)?.converted_at ?? null,
         };
       })
       .sort((a, b) => (b.lastActive ?? "").localeCompare(a.lastActive ?? ""));
@@ -342,7 +346,14 @@ const Reports = () => {
     const gmv = rows.reduce((s, r) => s + r.revenue, 0);
     const activated = rows.filter((r) => r.artworks > 0).length;
     const activationRate = rows.length ? Math.round((activated / rows.length) * 100) : 0;
-    return { mrr, arr: mrr * 12, paying, trials, gmv, activationRate };
+    // Trial → paid: of members whose trial has resolved (started, no longer
+    // trialing), how many converted. Members still mid-trial are excluded.
+    const trialsStarted = rows.filter((r) => r.trialStartedAt).length;
+    const converted = rows.filter((r) => r.convertedAt).length;
+    const inTrial = rows.filter((r) => r.subStatus === "trialing").length;
+    const decided = Math.max(0, trialsStarted - inTrial);
+    const conversionRate = decided > 0 ? Math.round((converted / decided) * 100) : 0;
+    return { mrr, arr: mrr * 12, paying, trials, gmv, activationRate, trialsStarted, converted, inTrial, conversionRate };
   }, [rows]);
 
   // Studio-wide time spent per section (heartbeat minutes across all members).
@@ -442,6 +453,31 @@ const Reports = () => {
             <div className="font-display text-2xl tracking-tight">{t.value}</div>
           </div>
         ))}
+      </div>
+
+      {/* Trial → paid conversion funnel */}
+      <div className="hairline-card p-5 mb-8">
+        <div className="flex items-baseline justify-between mb-4">
+          <div className="eyebrow">Trial → paid conversion</div>
+          <div className="font-display text-3xl tracking-tight">{biz.conversionRate}%</div>
+        </div>
+        <div className="grid grid-cols-3 gap-4 text-center">
+          {[
+            { label: "Trials started", value: biz.trialsStarted },
+            { label: "Converted to paid", value: biz.converted },
+            { label: "Still in trial", value: biz.inTrial },
+          ].map((s) => (
+            <div key={s.label}>
+              <div className="font-display text-2xl tabular-nums">{s.value}</div>
+              <div className="eyebrow text-[10px] text-muted-foreground mt-1">{s.label}</div>
+            </div>
+          ))}
+        </div>
+        {biz.trialsStarted === 0 && (
+          <p className="text-[11px] text-muted-foreground mt-4">
+            No trial data yet — run the migration, then click <span className="font-medium">Resync from Stripe</span> to backfill. New trials populate automatically.
+          </p>
+        )}
       </div>
 
       {/* Studio-wide engagement + survey aggregates */}

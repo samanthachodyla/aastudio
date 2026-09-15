@@ -75,6 +75,25 @@ function rowFromSubscription(userId: string, customerId: string, sub: Stripe.Sub
   };
 }
 
+// Record the trial funnel on the member's subscription row, for conversion
+// reporting. Sticky: converted_at is only ever set, never cleared, so a churn
+// after conversion keeps its timestamp. The columns live behind a later
+// migration; any failure here is swallowed so it never breaks the webhook.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function stampTrialLifecycle(supabase: any, userId: string, sub: Stripe.Subscription) {
+  const iso = (u?: number | null) => (u ? new Date(u * 1000).toISOString() : null);
+  const patch: Record<string, string | null> = {};
+  if (sub.trial_start) patch.trial_started_at = iso(sub.trial_start);
+  const converted = !!sub.trial_start && (
+    ["active", "past_due"].includes(sub.status) ||
+    (sub.status === "canceled" && !!sub.canceled_at && !!sub.trial_end && sub.canceled_at > sub.trial_end)
+  );
+  if (converted) patch.converted_at = iso(sub.trial_end);
+  if (sub.canceled_at) patch.canceled_at = iso(sub.canceled_at);
+  if (!Object.keys(patch).length) return;
+  try { await supabase.from("subscriptions").update(patch).eq("user_id", userId); } catch { /* columns may not exist yet */ }
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") return res.status(405).end("Method not allowed");
@@ -175,6 +194,7 @@ export default async function handler(req: any, res: any) {
 
           const sub = await stripe.subscriptions.retrieve(subId);
           await supabase.from("subscriptions").upsert(rowFromSubscription(userId, customerId, sub), { onConflict: "user_id" });
+          await stampTrialLifecycle(supabase, userId, sub);
         }
         await firePurchaseCapi(s);
         break;
@@ -190,6 +210,7 @@ export default async function handler(req: any, res: any) {
             const row = rowFromSubscription(userId, customerId, sub);
             if (event.type === "customer.subscription.deleted") row.status = "canceled";
             await supabase.from("subscriptions").upsert(row, { onConflict: "user_id" });
+            await stampTrialLifecycle(supabase, userId, sub);
           }
         }
         break;

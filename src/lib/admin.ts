@@ -61,7 +61,7 @@ export interface AdminDataset {
   invoices: { user_id: string; id: string; number: string | null; buyer_name: string | null; amount: number | null; status: string | null }[];
   contacts: { user_id: string; id: string; name: string; type: string | null; email: string | null }[];
   opportunities: { user_id: string; id: string }[];
-  subscriptions: { user_id: string; plan: string | null; cycle: string | null; status: string | null }[];
+  subscriptions: { user_id: string; plan: string | null; cycle: string | null; status: string | null; trial_started_at?: string | null; converted_at?: string | null; canceled_at?: string | null }[];
   notes: { user_id: string; notes: string | null }[];
 }
 
@@ -112,6 +112,21 @@ export async function fetchAdminDataset(): Promise<AdminDataset> {
       () => [],
     );
 
+  // Trial-lifecycle columns live behind a later migration; fetch them separately
+  // and tolerate their absence so Reports keeps working before that SQL is run.
+  const trialRows = await db
+    .from("subscriptions")
+    .select("user_id,trial_started_at,converted_at,canceled_at")
+    .then(
+      (r: { data: { user_id: string; trial_started_at?: string | null; converted_at?: string | null; canceled_at?: string | null }[] | null; error: unknown }) => (r.error ? [] : r.data ?? []),
+      () => [],
+    );
+  const trialById = new Map((trialRows as { user_id: string }[]).map((t) => [t.user_id, t]));
+  const mergedSubs = (subscriptions.data ?? []).map((s: { user_id: string }) => {
+    const t = trialById.get(s.user_id);
+    return t ? { ...s, ...t } : s;
+  });
+
   return {
     profiles: mergedProfiles,
     usage: usage.data ?? [],
@@ -119,7 +134,7 @@ export async function fetchAdminDataset(): Promise<AdminDataset> {
     invoices: invoices.data ?? [],
     contacts: contacts.data ?? [],
     opportunities: opportunities.data ?? [],
-    subscriptions: subscriptions.data ?? [],
+    subscriptions: mergedSubs,
     notes,
   };
 }
