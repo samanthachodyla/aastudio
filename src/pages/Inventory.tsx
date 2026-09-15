@@ -166,7 +166,7 @@ const Inventory = () => {
       toast.error("Please allow pop-ups for this site, then try the export again.");
       return;
     }
-    toast.success(`Portfolio ready — choose “Save as PDF” in the print dialog.`);
+    toast.success(`Portfolio ready — in the print dialog choose “Save as PDF”, set Margins to “Default”, and turn on “Background graphics”.`);
     setPortfolioOpen(false);
   };
 

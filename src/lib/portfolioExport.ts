@@ -49,8 +49,9 @@ function statusLabel(status: ArtworkStatus, labels: Record<string, string>): str
   return labels[status] ?? titleize(String(status));
 }
 
-/** One "plate" per work: image on top, elegant caption block beneath. */
-function plate(a: Artwork, opts: PortfolioOptions): string {
+/** One work as a row: image on the left, its details beside it. Two of these
+ *  stack to fill a printed page. */
+function workRow(a: Artwork, opts: PortfolioOptions): string {
   const details: string[] = [];
   if (a.year) details.push(esc(a.year));
   if (a.medium) details.push(esc(a.medium));
@@ -59,8 +60,8 @@ function plate(a: Artwork, opts: PortfolioOptions): string {
   const metaLine = details.join("&nbsp;&nbsp;·&nbsp;&nbsp;");
 
   const img = a.imageUrl
-    ? `<div class="plate-img"><img src="${esc(a.imageUrl)}" alt="${esc(a.title)}" /></div>`
-    : `<div class="plate-img plate-img--empty"><span>Image available on request</span></div>`;
+    ? `<div class="row-img"><img src="${esc(a.imageUrl)}" alt="${esc(a.title)}" /></div>`
+    : `<div class="row-img row-img--empty"><span>Image available on request</span></div>`;
 
   const price = opts.showPrices && typeof a.price === "number" && a.price > 0
     ? `<div class="price">${esc(fmtMoney(a.price))}</div>`
@@ -68,28 +69,34 @@ function plate(a: Artwork, opts: PortfolioOptions): string {
 
   const avail = `<span class="avail">${esc(statusLabel(a.status, opts.statusLabels))}</span>`;
   const loc = opts.showLocation && a.location
-    ? `<span class="loc">${esc(a.location)}</span>`
+    ? `<div class="loc">${esc(a.location)}</div>`
     : "";
 
-  // Running header on every page: the artist's own logo (their invoice logo) if
-  // they have one, otherwise their name.
+  // Image on the left; title, medium, size, price, status and location beside it.
+  return `
+      <div class="row">
+        ${img}
+        <div class="row-info">
+          <h2 class="work-title">${esc(a.title) || "Untitled"}</h2>
+          ${metaLine ? `<div class="work-meta">${metaLine}</div>` : ""}
+          ${price}
+          <div class="tags">${avail}</div>
+          ${loc}
+        </div>
+      </div>`;
+}
+
+/** A printed page: the artist's logo/name at the top, then up to two work rows. */
+function worksPage(works: Artwork[], opts: PortfolioOptions): string {
   const header = opts.logo
     ? `<img class="head-logo" src="${esc(opts.logo)}" alt="${esc(opts.artistName)}" />`
     : (opts.artistName ? `<span class="head-name">${esc(opts.artistName)}</span>` : "");
-
+  const rows = works.map((a) => workRow(a, opts)).join("");
   return `
-    <section class="plate">
-      <div class="plate-head">${header}</div>
-      ${img}
-      <div class="caption">
-        <h2 class="work-title">${esc(a.title) || "Untitled"}</h2>
-        ${metaLine ? `<div class="work-meta">${metaLine}</div>` : ""}
-        <div class="work-foot">
-          ${price}
-          <div class="tags">${avail}${loc}</div>
-        </div>
-      </div>
-      <div class="plate-brand">Allegory Art Studio</div>
+    <section class="page">
+      <div class="page-head">${header}</div>
+      <div class="rows">${rows}</div>
+      <div class="page-brand">Allegory Art Studio</div>
     </section>`;
 }
 
@@ -113,7 +120,12 @@ function coverPage(opts: PortfolioOptions, count: number): string {
 }
 
 export function buildPortfolioHtml(opts: PortfolioOptions): string {
-  const plates = opts.artworks.map((a) => plate(a, opts)).join("");
+  // Two works per printed page.
+  const pages: string[] = [];
+  for (let i = 0; i < opts.artworks.length; i += 2) {
+    pages.push(worksPage(opts.artworks.slice(i, i + 2), opts));
+  }
+  const plates = pages.join("");
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -168,50 +180,52 @@ export function buildPortfolioHtml(opts: PortfolioOptions): string {
     margin-top: 42px; font-size: 12px; letter-spacing: 0.04em; color: var(--muted);
   }
 
-  /* ---- Plate (one work per page) ---- */
-  .plate {
+  /* ---- Works page: two works per page, image beside its details ---- */
+  .page {
     height: 100vh; display: flex; flex-direction: column;
-    padding: 0.6in 0.85in 0.6in; page-break-after: always; position: relative;
+    padding: 0.5in 0.6in; page-break-after: always; position: relative; overflow: hidden;
   }
-  .plate-head { text-align: center; margin-bottom: 14px; min-height: 18px; }
-  .head-logo { max-height: 42px; max-width: 220px; object-fit: contain; }
+  .page:last-of-type { page-break-after: auto; } /* no trailing blank page */
+  .page-head { text-align: center; margin-bottom: 8px; min-height: 16px; flex: none; }
+  .head-logo { max-height: 40px; max-width: 220px; object-fit: contain; }
   .head-name {
     font-family: "Cormorant Garamond", Georgia, serif; font-size: 15px;
     letter-spacing: 0.02em; color: var(--ink);
   }
-  .plate-img {
-    flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center;
-    margin-bottom: 26px;
+  .rows { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .row {
+    flex: 1; min-height: 0; display: flex; align-items: center; gap: 0.45in;
+    padding: 0.16in 0; break-inside: avoid;
   }
-  .plate-img img { max-width: 100%; max-height: 100%; object-fit: contain;
-    box-shadow: 0 1px 0 var(--hair); }
-  .plate-img--empty {
-    border: 1px solid var(--hair); color: var(--muted); font-style: italic;
-    font-family: "Cormorant Garamond", Georgia, serif; font-size: 18px;
+  .row + .row { border-top: 1px solid var(--hair); }
+  .row-img {
+    flex: 0 0 46%; height: 100%; display: flex; align-items: center; justify-content: center;
   }
-  .caption { border-top: 1px solid var(--hair); padding-top: 16px; break-inside: avoid; }
+  .row-img img { max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 1px 0 var(--hair); }
+  .row-img--empty {
+    width: 100%; height: 78%; border: 1px solid var(--hair); color: var(--muted); font-style: italic;
+    font-family: "Cormorant Garamond", Georgia, serif; font-size: 15px;
+    display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px;
+  }
+  .row-info { flex: 1; min-width: 0; }
   .work-title {
     font-family: "Cormorant Garamond", Georgia, serif; font-style: italic; font-weight: 500;
-    font-size: 26px; margin: 0 0 4px; color: var(--ink); line-height: 1.15;
+    font-size: 25px; margin: 0 0 6px; color: var(--ink); line-height: 1.12;
   }
-  .work-meta { font-size: 12.5px; color: var(--muted); letter-spacing: 0.01em; }
-  .work-foot {
-    display: flex; align-items: baseline; justify-content: space-between;
-    margin-top: 12px; gap: 16px;
-  }
+  .work-meta { font-size: 12.5px; color: var(--muted); letter-spacing: 0.01em; line-height: 1.55; }
   .price {
     font-family: "Cormorant Garamond", Georgia, serif; font-size: 22px;
-    color: var(--forest); font-weight: 600;
+    color: var(--forest); font-weight: 600; margin-top: 12px;
   }
-  .tags { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .tags { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
   .avail {
     text-transform: uppercase; letter-spacing: 0.18em; font-size: 9px; font-weight: 500;
     color: var(--sage); border: 1px solid var(--sage); border-radius: 2px;
     padding: 4px 9px; white-space: nowrap;
   }
-  .loc { font-size: 11px; color: var(--muted); font-style: italic; }
-  .plate-brand {
-    position: absolute; bottom: 0.42in; left: 0; right: 0; text-align: center;
+  .loc { font-size: 11px; color: var(--muted); font-style: italic; margin-top: 8px; }
+  .page-brand {
+    position: absolute; bottom: 0.3in; left: 0; right: 0; text-align: center;
     text-transform: uppercase; letter-spacing: 0.24em; font-size: 8px; color: var(--muted);
   }
 
