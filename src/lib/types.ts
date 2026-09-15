@@ -34,7 +34,11 @@ export interface Invoice {
   shippingSameAsBilling?: boolean;
   // legacy / fallback
   buyerAddress?: string;
-  amount: number;
+  amount: number;              // grand total (subtotal + tax + shipping) — drives all rollups
+  subtotal?: number;           // the work price before tax/shipping
+  taxRate?: number;            // sales tax percent, e.g. 8.5
+  taxAmount?: number;          // computed tax in dollars
+  shippingAmount?: number;     // shipping charge in dollars
   paymentTerms?: string;
   status: InvoiceStatus;
   issuedAt: string;

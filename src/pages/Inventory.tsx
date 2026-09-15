@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Plus, Search, Download, Trash2, Upload, X, ImageIcon, Boxes, Handshake, FileText, Link2, Copy, Check, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Search, Download, Trash2, Upload, X, ImageIcon, Boxes, Handshake, FileText, Link2, Copy, Check, ArrowUp, ArrowDown, Tag } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useStore, fmtMoney } from "@/lib/store";
 import type { Artwork } from "@/lib/types";
@@ -16,6 +16,7 @@ import { ConsignmentsView } from "@/components/ConsignmentsView";
 import { toast } from "sonner";
 import { parseCsv } from "@/lib/csv";
 import { exportPortfolioPdf } from "@/lib/portfolioExport";
+import { exportArtworkLabels } from "@/lib/artworkLabels";
 import { createSharedPortfolio } from "@/lib/sharePortfolio";
 import { useUserProfile } from "@/lib/userProfile";
 import type { ArtworkStatus } from "@/lib/types";
@@ -145,6 +146,23 @@ const Inventory = () => {
   };
   const selectAllPieces = () => setSelectedIds(new Set(artworks.map(a => a.id)));
   const clearPieces = () => setSelectedIds(new Set());
+
+  // Artwork labels export (own selection so it doesn't tangle with the portfolio).
+  const [labelsOpen, setLabelsOpen] = useState(false);
+  const [labelIds, setLabelIds] = useState<Set<string>>(new Set());
+  const [labelShowPrices, setLabelShowPrices] = useState(true);
+  const [labelPerRow, setLabelPerRow] = useState<2 | 3>(2);
+  const toggleLabel = (id: string) => {
+    setLabelIds(prev => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  };
+  const exportLabels = () => {
+    const data = artworks.filter(a => labelIds.has(a.id));
+    if (data.length === 0) { toast.error("Select at least one piece."); return; }
+    const ok = exportArtworkLabels({ artworks: data, artistName: fullName || "", showPrices: labelShowPrices, perRow: labelPerRow });
+    if (!ok) { toast.error("Please allow pop-ups for this site, then try again."); return; }
+    toast.success(`Labels ready — in the print dialog choose “Save as PDF”, Margins “Default”.`);
+    setLabelsOpen(false);
+  };
 
   const exportPortfolio = () => {
     const data = artworks.filter(a => selectedIds.has(a.id));
@@ -415,6 +433,63 @@ const Inventory = () => {
                   </Button>
                   <Button size="sm" onClick={exportPortfolio} disabled={selectedIds.size === 0} className="gap-2">
                     <FileText className="h-3.5 w-3.5" /> Create PDF
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={labelsOpen} onOpenChange={(o) => { setLabelsOpen(o); if (o) setLabelIds(prev => prev.size ? prev : new Set(artworks.map(a => a.id))); }}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Tag className="h-3.5 w-3.5" /> Labels
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Print artwork labels</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Printable wall / exhibition labels — title, medium, size{labelShowPrices ? ", price" : ""}, and your name.
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="eyebrow text-[10px]">Choose pieces</Label>
+                    <span className="text-[11px] text-muted-foreground">{labelIds.size} of {artworks.length} selected</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                    <button type="button" onClick={() => setLabelIds(new Set(artworks.map(a => a.id)))} className="px-2 py-1 rounded-sm border border-border text-muted-foreground hover:text-foreground hover:border-foreground transition-colors">All</button>
+                    <button type="button" onClick={() => setLabelIds(new Set())} className="px-2 py-1 rounded-sm border border-border text-muted-foreground hover:text-foreground hover:border-foreground transition-colors">None</button>
+                  </div>
+                  <div className="max-h-56 overflow-y-auto rounded-sm border border-border divide-y divide-border">
+                    {artworks.length === 0 && (
+                      <div className="p-4 text-center text-xs text-muted-foreground italic">No works in your catalogue yet.</div>
+                    )}
+                    {artworks.map(a => (
+                      <label key={a.id} className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer hover:bg-surface/50">
+                        <Checkbox checked={labelIds.has(a.id)} onCheckedChange={() => toggleLabel(a.id)} />
+                        <span className="flex-1 min-w-0 truncate font-display italic">{a.title || "Untitled"}</span>
+                        <StatusPill status={a.status} />
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between border-t border-border pt-3">
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox checked={labelShowPrices} onCheckedChange={(v) => setLabelShowPrices(!!v)} /> Show prices
+                  </label>
+                  <div className="flex items-center gap-1 text-xs">
+                    <span className="text-muted-foreground mr-1">Per row</span>
+                    {([2, 3] as const).map(n => (
+                      <button key={n} type="button" onClick={() => setLabelPerRow(n)}
+                        className={`px-2.5 py-1 rounded-sm border transition-colors ${labelPerRow === n ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:text-foreground"}`}>{n}</button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-1">
+                  <Button variant="outline" size="sm" onClick={() => setLabelsOpen(false)}>Cancel</Button>
+                  <Button size="sm" onClick={exportLabels} disabled={labelIds.size === 0} className="gap-2">
+                    <Tag className="h-3.5 w-3.5" /> Create labels PDF
                   </Button>
                 </div>
               </div>

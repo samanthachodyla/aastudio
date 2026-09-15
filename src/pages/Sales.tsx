@@ -150,6 +150,9 @@ const Sales = () => {
     if (!inv) return;
     const work = workFor(inv);
     const shipping = inv.shippingSameAsBilling ? inv.billingAddress : inv.shippingAddress;
+    const sub = inv.subtotal ?? inv.amount;   // legacy invoices: subtotal == amount
+    const taxAmt = inv.taxAmount ?? 0;
+    const shipAmt = inv.shippingAmount ?? 0;
     const w = window.open("", "_blank", "width=800,height=1000");
     if (!w) return;
     w.document.write(`<!doctype html><html><head><title>${inv.number}</title>
@@ -162,6 +165,9 @@ const Sales = () => {
   td,th{padding:12px 0;text-align:left;border-bottom:1px solid #ddd;vertical-align:top}
   .right{text-align:right}
   .total{font-family:Georgia,serif;font-size:32px;font-weight:400}
+  .totals{margin-left:auto;width:290px;font-family:Helvetica,sans-serif;font-size:13px;margin-top:24px}
+  .trow{display:flex;justify-content:space-between;padding:6px 0;color:#444}
+  .trow.grand{border-top:1px solid #ccc;margin-top:6px;padding-top:14px;align-items:baseline;color:#1a1a1a}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;font-family:Helvetica,sans-serif;font-size:13px;margin-top:16px}
   .meta{display:flex;justify-content:space-between;font-family:Helvetica,sans-serif;font-size:13px;margin-top:8px}
   .block{white-space:pre-line;margin-top:6px;line-height:1.5}
@@ -188,9 +194,14 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
   </div>
 </div>
 <table><tr><th>Work</th><th>Details</th><th class="right">Amount</th></tr>
-<tr><td><em>${work?.title ?? "—"}</em></td><td>${work?.medium ?? ""}${work?.year ? `, ${work.year}` : ""}${work?.dimensions ? `<br/>${work.dimensions}` : ""}</td><td class="right">${fmtMoney(inv.amount)}</td></tr>
+<tr><td><em>${work?.title ?? "—"}</em></td><td>${work?.medium ?? ""}${work?.year ? `, ${work.year}` : ""}${work?.dimensions ? `<br/>${work.dimensions}` : ""}</td><td class="right">${fmtMoney(sub)}</td></tr>
 </table>
-<div style="text-align:right;margin-top:32px"><div class="eyebrow">Total due</div><div class="total">${fmtMoney(inv.amount)}</div></div>
+<div class="totals">
+  <div class="trow"><span>Subtotal</span><span>${fmtMoney(sub)}</span></div>
+  ${taxAmt > 0 ? `<div class="trow"><span>Sales tax${inv.taxRate ? ` (${inv.taxRate}%)` : ""}</span><span>${fmtMoney(taxAmt)}</span></div>` : ""}
+  ${shipAmt > 0 ? `<div class="trow"><span>Shipping</span><span>${fmtMoney(shipAmt)}</span></div>` : ""}
+  <div class="trow grand"><span class="eyebrow">Total due</span><span class="total">${fmtMoney(inv.amount)}</span></div>
+</div>
 <hr/>
 <div style="font-family:Helvetica,sans-serif;font-size:11px;color:#666;text-align:center">Thank you. — Allegory Studio</div>
 </body></html>`);
@@ -657,6 +668,8 @@ function InvoiceForm({ artworks, onSubmit }: { artworks: Artwork[]; onSubmit: (d
     shippingAddress: "",
     shippingSameAsBilling: true,
     amount: artworks[0]?.price ?? 0,
+    taxRate: 0,
+    shipping: 0,
     paymentTerms: "Net 30",
     status: "draft" as InvoiceStatus,
     dueAt: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
@@ -664,8 +677,17 @@ function InvoiceForm({ artworks, onSubmit }: { artworks: Artwork[]; onSubmit: (d
 
   const isCustom = form.artworkId === CUSTOM;
 
+  // Live totals: the "Amount" field is the subtotal (work price); tax + shipping
+  // add on top. Grand total is what's stored as `amount`.
+  const subtotal = Number(form.amount) || 0;
+  const taxRate = Number(form.taxRate) || 0;
+  const shipping = Number(form.shipping) || 0;
+  const taxAmount = Math.round(subtotal * taxRate) / 100; // subtotal * (rate/100), 2dp
+  const grandTotal = Math.round((subtotal + taxAmount + shipping) * 100) / 100;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const hasCharges = taxRate > 0 || shipping > 0;
     const payload: any = {
       artworkId: isCustom ? "" : form.artworkId,
       buyerName: form.buyerName,
@@ -674,7 +696,14 @@ function InvoiceForm({ artworks, onSubmit }: { artworks: Artwork[]; onSubmit: (d
       billingAddress: form.billingAddress || undefined,
       shippingSameAsBilling: form.shippingSameAsBilling,
       shippingAddress: form.shippingSameAsBilling ? undefined : (form.shippingAddress || undefined),
-      amount: Number(form.amount),
+      // Grand total drives all rollups. Breakdown fields are only sent when tax
+      // or shipping is used, so existing invoices are unaffected before the
+      // (subtotal/tax/shipping) columns migration is applied.
+      amount: hasCharges ? grandTotal : subtotal,
+      subtotal: hasCharges ? subtotal : undefined,
+      taxRate: taxRate > 0 ? taxRate : undefined,
+      taxAmount: taxAmount > 0 ? taxAmount : undefined,
+      shippingAmount: shipping > 0 ? shipping : undefined,
       paymentTerms: form.paymentTerms,
       status: form.status,
       dueAt: new Date(form.dueAt).toISOString(),
@@ -755,10 +784,20 @@ function InvoiceForm({ artworks, onSubmit }: { artworks: Artwork[]; onSubmit: (d
         <div className="space-y-3">
           <div className="eyebrow">Terms</div>
           <div className="grid grid-cols-3 gap-3">
-            <div><Label>Amount</Label><Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: +e.target.value })} /></div>
+            <div><Label>Amount <span className="text-muted-foreground font-normal">(work price)</span></Label><Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: +e.target.value })} /></div>
+            <div><Label>Sales tax %</Label><Input type="number" step="0.01" value={form.taxRate} onChange={(e) => setForm({ ...form, taxRate: +e.target.value })} placeholder="0" /></div>
+            <div><Label>Shipping $</Label><Input type="number" step="0.01" value={form.shipping} onChange={(e) => setForm({ ...form, shipping: +e.target.value })} placeholder="0.00" /></div>
             <div><Label>Payment terms</Label><Input value={form.paymentTerms} onChange={(e) => setForm({ ...form, paymentTerms: e.target.value })} /></div>
             <div><Label>Due date</Label><Input type="date" value={form.dueAt} onChange={(e) => setForm({ ...form, dueAt: e.target.value })} /></div>
           </div>
+          {(taxRate > 0 || shipping > 0) && (
+            <div className="rounded-sm border border-border bg-surface/40 px-4 py-3 text-sm space-y-1">
+              <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span className="tabular-nums">{fmtMoney(subtotal)}</span></div>
+              {taxRate > 0 && <div className="flex justify-between text-muted-foreground"><span>Sales tax ({taxRate}%)</span><span className="tabular-nums">{fmtMoney(taxAmount)}</span></div>}
+              {shipping > 0 && <div className="flex justify-between text-muted-foreground"><span>Shipping</span><span className="tabular-nums">{fmtMoney(shipping)}</span></div>}
+              <div className="flex justify-between font-medium pt-1 border-t border-border"><span>Total due</span><span className="tabular-nums">{fmtMoney(grandTotal)}</span></div>
+            </div>
+          )}
           <div>
             <Label>Status</Label>
             <Select value={form.status} onValueChange={(v: InvoiceStatus) => setForm({ ...form, status: v })}>
