@@ -226,9 +226,25 @@ const Inventory = () => {
   };
 
   const importArtworks = (rows: Omit<Artwork, "id" | "createdAt">[]) => {
-    rows.forEach(r => addArtwork(r));
+    // Skip works already in the catalogue so re-importing the same CSV can't pile
+    // up duplicates (title + year + medium + dimensions identify a work). Also
+    // dedupes within the pasted batch itself.
+    const norm = (s: unknown) => String(s ?? "").trim().toLowerCase();
+    const keyOf = (a: { title?: string; year?: number; medium?: string; dimensions?: string }) =>
+      `${norm(a.title)}|${a.year ?? ""}|${norm(a.medium)}|${norm(a.dimensions)}`;
+    const seen = new Set(artworks.map(keyOf));
+    let added = 0, skipped = 0;
+    rows.forEach(r => {
+      const k = keyOf(r);
+      if (seen.has(k)) { skipped++; return; }
+      seen.add(k);
+      addArtwork(r);
+      added++;
+    });
     setImportOpen(false);
-    toast.success(`Imported ${rows.length} work${rows.length === 1 ? "" : "s"}`);
+    if (added && skipped) toast.success(`Imported ${added} new work${added === 1 ? "" : "s"} — skipped ${skipped} already in your catalogue.`);
+    else if (added) toast.success(`Imported ${added} work${added === 1 ? "" : "s"}.`);
+    else toast.message(`Nothing new to import — all ${skipped} ${skipped === 1 ? "is" : "are"} already in your catalogue.`);
   };
 
   const toggleExportStatus = (s: ArtworkStatus) => {
