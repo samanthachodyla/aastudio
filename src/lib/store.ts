@@ -183,26 +183,31 @@ export const useStore = create<State>()(
           due: src.due, priority: src.priority, recurrence: src.recurrence,
         };
         set({ todos: [...get().todos, item] });
+        track(pushInsert("todos", item));
       },
       toggleTodo: (id) => {
-        set({
-          todos: get().todos.map(t => {
-            if (t.id !== id) return t;
-            // Completing a recurring task reschedules it and keeps it active,
-            // instead of marking it done (Todoist behavior).
-            if (!t.done && t.recurrence) return { ...t, due: nextRecurrence(t.due, t.recurrence) };
-            return { ...t, done: !t.done, completedAt: !t.done ? new Date().toISOString() : undefined };
-          }),
-        });
+        const t = get().todos.find(x => x.id === id);
+        if (!t) return;
+        // Completing a recurring task reschedules it and keeps it active
+        // (Todoist behavior); otherwise flip done.
+        const patch: Partial<Todo> = (!t.done && t.recurrence)
+          ? { due: nextRecurrence(t.due, t.recurrence) }
+          : { done: !t.done, completedAt: !t.done ? new Date().toISOString() : undefined };
+        set({ todos: get().todos.map(x => x.id === id ? { ...x, ...patch } : x) });
+        track(pushUpdate("todos", id, patch));
       },
       updateTodo: (id, patch) => {
         set({ todos: get().todos.map(t => t.id === id ? { ...t, ...patch } : t) });
+        track(pushUpdate("todos", id, patch));
       },
       deleteTodo: (id) => {
         set({ todos: get().todos.filter(t => t.id !== id) });
+        track(pushDelete("todos", id));
       },
       clearCompletedTodos: () => {
+        const completed = get().todos.filter(t => t.done);
         set({ todos: get().todos.filter(t => !t.done) });
+        completed.forEach(t => track(pushDelete("todos", t.id)));
       },
 
       addArtwork: (a) => {

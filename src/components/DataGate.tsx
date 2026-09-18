@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
-import { setActiveUserId, importLocalDataIfNeeded, loadAllForUser, overlayOutbox, replayOutbox } from "@/lib/sync";
+import { setActiveUserId, importLocalDataIfNeeded, loadAllForUser, overlayOutbox, replayOutbox, migrateLocalTodos } from "@/lib/sync";
 import { Button } from "@/components/ui/button";
 import { SyncStatusBanner } from "@/components/SyncStatusBanner";
 
@@ -45,6 +45,7 @@ export function DataGate({ children }: { children: ReactNode }) {
     (async () => {
       try {
         await importLocalDataIfNeeded(user.id);
+        await migrateLocalTodos(user.id);
         const data = await loadAllForUser(user.id);
         // Merge any writes that never reached the server so nothing looks lost,
         // then retry them in the background.
@@ -75,6 +76,7 @@ export function DataGate({ children }: { children: ReactNode }) {
               setActiveUserId(user.id);
               loadedFor.current = user.id;
               importLocalDataIfNeeded(user.id)
+                .then(() => migrateLocalTodos(user.id))
                 .then(() => loadAllForUser(user.id))
                 .then((data) => {
                   overlayOutbox(user.id, data.collections);

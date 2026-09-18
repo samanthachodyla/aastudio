@@ -19,6 +19,7 @@ const db = supabase as unknown as {
 
 // Store collection key -> Postgres table name.
 export const ENTITY_TABLES: Record<string, string> = {
+  todos: "todos",
   artworks: "artworks",
   invoices: "invoices",
   consignments: "consignments",
@@ -226,6 +227,38 @@ export async function loadAllForUser(userId: string): Promise<HydratedData> {
   }
 
   return { collections, inboxConnection };
+}
+
+// ---- one-time migration: local-only todos -> server ----------------------
+// Todos used to live only in this browser (the persisted store). Now that they're
+// server-backed, push any this device still holds locally up to the server once,
+// so a member's existing tasks aren't lost and both devices' lists merge. Keyed
+// per user+device so it runs a single time.
+const TODO_MIGRATED = (userId: string) => `allegory.todos.migrated.${userId}`;
+export async function migrateLocalTodos(userId: string): Promise<void> {
+  try {
+    if (localStorage.getItem(TODO_MIGRATED(userId))) return;
+  } catch { return; }
+  let localTodos: any[] = [];
+  try {
+    const raw = localStorage.getItem("allegory.studio.prefs.v1");
+    const arr = raw ? JSON.parse(raw)?.state?.todos : null;
+    if (Array.isArray(arr)) localTodos = arr;
+  } catch { localTodos = []; }
+  try {
+    const rows = localTodos
+      .filter((t) => t && t.id && t.text)
+      .map((t) => ({ ...rowToDb(t), user_id: userId }));
+    if (rows.length) {
+      // Upsert so re-runs (or a task already synced) can't create duplicates.
+      const { error } = await db.from("todos").upsert(rows, { onConflict: "id" });
+      if (error) throw error;
+    }
+    localStorage.setItem(TODO_MIGRATED(userId), new Date().toISOString());
+  } catch (e) {
+    // Leave the flag unset so it retries next load (e.g. before the table exists).
+    console.warn("[sync] local todo migration deferred", e);
+  }
 }
 
 // ---- one-time localStorage import ----------------------------------------
