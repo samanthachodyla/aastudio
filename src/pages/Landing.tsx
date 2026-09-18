@@ -42,6 +42,19 @@ export default function Landing() {
     const submitBindings: Array<[HTMLFormElement, (e: Event) => void]> = [];
     forms.forEach((form) => {
       const msg = form.querySelector<HTMLElement>(".signup-msg");
+      // Honeypot: an off-screen field real people never see. Bots fill it; we
+      // inject it here so we don't have to edit every form's markup. Injected
+      // once per form (idempotent across re-renders).
+      if (!form.querySelector('input[name="company"]')) {
+        const hp = document.createElement("input");
+        hp.type = "text";
+        hp.name = "company";
+        hp.tabIndex = -1;
+        hp.setAttribute("autocomplete", "off");
+        hp.setAttribute("aria-hidden", "true");
+        hp.style.cssText = "position:absolute;left:-9999px;top:auto;width:1px;height:1px;opacity:0;overflow:hidden";
+        form.appendChild(hp);
+      }
       const handler = (e: Event) => {
         e.preventDefault();
         const input = form.querySelector<HTMLInputElement>("input[type=email]");
@@ -52,6 +65,14 @@ export default function Landing() {
         const lastName = (lastEl?.value || "").trim();
         const phoneEl = form.querySelector<HTMLInputElement>('input[name="phone"]');
         const phone = (phoneEl?.value || "").trim();
+        const hp = (form.querySelector<HTMLInputElement>('input[name="company"]')?.value || "").trim();
+        // Bot caught by the honeypot — show the normal success state so it moves
+        // on, but record nothing and fire NO Lead event (Pixel or CAPI).
+        if (hp) {
+          form.classList.add("done");
+          if (msg) { msg.className = "signup-msg"; msg.textContent = "Thanks — you're on the list. ✦"; }
+          return;
+        }
         if (!email) return;
         if (!firstName) {
           if (msg) { msg.className = "signup-msg err"; msg.textContent = "Please add your first name."; }
@@ -87,6 +108,7 @@ export default function Landing() {
             first_name: firstName,
             last_name: lastName,
             phone,
+            company: hp, // honeypot (always empty for real people; server also checks)
             source: formSource,
             referrer: document.referrer || "",
             user_agent: navigator.userAgent,

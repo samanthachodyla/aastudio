@@ -33,6 +33,14 @@ export default async function handler(req: any, res: any) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
+
+  // Honeypot: a hidden "company" field real people never see or fill. If it has a
+  // value, it's a bot — silently accept and do NOTHING: no Mailchimp, no Sheet,
+  // and (critically) no Meta Lead event, so spam never counts as a conversion.
+  if (str(body.company)) {
+    return res.status(200).json({ ok: true, skipped: "bot" });
+  }
+
   const email = str(body.email).toLowerCase();
   if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     return res.status(400).json({ error: "A valid email is required" });
