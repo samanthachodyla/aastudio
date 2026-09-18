@@ -60,6 +60,40 @@ export function DataGate({ children }: { children: ReactNode }) {
     })();
   }, [user, hydrateAll, resetHydrated]);
 
+  // Keep devices in sync automatically: when the member returns to the tab (or
+  // refocuses the window) after a short gap, quietly reload their data from the
+  // server. This is what makes a change made on a studio desktop appear on a home
+  // laptop without any manual refresh. It never blanks the screen (no loading
+  // gate), and unsynced local writes are preserved by overlayOutbox.
+  useEffect(() => {
+    if (!user) return;
+    let last = Date.now();
+    let running = false;
+    const refresh = async () => {
+      if (document.visibilityState !== "visible") return;
+      if (running || Date.now() - last < 20000) return; // throttle: at most every 20s
+      running = true;
+      last = Date.now();
+      try {
+        const data = await loadAllForUser(user.id);
+        overlayOutbox(user.id, data.collections);
+        hydrateAll(data);
+        void replayOutbox(user.id);
+      } catch {
+        /* keep showing current data; the next focus retries */
+      } finally {
+        running = false;
+      }
+    };
+    const onVisible = () => { if (document.visibilityState === "visible") void refresh(); };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [user, hydrateAll]);
+
   if (error) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background px-6 text-center">
