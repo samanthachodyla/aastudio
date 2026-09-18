@@ -83,9 +83,22 @@ const Communications = () => {
         }
       })();
     } else if (params.get("error")) {
-      const err = params.get("error");
+      const err = params.get("error") || "";
       window.history.replaceState({}, "", "/communications");
-      toast.error(`Couldn't connect Gmail (${err}). Please try again.`);
+      // Human-readable reason. Config-side errors are clearly flagged as ours so
+      // the member knows it isn't something they did. The raw code is logged for
+      // support. Kept on screen longer so it's not missed.
+      const CONFIG = "Email connect isn't fully set up on our end yet — this is on us, not you. We've been notified and will get it working.";
+      const MESSAGES: Record<string, string> = {
+        missing_code: "The Google sign-in didn't complete. Please click Connect Gmail and finish the Google prompts.",
+        bad_state: "Your session expired before the connection finished. Please try Connect Gmail again.",
+        missing_nylas_api_key: CONFIG,
+        missing_supabase_key: CONFIG,
+        token_exchange_failed: "We couldn't finish connecting to Google — usually a setup issue on our side. We're on it; please try again shortly.",
+        server_error: "Something went wrong finishing the connection on our end. We've been notified.",
+      };
+      console.error("[nylas] connect failed:", err);
+      toast.error(MESSAGES[err] || `Couldn't connect Gmail (${err}). Please try again.`, { duration: 12000 });
     }
   }, []);
 
