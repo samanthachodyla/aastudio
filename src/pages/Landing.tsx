@@ -134,12 +134,15 @@ export default function Landing() {
                 ? "You're in! Your 20% code is on its way to your inbox. ✦"
                 : "Thanks — you're on the list. ✦";
             }
-            // Fire a GA4 conversion so signups can be tied to traffic/campaigns.
+            // GA4 generate_lead — fires only after a successful lead submission.
             try {
-              (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", "waitlist_signup", {
+              (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", "generate_lead", {
                 form_source: formSource,
                 utm_source: qs.get("utm_source") || undefined,
+                utm_medium: qs.get("utm_medium") || undefined,
                 utm_campaign: qs.get("utm_campaign") || undefined,
+                utm_content: qs.get("utm_content") || undefined,
+                utm_term: qs.get("utm_term") || undefined,
               });
             } catch { /* analytics is best-effort */ }
             // Fire the Meta Pixel Lead event so Meta ads can optimize for signups.

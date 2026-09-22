@@ -52,21 +52,23 @@ export default function Welcome() {
         const [amFn, ...amRest] = String(json.name || "").trim().split(/\s+/).filter(Boolean);
         saveFbMatch({ em: json.email, fn: amFn, ln: amRest.join(" ") });
       }
-      // Fire the Meta Pixel Purchase from the browser, sharing the event id
-      // (purchase_<sid>) with the server-side CAPI Purchase from the Stripe
-      // webhook so Meta de-dupes them into one conversion. (The Mailchimp add
-      // happened server-side in finish-signup — no browser dependency.)
+      // The account was just created and the 7-day trial started — no charge yet.
+      // So fire sign_up + start_trial (NOT purchase; purchase fires server-side on
+      // the first real payment). Event IDs are shared with the server's CAPI events
+      // so Meta de-dupes. start_trial carries the plan's price as its value.
       try {
         const PRICE: Record<string, number> = {
           "starter:monthly": 25, "starter:annual": 240,
           "pro:monthly": 55, "pro:annual": 528,
         };
         const value = PRICE[`${json.plan}:${json.cycle}`];
-        (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq?.(
-          "track", "Purchase",
-          { value, currency: "USD", content_name: `${json.plan}-${json.cycle}` },
-          { eventID: `purchase_${sid}` },
-        );
+        const label = `${json.plan}-${json.cycle}`;
+        const g = (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag;
+        const fbq = (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq;
+        g?.("event", "sign_up", { method: "stripe" });
+        g?.("event", "start_trial", { value, currency: "USD", plan: label });
+        fbq?.("track", "CompleteRegistration", { content_name: label }, { eventID: `signup_${sid}` });
+        fbq?.("track", "StartTrial", { value, currency: "USD", predicted_ltv: value, content_name: label }, { eventID: `trial_${sid}` });
       } catch { /* analytics is best-effort */ }
       // Account is ready — sign them straight in.
       const { error } = await supabase.auth.signInWithPassword({ email: json.email, password });

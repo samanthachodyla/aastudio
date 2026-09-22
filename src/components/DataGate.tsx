@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import { setActiveUserId, importLocalDataIfNeeded, loadAllForUser, overlayOutbox, replayOutbox, migrateLocalTodos } from "@/lib/sync";
+import { syncAttributionToProfile } from "@/lib/attribution";
 import { Button } from "@/components/ui/button";
 import { SyncStatusBanner } from "@/components/SyncStatusBanner";
 
@@ -41,6 +42,9 @@ export function DataGate({ children }: { children: ReactNode }) {
     setActiveUserId(user.id);
     resetHydrated();
     setError(null);
+    // Save this member's marketing attribution to their profile (first-touch once,
+    // last-touch refreshed) so their acquisition source stays on the customer record.
+    void syncAttributionToProfile(user.id);
 
     (async () => {
       try {

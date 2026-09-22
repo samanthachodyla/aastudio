@@ -21,21 +21,25 @@ const Dashboard = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("checkout") === "success") {
-      // Meta Pixel Purchase — shares event_id (purchase_<session>) with the
-      // server-side CAPI Purchase from the Stripe webhook so Meta de-dupes them.
+      // An existing member just started a subscription/trial (no charge yet during
+      // the free trial), so fire start_trial — not purchase. Purchase fires
+      // server-side on the first real payment. Shares the event id with the
+      // server's CAPI StartTrial so Meta de-dupes.
       try {
         const sid = params.get("sid") || "";
         const plan = params.get("plan") || "";
         const cycle = params.get("cycle") || "";
+        const label = `${plan}-${cycle}`;
         const PRICE: Record<string, number> = {
           "starter:monthly": 25, "starter:annual": 240,
           "pro:monthly": 55, "pro:annual": 528,
         };
         const value = PRICE[`${plan}:${cycle}`];
+        (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", "start_trial", { value, currency: "USD", plan: label });
         (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq?.(
-          "track", "Purchase",
-          { value, currency: "USD", content_name: `${plan}-${cycle}` },
-          sid ? { eventID: `purchase_${sid}` } : undefined,
+          "track", "StartTrial",
+          { value, currency: "USD", predicted_ltv: value, content_name: label },
+          sid ? { eventID: `trial_${sid}` } : undefined,
         );
       } catch { /* analytics is best-effort */ }
       window.history.replaceState({}, "", "/dashboard");

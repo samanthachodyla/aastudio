@@ -4,43 +4,79 @@
 //
 // Set the endpoint in Stripe to: https://allegoryartstudio.com/api/stripe/webhook
 // and subscribe to: checkout.session.completed, customer.subscription.created,
-// customer.subscription.updated, customer.subscription.deleted.
+// customer.subscription.updated, customer.subscription.deleted, invoice.paid.
+// (invoice.paid drives the first-payment Purchase conversion after the trial.)
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 
 const META_PIXEL_ID = process.env.META_PIXEL_ID || "1583309690064748";
 const META_CAPI_TOKEN = process.env.META_CAPI_TOKEN || "";
+const APP_URL = process.env.APP_URL || "https://allegoryartstudio.com";
+const GA4_MEASUREMENT_ID = process.env.GA4_MEASUREMENT_ID || "G-CSJ5CQZ382";
+const GA4_API_SECRET = process.env.GA4_API_SECRET || "";
 
-// Meta Conversions API "Purchase" — shares event_id (purchase_<session>) with the
-// browser Pixel fired on the post-checkout success page, so Meta de-dupes them.
-// No-op until META_CAPI_TOKEN is set. Value comes from the actual amount charged
-// (after any discount code), so 100%-off signups report $0.
-async function firePurchaseCapi(session: Stripe.Checkout.Session) {
+// Plan+cycle -> monthly-list price, used as the start_trial "potential" value.
+const PLAN_PRICE: Record<string, number> = {
+  "starter:monthly": 25, "starter:annual": 240, "pro:monthly": 55, "pro:annual": 528,
+};
+
+const sha256 = (v: string) => crypto.createHash("sha256").update(v.trim().toLowerCase()).digest("hex");
+
+// A Meta Conversions API event. Browser + server events that share an event_id
+// are de-duplicated by Meta. No-op until META_CAPI_TOKEN is set. PII (email,
+// external id) is SHA-256 hashed; fbc/fbp are sent raw for matching.
+async function fireMetaEvent(opts: {
+  eventName: string;
+  eventId: string;
+  email?: string;
+  userId?: string;
+  fbc?: string;
+  fbp?: string;
+  value?: number;
+  currency?: string;
+  custom?: Record<string, unknown>;
+}): Promise<void> {
   if (!META_CAPI_TOKEN || !META_PIXEL_ID) return;
-  const email = (session.customer_details?.email || "").trim().toLowerCase();
-  const userData: Record<string, unknown> = {};
-  if (email) userData.em = [crypto.createHash("sha256").update(email).digest("hex")];
+  const user_data: Record<string, unknown> = {};
+  if (opts.email) user_data.em = [sha256(opts.email)];
+  if (opts.userId) user_data.external_id = [sha256(opts.userId)];
+  if (opts.fbc) user_data.fbc = opts.fbc;
+  if (opts.fbp) user_data.fbp = opts.fbp;
+  const custom_data: Record<string, unknown> = { ...(opts.custom || {}) };
+  if (typeof opts.value === "number") custom_data.value = opts.value;
+  if (opts.currency) custom_data.currency = opts.currency;
   try {
     await fetch(`https://graph.facebook.com/v19.0/${META_PIXEL_ID}/events?access_token=${encodeURIComponent(META_CAPI_TOKEN)}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         data: [{
-          event_name: "Purchase",
+          event_name: opts.eventName,
           event_time: Math.floor(Date.now() / 1000),
-          event_id: `purchase_${session.id}`,
+          event_id: opts.eventId,
           action_source: "website",
-          event_source_url: `${process.env.APP_URL || "https://allegoryartstudio.com"}/dashboard`,
-          user_data: userData,
-          custom_data: {
-            currency: (session.currency || "usd").toUpperCase(),
-            value: (session.amount_total ?? 0) / 100,
-          },
+          event_source_url: `${APP_URL}/dashboard`,
+          user_data,
+          custom_data,
         }],
       }),
     });
   } catch { /* CAPI is best-effort */ }
+}
+
+// A GA4 event via the Measurement Protocol (server-side). Used for the purchase
+// that happens after the trial, when the customer isn't on the site. No PII — the
+// GA client_id ties it back to the original browser session; params only.
+async function fireGa4(clientId: string, name: string, params: Record<string, unknown>): Promise<void> {
+  if (!GA4_API_SECRET || !GA4_MEASUREMENT_ID || !clientId) return;
+  try {
+    await fetch(`https://www.google-analytics.com/mp/collect?measurement_id=${GA4_MEASUREMENT_ID}&api_secret=${encodeURIComponent(GA4_API_SECRET)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ client_id: clientId, events: [{ name, params }] }),
+    });
+  } catch { /* MP is best-effort */ }
 }
 
 // We need the raw body to verify the Stripe signature — disable body parsing.
@@ -196,7 +232,88 @@ export default async function handler(req: any, res: any) {
           await supabase.from("subscriptions").upsert(rowFromSubscription(userId, customerId, sub), { onConflict: "user_id" });
           await stampTrialLifecycle(supabase, userId, sub);
         }
-        await firePurchaseCapi(s);
+
+        // Server-side sign_up + start_trial (deduped with the browser via matching
+        // event ids). NO purchase here — the 7-day trial hasn't charged yet; the
+        // purchase fires from invoice.paid below. sign_up/CompleteRegistration only
+        // for a brand-new (guest) account, not an existing member upgrading.
+        {
+          const plan = s.metadata?.plan || "";
+          const cycle = s.metadata?.cycle || "";
+          const label = `${plan}-${cycle}`;
+          const value = PLAN_PRICE[`${plan}:${cycle}`];
+          const isNewSignup = !s.metadata?.user_id;
+          if (isNewSignup) {
+            await fireMetaEvent({ eventName: "CompleteRegistration", eventId: `signup_${s.id}`, email, userId: userId || undefined, custom: { content_name: label } });
+          }
+          await fireMetaEvent({
+            eventName: "StartTrial", eventId: `trial_${s.id}`, email, userId: userId || undefined,
+            value, currency: "USD", custom: { content_name: label, predicted_ltv: value, plan, cycle },
+          });
+        }
+        break;
+      }
+      // First successful payment (after the trial, or immediately for a no-trial
+      // sub). Fires the Purchase conversion server-side, since the customer isn't
+      // on the site 7 days later. Renewals are excluded via subscriptions.first_paid_at.
+      case "invoice.paid": {
+        const inv = event.data.object as Stripe.Invoice;
+        const amount = (inv.amount_paid ?? 0) / 100;
+        if (amount <= 0) break; // the $0 trial-start invoice is not a payment
+        const subId = typeof inv.subscription === "string" ? inv.subscription : inv.subscription?.id;
+        const customerId = typeof inv.customer === "string" ? inv.customer : inv.customer?.id;
+        if (!subId || !customerId) break;
+        const sub = await stripe.subscriptions.retrieve(subId);
+        const userId = await resolveUserId(sub, customerId);
+        if (!userId) break;
+
+        // Fire the Purchase once — only for the FIRST paid invoice. A renewal finds
+        // first_paid_at already set and is skipped.
+        const { data: subRow } = await supabase
+          .from("subscriptions").select("first_paid_at").eq("user_id", userId).maybeSingle();
+        if (subRow?.first_paid_at) break;
+        try { await supabase.from("subscriptions").update({ first_paid_at: new Date().toISOString() }).eq("user_id", userId); } catch { /* column may not exist yet */ }
+
+        // Original attribution + match keys, saved on the profile during the trial.
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("email, ga_client_id, fbc, fbp, first_utm_source, first_utm_medium, first_utm_campaign, first_utm_content, first_utm_term")
+          .eq("id", userId).maybeSingle();
+
+        const email = (inv.customer_email || prof?.email || "").toLowerCase().trim();
+        const plan = sub.metadata?.plan || "";
+        const cycle = sub.metadata?.cycle || "";
+        const label = `${plan}-${cycle}`;
+        const currency = (inv.currency || "usd").toUpperCase();
+        const trialUsed = !!sub.trial_start;
+        const txnId = inv.id;
+        const attr = {
+          utm_source: prof?.first_utm_source || undefined,
+          utm_medium: prof?.first_utm_medium || undefined,
+          utm_campaign: prof?.first_utm_campaign || undefined,
+          utm_content: prof?.first_utm_content || undefined,
+          utm_term: prof?.first_utm_term || undefined,
+        };
+
+        // Meta CAPI Purchase (server-only — no browser event, so no dedup needed).
+        await fireMetaEvent({
+          eventName: "Purchase",
+          eventId: `purchase_${txnId}`,
+          email, userId, fbc: prof?.fbc || undefined, fbp: prof?.fbp || undefined,
+          value: amount, currency,
+          custom: { content_name: label, plan, cycle, trial_used: trialUsed, transaction_id: txnId, subscription_id: sub.id, customer_id: userId, ...attr },
+        });
+
+        // GA4 purchase via Measurement Protocol (client_id stitches to the browser
+        // session; no PII sent).
+        await fireGa4(prof?.ga_client_id || "", "purchase", {
+          transaction_id: txnId,
+          value: amount,
+          currency,
+          items: [{ item_id: label, item_name: `Allegory ${plan} ${cycle}`.trim(), price: amount, quantity: 1 }],
+          plan, cycle, trial_used: trialUsed, customer_id: userId,
+          ...attr,
+        });
         break;
       }
       case "customer.subscription.created":

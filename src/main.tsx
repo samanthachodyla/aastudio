@@ -1,6 +1,11 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { captureAttribution } from "./lib/attribution";
+
+// Record where this visit came from (UTMs, click IDs, referrer, landing page)
+// before anything else, so first-touch is captured on the very first pageview.
+captureAttribution();
 
 // If the user arrived from a Supabase password-recovery email, the token can
 // land on any path (depending on the project's redirect config). Route them to
