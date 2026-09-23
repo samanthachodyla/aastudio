@@ -6,6 +6,12 @@
 // and subscribe to: checkout.session.completed, customer.subscription.created,
 // customer.subscription.updated, customer.subscription.deleted, invoice.paid.
 // (invoice.paid drives the first-payment Purchase conversion after the trial.)
+//
+// Env vars this function reads (all optional — each feature no-ops if unset):
+//   STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET  — required for the webhook itself
+//   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY   — mirror subscription state
+//   META_PIXEL_ID, META_CAPI_TOKEN            — server-side Meta Purchase (CAPI)
+//   GA4_MEASUREMENT_ID, GA4_API_SECRET        — server-side GA4 purchase event
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
