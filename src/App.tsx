@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 // Public, fast-path pages stay eager so they render the instant React boots.
 import Landing from "./pages/Landing.tsx";
 import Login from "./pages/Login.tsx";
@@ -52,6 +53,7 @@ const App = () => (
       <Sonner />
       <CookieConsent />
       <UpdateBanner />
+      <SpeedInsights />
       <BrowserRouter>
         <AuthProvider>
           <UsageTracker />
