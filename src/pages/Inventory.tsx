@@ -361,7 +361,7 @@ const Inventory = () => {
           <Dialog open={portfolioOpen} onOpenChange={(o) => { setPortfolioOpen(o); if (o) { setSelectedIds(prev => prev.size ? prev : defaultSelection()); } else { setShareUrl(""); setCopied(false); } }}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
-                <FileText className="h-3.5 w-3.5" /> Export portfolio
+                <FileText className="h-3.5 w-3.5" /> Export PDF
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">

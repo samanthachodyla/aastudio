@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let lastUserId: string | null = null;
     const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
       setSession(next);
-      syncProfileEmail(next?.user ?? null);
+      syncProfile(next?.user ?? null);
       // When the signed-in user changes (sign in / sign out / account switch),
       // clear the cached subscription so the paywall re-checks for THIS account
       // instead of inheriting the previous user's access. Without this, signing
@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .getSession()
       .then(({ data }) => {
         setSession(data.session);
-        syncProfileEmail(data.session?.user ?? null);
+        syncProfile(data.session?.user ?? null);
       })
       // Never hang the whole app on a failed session check — fall through to login.
       .catch((e) => console.error("[auth] getSession failed", e))
@@ -67,14 +67,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-/** Keep the local profile store's email in sync with the authenticated user, and
- *  feed the Pixel's Advanced Matching so this member's PageViews carry their
- *  email + a stable external id (lifts Event Match Quality). */
-function syncProfileEmail(user: User | null) {
+/** Keep the local profile store in sync with the authenticated user: their email
+ *  (also feeds the Pixel's Advanced Matching), and their display NAME, which the
+ *  PDF/portfolio exports use. The name is sourced from the account itself — auth
+ *  metadata first, then the profiles row — so a comped artist who never opened
+ *  Settings still gets their name on exports instead of just their email. When a
+ *  DIFFERENT account signs in on the same device we reseed from that account, so
+ *  one artist's name never bleeds onto another's exports. A name the user typed
+ *  in Settings (same account, email unchanged) is preserved. */
+function syncProfile(user: User | null) {
   if (!user?.email) return;
-  const { email, setProfile } = useUserProfile.getState();
-  if (email !== user.email) setProfile({ email: user.email });
+  const { email, fullName, setProfile } = useUserProfile.getState();
+  const metaName = String(
+    (user.user_metadata?.full_name as string) || (user.user_metadata?.name as string) || "",
+  ).trim();
+
+  if (email !== user.email) {
+    // A new/different account on this device — reset the name to this account's.
+    setProfile({ email: user.email, fullName: metaName });
+  } else if (!fullName && metaName) {
+    setProfile({ fullName: metaName });
+  }
   saveFbMatch({ em: user.email, external_id: user.id });
+
+  // If we still have no name, pull it from the profiles row (covers accounts
+  // whose name lives only in the database, e.g. ones set up on the backend).
+  if (!useUserProfile.getState().fullName) {
+    const db = supabase as unknown as { from: (t: string) => any };
+    db.from("profiles").select("full_name").eq("id", user.id).maybeSingle()
+      .then(({ data }: { data: { full_name?: string } | null }) => {
+        const n = String(data?.full_name || "").trim();
+        // Guard against an account switch mid-flight before applying.
+        if (n && useUserProfile.getState().email === user.email && !useUserProfile.getState().fullName) {
+          setProfile({ fullName: n });
+        }
+      })
+      .catch(() => { /* best-effort */ });
+  }
 }
 
 export function useAuth(): AuthState {

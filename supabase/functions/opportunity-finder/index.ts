@@ -73,7 +73,7 @@ Return ONLY a JSON array (no prose, no markdown fences) of objects with this exa
     "type": "Open call | Residency | Grant | Prize | Platform",
     "deadline_season": "string (e.g. 'Rolling', 'Spring', 'Annual - Fall')",
     "description": "one short sentence",
-    "where_to_find": "string (URL or clear search hint)"
+    "where_to_find": "string — a full https:// URL to the opportunity's own page or open-call listing whenever one exists; only fall back to a short search hint if you truly don't know a URL"
   }
 ]`;
 

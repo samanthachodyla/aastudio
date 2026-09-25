@@ -83,17 +83,19 @@ export default async function handler(req: any, res: any) {
     const lastName = restName.join(" ");
 
     const supabase = createClient(SUPABASE_URL, svc);
+    // Store the name on the account so exports/greetings show it (not just email).
+    const meta = fullName ? { full_name: fullName } : undefined;
     let userId = await getUserIdByEmail(supabase, email);
     if (userId) {
-      const { error } = await supabase.auth.admin.updateUserById(userId, { password, email_confirm: true });
+      const { error } = await supabase.auth.admin.updateUserById(userId, { password, email_confirm: true, user_metadata: meta });
       if (error) return res.status(500).json({ error: error.message });
     } else {
-      const { data, error } = await supabase.auth.admin.createUser({ email, password, email_confirm: true });
+      const { data, error } = await supabase.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: meta });
       if (error) {
         // Race with the webhook creating them first — retry as an update.
         userId = await getUserIdByEmail(supabase, email);
         if (!userId) return res.status(500).json({ error: error.message });
-        const upd = await supabase.auth.admin.updateUserById(userId, { password, email_confirm: true });
+        const upd = await supabase.auth.admin.updateUserById(userId, { password, email_confirm: true, user_metadata: meta });
         if (upd.error) return res.status(500).json({ error: upd.error.message });
       } else {
         userId = data.user?.id ?? null;

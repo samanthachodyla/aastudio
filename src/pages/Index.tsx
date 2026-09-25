@@ -239,17 +239,22 @@ const Dashboard = () => {
             {upcomingDeadlines.map(o => {
               const d = daysUntil(o.deadline);
               return (
-                <li key={o.id} className="py-4 flex items-center gap-4">
-                  <div className="font-display text-3xl tabular-nums w-12 text-right">
-                    {d < 0 ? "!" : d}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium truncate">{o.title}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {o.organization} · {fmtDate(o.deadline)}
+                <li key={o.id}>
+                  <Link
+                    to={`/exhibitions?open=${o.id}`}
+                    className="py-4 flex items-center gap-4 -mx-2 px-2 rounded-sm hover:bg-muted/40 transition-colors"
+                  >
+                    <div className="font-display text-3xl tabular-nums w-12 text-right">
+                      {d < 0 ? "!" : d}
                     </div>
-                  </div>
-                  <StatusPill status={o.status} />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate">{o.title}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {o.organization} · {fmtDate(o.deadline)}
+                      </div>
+                    </div>
+                    <StatusPill status={o.status} />
+                  </Link>
                 </li>
               );
             })}

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Plus, Trash2, Sparkles, Loader2, ChevronDown, CalendarClock, Search, ExternalLink, Check, Paperclip, Download, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { useSearchParams } from "react-router-dom";
 import type { Opportunity, OpportunityStatus, OpportunityType, OppAttachment } from "@/lib/types";
 
 const typeLabels: Record<string, string> = {
@@ -152,6 +153,20 @@ const Exhibitions = () => {
   const [open, setOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Deep-link from the dashboard "On the horizon" list: /exhibitions?open=<id>
+  // expands that opportunity and scrolls it into view.
+  useEffect(() => {
+    const openId = searchParams.get("open");
+    if (!openId) return;
+    setExpandedId(openId);
+    const t = window.setTimeout(() => {
+      document.getElementById(`opp-${openId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 120);
+    setSearchParams({}, { replace: true });
+    return () => window.clearTimeout(t);
+  }, [searchParams, setSearchParams]);
   const sorted = [...opportunities].sort((a, b) => +new Date(a.deadline) - +new Date(b.deadline));
 
   const filtered = useMemo(() => {
@@ -204,7 +219,7 @@ const Exhibitions = () => {
               const overdue = d < 0 && ["researching", "applying"].includes(o.status);
               const isExpanded = expandedId === o.id;
               return (
-                <li key={o.id} className="group">
+                <li key={o.id} id={`opp-${o.id}`} className="group scroll-mt-24">
                   <div
                     onClick={() => setExpandedId(isExpanded ? null : o.id)}
                     className="py-6 grid md:grid-cols-[80px_1fr_auto] gap-6 items-start cursor-pointer"
@@ -254,7 +269,7 @@ const Exhibitions = () => {
                           <Label className="eyebrow">Deadline</Label>
                           <Input
                             type="date"
-                            value={o.deadline || ""}
+                            value={(o.deadline || "").slice(0, 10)}
                             onChange={(e) => updateOpportunity(o.id, { deadline: e.target.value })}
                           />
                         </div>
@@ -265,6 +280,16 @@ const Exhibitions = () => {
                             onChange={(e) => updateOpportunity(o.id, { link: e.target.value })}
                             placeholder="https://…"
                           />
+                          {o.link?.trim() && (
+                            <a
+                              href={/^https?:\/\//i.test(o.link.trim()) ? o.link.trim() : `https://${o.link.trim()}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-1.5 inline-flex items-center gap-1 text-xs text-foreground underline underline-offset-2 hover:opacity-70"
+                            >
+                              <ExternalLink className="h-3 w-3" /> Open link
+                            </a>
+                          )}
                         </div>
                         <div>
                           <Label className="eyebrow">Entry fee</Label>
@@ -403,7 +428,9 @@ function OpportunityForm({ onSubmit }: { onSubmit: (d: any, files: PendingAttach
         e.preventDefault();
         onSubmit({
           ...form,
-          deadline: new Date(form.deadline).toISOString(),
+          // Store the bare YYYY-MM-DD so it round-trips into the date picker on
+          // edit (a full ISO datetime renders the native date input blank).
+          deadline: (form.deadline || "").slice(0, 10),
           fee: form.fee === "" ? undefined : Number(form.fee),
           link: form.link || undefined,
           requirements: form.requirements || undefined,
@@ -538,6 +565,16 @@ const asUrl = (v?: string): string | null => {
   return /^https?:\/\/\S+$/i.test(s) ? s : null;
 };
 
+// Always give a suggestion a clickable destination: its real URL when the AI
+// returns one, otherwise a web search for the name + organization so the user
+// can jump straight to finding it — never dead, un-clickable text.
+const suggestionUrl = (s: Suggestion): string => {
+  const real = asUrl(s.where_to_find);
+  if (real) return real;
+  const q = [s.name, s.organization, s.type].filter(Boolean).join(" ").trim();
+  return `https://www.google.com/search?q=${encodeURIComponent(q || (s.name ?? "art opportunity"))}`;
+};
+
 // Map the finder's free-text type onto the app's opportunity types.
 const SUGGESTION_TYPE_MAP: Record<string, OpportunityType> = {
   "open call": "open_call", residency: "residency", grant: "grant",
@@ -571,7 +608,7 @@ function OpportunityFinder({ existingTitles, onAdd }: {
     onAdd({
       title: s.name,
       organization: s.organization ?? "",
-      deadline: new Date(Date.now() + 60 * 86400000).toISOString(), // placeholder — refine in Deadlines
+      deadline: (new Date(Date.now() + 60 * 86400000).toISOString()).slice(0, 10), // placeholder — refine in Deadlines
       type: mapSuggestionType(s.type),
       status,
       notes: [
@@ -699,18 +736,17 @@ function OpportunityFinder({ existingTitles, onAdd }: {
           {filteredSuggestions && filteredSuggestions.length > 0 ? (
             <div className="mt-4 hairline-card divide-y divide-border">
               {filteredSuggestions.map((s, i) => {
-                const url = asUrl(s.where_to_find);
+                const hasUrl = !!asUrl(s.where_to_find);
+                const link = suggestionUrl(s);
                 const isAdded = added.has(s.name);
                 return (
                   <div key={i} className="p-5">
                     <div className="flex items-baseline justify-between gap-4 flex-wrap">
                       <h3 className="font-display text-xl">
-                        {url ? (
-                          <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:underline">
-                            {s.name}
-                            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-                          </a>
-                        ) : s.name}
+                        <a href={link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:underline">
+                          {s.name}
+                          <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                        </a>
                       </h3>
                       {s.deadline_season && <span className="eyebrow">{s.deadline_season}</span>}
                     </div>
@@ -720,18 +756,14 @@ function OpportunityFinder({ existingTitles, onAdd }: {
                     {s.description && <p className="text-sm text-muted-foreground mt-2">{s.description}</p>}
 
                     <div className="flex items-center flex-wrap gap-3 mt-4">
-                      {url ? (
-                        <a
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-xs font-medium hover:underline"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" /> Visit site
-                        </a>
-                      ) : s.where_to_find ? (
-                        <span className="text-xs text-muted-foreground italic">Where to find: {s.where_to_find}</span>
-                      ) : null}
+                      <a
+                        href={link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-medium hover:underline"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" /> {hasUrl ? "Visit site" : "Search the web"}
+                      </a>
 
                       <div className="ml-auto">
                         {isAdded ? (
