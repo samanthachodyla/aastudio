@@ -19,28 +19,23 @@ import { exportPortfolioPdf } from "@/lib/portfolioExport";
 import { exportArtworkLabels } from "@/lib/artworkLabels";
 import { createSharedPortfolio } from "@/lib/sharePortfolio";
 import { useUserProfile } from "@/lib/userProfile";
-import type { ArtworkStatus } from "@/lib/types";
+import type { ArtworkStatus, ArtworkLocation } from "@/lib/types";
+import { ARTWORK_STATUSES, ARTWORK_LOCATIONS, statusLabel, locationLabel, locationTakesDetail, normalizeArtwork } from "@/lib/artworkTaxonomy";
 
-// Default statuses for a collector-facing "available works" portfolio.
-const defaultPortfolioStatuses: ArtworkStatus[] = ["in_studio", "on_consignment"];
+// Default disposition for a collector-facing "available works" portfolio.
+const defaultPortfolioStatuses: ArtworkStatus[] = ["available"];
 
-const exportableStatuses: { value: ArtworkStatus; label: string }[] = [
-  { value: "in_studio", label: "In studio" },
-  { value: "on_consignment", label: "On consignment" },
-  { value: "sold", label: "Sold" },
-  { value: "donated", label: "Donated" },
-  { value: "loaned", label: "Loaned" },
-  { value: "nfs", label: "NFS" },
-];
+const exportableStatuses = ARTWORK_STATUSES;
 
 const statuses: { value: ArtworkStatus | "all"; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "in_studio", label: "In studio" },
-  { value: "on_consignment", label: "On consignment" },
-  { value: "sold", label: "Sold" },
-  { value: "donated", label: "Donated" },
-  { value: "loaned", label: "Loaned" },
-  { value: "nfs", label: "NFS" },
+  ...ARTWORK_STATUSES,
+];
+
+// Location filter options (second axis, alongside the status filter).
+const locationFilters: { value: ArtworkLocation | "all"; label: string }[] = [
+  { value: "all", label: "All locations" },
+  ...ARTWORK_LOCATIONS,
 ];
 
 // ---- Inventory sorting ----
@@ -52,10 +47,9 @@ const SORT_LABELS: { value: SortKey; label: string }[] = [
   { value: "price", label: "Price" },
   { value: "year", label: "Year" },
 ];
-// A meaningful order for the "Status" sort (studio → out in the world → gone).
-// Custom statuses fall to the end and then sort alphabetically.
+// A meaningful order for the "Status" sort (owned/available → gone).
 const STATUS_ORDER: Record<string, number> = {
-  in_studio: 0, on_consignment: 1, in_transit: 2, in_storage: 3, loaned: 4, nfs: 5, sold: 6, donated: 7,
+  available: 0, nfs: 1, donated: 2, sold: 3,
 };
 
 /** Kebab-case slug from a name, for export filenames. */
@@ -68,6 +62,7 @@ const Inventory = () => {
   const { fullName, email, invoiceLogo } = useUserProfile();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<ArtworkStatus | "all">("all");
+  const [locFilter, setLocFilter] = useState<ArtworkLocation | "all">("all");
   const [sortKey, setSortKey] = useState<SortKey>("added");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [open, setOpen] = useState(false);
@@ -254,7 +249,8 @@ const Inventory = () => {
   const filtered = useMemo(() => {
     const list = artworks.filter(a => {
       if (filter !== "all" && a.status !== filter) return false;
-      if (q && !`${a.title} ${a.medium} ${a.year}`.toLowerCase().includes(q.toLowerCase())) return false;
+      if (locFilter !== "all" && a.location !== locFilter) return false;
+      if (q && !`${a.title} ${a.medium} ${a.year} ${a.locationDetail ?? ""}`.toLowerCase().includes(q.toLowerCase())) return false;
       return true;
     });
     const dir = sortDir === "asc" ? 1 : -1;
@@ -275,14 +271,14 @@ const Inventory = () => {
       }
     };
     return [...list].sort(cmp);
-  }, [artworks, q, filter, sortKey, sortDir]);
+  }, [artworks, q, filter, locFilter, sortKey, sortDir]);
 
   const exportCSV = () => {
     const selected = new Set(exportStatuses);
     const data = artworks.filter(a => selected.has(a.status));
     // Lead every row with the artist's name so the export is attributable.
-    const header = ["Artist", "Title", "Year", "Medium", "Dimensions", "Edition", "Price", "Status", "Location"];
-    const rows = data.map(a => [fullName || "", a.title, a.year, a.medium, a.dimensions, a.edition ?? "", a.price, a.status, a.location ?? ""]);
+    const header = ["Artist", "Title", "Year", "Medium", "Dimensions", "Edition", "Price", "Status", "Location", "Specific location"];
+    const rows = data.map(a => [fullName || "", a.title, a.year, a.medium, a.dimensions, a.edition ?? "", a.price, statusLabel(a.status), locationLabel(a.location), a.locationDetail ?? ""]);
     const csv = [header, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -550,6 +546,12 @@ const Inventory = () => {
               ))}
             </div>
             <div className="flex items-center gap-2 sm:ml-auto">
+              <Select value={locFilter} onValueChange={(v) => setLocFilter(v as ArtworkLocation | "all")}>
+                <SelectTrigger className="h-8 w-[150px] text-xs bg-card"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {locationFilters.map(l => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
               <span className="eyebrow text-[10px] text-muted-foreground hidden sm:inline">Sort</span>
               <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
                 <SelectTrigger className="h-8 w-[150px] text-xs bg-card"><SelectValue /></SelectTrigger>
@@ -600,7 +602,14 @@ const Inventory = () => {
                     <td className="px-4 py-4 tabular-nums text-muted-foreground">{a.year}</td>
                     <td className="px-4 py-4 text-muted-foreground">{a.dimensions}</td>
                     <td className="px-4 py-4"><StatusPill status={a.status} /></td>
-                    <td className="px-4 py-4 text-muted-foreground">{a.location ?? "—"}</td>
+                    <td className="px-4 py-4 text-muted-foreground">
+                      {a.location ? (
+                        <>
+                          {locationLabel(a.location)}
+                          {a.locationDetail && <span className="block text-[11px] opacity-70">{a.locationDetail}</span>}
+                        </>
+                      ) : "—"}
+                    </td>
                     <td className="px-4 py-4 tabular-nums text-right">{fmtMoney(a.price)}</td>
                     <td className="px-4 py-4 text-right">
                       <button onClick={(e) => { e.stopPropagation(); deleteArtwork(a.id); }} className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive">
@@ -646,7 +655,9 @@ const Inventory = () => {
                     <span className="tabular-nums text-sm">{fmtMoney(a.price)}</span>
                   </div>
                   {a.location && (
-                    <div className="text-[11px] text-muted-foreground mt-1.5">{a.location}</div>
+                    <div className="text-[11px] text-muted-foreground mt-1.5">
+                      {locationLabel(a.location)}{a.locationDetail ? ` · ${a.locationDetail}` : ""}
+                    </div>
                   )}
                 </div>
               </div>
@@ -667,17 +678,6 @@ const Inventory = () => {
   );
 };
 
-
-const BUILT_IN_STATUSES: { value: string; label: string }[] = [
-  { value: "in_studio", label: "In studio" },
-  { value: "on_consignment", label: "On consignment" },
-  { value: "sold", label: "Sold" },
-  { value: "donated", label: "Donated" },
-  { value: "loaned", label: "Loaned" },
-  { value: "nfs", label: "NFS" },
-];
-
-const ADD_NEW_STATUS = "__add_new_status__";
 
 /** USD input: shows $1,234.56 when blurred, raw number while editing; stores a clean number. */
 function CurrencyInput({ value, onChange }: { value: number; onChange: (n: number) => void }) {
@@ -707,18 +707,16 @@ function CurrencyInput({ value, onChange }: { value: number; onChange: (n: numbe
 }
 
 function ArtworkForm({ initial, onSubmit }: { initial?: Artwork; onSubmit: (data: any) => void }) {
-  const customStatuses = useStore(s => s.customStatuses);
-  const addCustomStatus = useStore(s => s.addCustomStatus);
   const [form, setForm] = useState({
     title: initial?.title ?? "", year: initial?.year ?? new Date().getFullYear(),
     medium: initial?.medium ?? "", dimensions: initial?.dimensions ?? "",
     edition: initial?.edition ?? "", price: initial?.price ?? 0,
-    status: (initial?.status ?? "in_studio") as ArtworkStatus, location: initial?.location ?? "",
+    status: (initial?.status ?? "available") as ArtworkStatus,
+    location: (initial?.location ?? "in_studio") as ArtworkLocation,
+    locationDetail: initial?.locationDetail ?? "",
     imageUrl: initial?.imageUrl ?? "",
     buyer: (initial as { buyer?: string } | undefined)?.buyer ?? "",
   });
-  const [addingStatus, setAddingStatus] = useState(false);
-  const [newStatus, setNewStatus] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (file: File) => {
@@ -730,15 +728,6 @@ function ArtworkForm({ initial, onSubmit }: { initial?: Artwork; onSubmit: (data
     const reader = new FileReader();
     reader.onload = () => setForm(f => ({ ...f, imageUrl: String(reader.result) }));
     reader.readAsDataURL(file);
-  };
-
-  const confirmNewStatus = () => {
-    const v = newStatus.trim();
-    if (!v) return;
-    addCustomStatus(v);
-    setForm(f => ({ ...f, status: v }));
-    setNewStatus("");
-    setAddingStatus(false);
   };
 
   return (
@@ -753,6 +742,8 @@ function ArtworkForm({ initial, onSubmit }: { initial?: Artwork; onSubmit: (data
             price: Number(form.price),
             year: Number(form.year),
             imageUrl: form.imageUrl || undefined,
+            // Specific place only applies to on-consignment / in-gallery pieces.
+            locationDetail: locationTakesDetail(form.location) ? (form.locationDetail.trim() || undefined) : undefined,
             // Only persist a buyer on a sold work; undefined is skipped by the sync layer.
             buyer: form.status === "sold" ? (form.buyer.trim() || undefined) : undefined,
           });
@@ -798,45 +789,36 @@ function ArtworkForm({ initial, onSubmit }: { initial?: Artwork; onSubmit: (data
         <div><Label>Edition</Label><Input value={form.edition} onChange={(e) => setForm({ ...form, edition: e.target.value })} placeholder="e.g. 1/5" /></div>
         <div>
           <Label>Status</Label>
-          <Select
-            value={form.status}
-            onValueChange={(v) => {
-              if (v === ADD_NEW_STATUS) {
-                setAddingStatus(true);
-                return;
-              }
-              setForm({ ...form, status: v });
-            }}
-          >
+          <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as ArtworkStatus })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {BUILT_IN_STATUSES.map(s => (
+              {ARTWORK_STATUSES.map(s => (
                 <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
               ))}
-              {customStatuses.map(s => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-              <SelectItem value={ADD_NEW_STATUS}>＋ Add new status…</SelectItem>
             </SelectContent>
           </Select>
-          {addingStatus && (
-            <div className="mt-2 flex items-center gap-2">
-              <Input
-                autoFocus
-                value={newStatus}
-                onChange={(e) => setNewStatus(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") { e.preventDefault(); confirmNewStatus(); }
-                  if (e.key === "Escape") { setAddingStatus(false); setNewStatus(""); }
-                }}
-                placeholder="Status name"
-                className="h-8 text-sm"
-              />
-              <Button type="button" size="sm" onClick={confirmNewStatus}>Add</Button>
-            </div>
-          )}
         </div>
-        <div><Label>Location</Label><Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} /></div>
+        <div>
+          <Label>Location</Label>
+          <Select value={form.location} onValueChange={(v) => setForm({ ...form, location: v as ArtworkLocation })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {ARTWORK_LOCATIONS.map(l => (
+                <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {locationTakesDetail(form.location) && (
+          <div className="col-span-2">
+            <Label>{form.location === "on_consignment" ? "Consignor / gallery" : "Gallery"}</Label>
+            <Input
+              value={form.locationDetail}
+              onChange={(e) => setForm({ ...form, locationDetail: e.target.value })}
+              placeholder="e.g. Blue Door Gallery, Charleston"
+            />
+          </div>
+        )}
         {form.status === "sold" && (
           <div className="col-span-2">
             <Label>Buyer</Label>
@@ -861,18 +843,33 @@ const ART_HEADER_ALIASES: Record<string, keyof Omit<Artwork, "id" | "createdAt">
   dimensions: "dimensions", size: "dimensions", dims: "dimensions",
   edition: "edition", ed: "edition",
   price: "price", value: "price", amount: "price", "list price": "price",
-  status: "status", state: "status",
-  location: "location", "location/consignee": "location", consignee: "location", "where": "location",
+  status: "status", state: "status", disposition: "status",
+  location: "location", place: "location",
+  "specific location": "locationDetail", "location detail": "locationDetail",
+  consignee: "locationDetail", "location/consignee": "locationDetail",
+  gallery: "locationDetail", where: "locationDetail",
 };
 const ART_POSITIONAL: (keyof Omit<Artwork, "id" | "createdAt">)[] =
-  ["title", "year", "medium", "dimensions", "edition", "price", "status", "location"];
+  ["title", "year", "medium", "dimensions", "edition", "price", "status", "location", "locationDetail"];
 
-// Normalize free-text status into one of our known statuses (falls back to in_studio).
-const STATUS_ALIASES: Record<string, ArtworkStatus> = {
-  "in studio": "in_studio", studio: "in_studio", available: "in_studio", instudio: "in_studio",
-  "on consignment": "on_consignment", consignment: "on_consignment", consigned: "on_consignment",
-  sold: "sold", donated: "donated", loaned: "loaned", loan: "loaned",
+// Free-text → canonical tokens understood by normalizeArtwork (handles both the
+// new two-axis exports and legacy single-axis spreadsheets).
+const STATUS_TOKEN_ALIASES: Record<string, string> = {
+  available: "available", "for sale": "available",
+  sold: "sold", donated: "donated", gift: "donated",
   nfs: "nfs", "not for sale": "nfs",
+  // Legacy single-axis "statuses" that are really locations:
+  "in studio": "in_studio", studio: "in_studio", instudio: "in_studio",
+  "on consignment": "on_consignment", consignment: "on_consignment", consigned: "on_consignment",
+  loaned: "loaned", loan: "loaned", "on loan": "loaned",
+  "in transit": "in_transit", "in storage": "in_storage", storage: "in_storage",
+  "in gallery": "in_gallery",
+};
+const LOCATION_TOKEN_ALIASES: Record<string, string> = {
+  "in studio": "in_studio", studio: "in_studio", instudio: "in_studio",
+  "on consignment": "on_consignment", consignment: "on_consignment", consigned: "on_consignment",
+  "on loan": "on_loan", loaned: "on_loan", loan: "on_loan",
+  "in gallery": "in_gallery", gallery: "in_gallery",
   "in transit": "in_transit", "in storage": "in_storage", storage: "in_storage",
 };
 
@@ -898,7 +895,17 @@ function rowsToArtworks(cells: string[][]): Omit<Artwork, "id" | "createdAt">[] 
     const title = (rec.title ?? "").trim();
     if (!title) continue; // title is required
     const rawStatus = (rec.status ?? "").trim().toLowerCase();
-    const status: ArtworkStatus = STATUS_ALIASES[rawStatus] ?? (rawStatus ? rawStatus : "in_studio");
+    const rawLocation = (rec.location ?? "").trim();
+    const rawDetail = (rec.locationDetail ?? "").trim();
+    const statusToken = STATUS_TOKEN_ALIASES[rawStatus] ?? (rawStatus || "available");
+    const locationToken = LOCATION_TOKEN_ALIASES[rawLocation.toLowerCase()] ?? "";
+    // Feed the pieces through the same normalizer the app uses on load, so old
+    // single-column spreadsheets and new two-axis exports both land correctly.
+    const norm = normalizeArtwork({
+      status: statusToken,
+      location: locationToken || rawLocation,
+      locationDetail: rawDetail || undefined,
+    } as unknown as Artwork);
     const yearNum = parseInt(String(rec.year ?? "").replace(/[^0-9]/g, ""), 10);
     out.push({
       title,
@@ -907,8 +914,9 @@ function rowsToArtworks(cells: string[][]): Omit<Artwork, "id" | "createdAt">[] 
       dimensions: rec.dimensions?.trim() || "",
       edition: rec.edition?.trim() || undefined,
       price: parsePrice(rec.price ?? ""),
-      status,
-      location: rec.location?.trim() || undefined,
+      status: norm.status,
+      location: norm.location,
+      locationDetail: norm.locationDetail,
     });
   }
   return out;
@@ -932,7 +940,7 @@ function ImportArtworksDialog({ onImport }: { onImport: (rows: Omit<Artwork, "id
         <p className="text-sm text-muted-foreground">
           Upload a <span className="font-medium">.csv</span> file (export one from Excel, Numbers, or Google Sheets)
           or paste rows below. Columns are matched by header
-          (<span className="font-mono text-xs">title, year, medium, dimensions, edition, price, status, location</span>)
+          (<span className="font-mono text-xs">title, year, medium, dimensions, edition, price, status, location, specific location</span>)
           — or, with no header, read in that order. Only <span className="font-medium">title</span> is required.
         </p>
 

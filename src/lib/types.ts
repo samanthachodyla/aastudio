@@ -1,4 +1,8 @@
-export type ArtworkStatus = "in_studio" | "on_consignment" | "sold" | "donated" | "loaned" | "nfs" | "in_transit" | "in_storage" | (string & {});
+// Disposition — what's happening with the piece commercially. Fixed set.
+export type ArtworkStatus = "available" | "sold" | "donated" | "nfs";
+// Where the piece physically is. Separate axis from disposition.
+export type ArtworkLocation =
+  | "in_studio" | "on_consignment" | "on_loan" | "in_gallery" | "in_transit" | "in_storage";
 
 export interface Artwork {
   id: string;
@@ -9,7 +13,8 @@ export interface Artwork {
   edition?: string;
   price: number; // in cents to avoid float issues? keep dollars for simplicity
   status: ArtworkStatus;
-  location?: string; // gallery/collector/institution
+  location?: ArtworkLocation; // where it physically is
+  locationDetail?: string; // specific place (gallery/consignor name) — for on_consignment / in_gallery
   imageUrl?: string;
   createdAt: string;
 }

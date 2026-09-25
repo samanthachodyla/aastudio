@@ -8,6 +8,7 @@
 // dialog / project notes) with public-read + owner-write RLS.
 import { supabase } from "@/integrations/supabase/client";
 import type { Artwork } from "@/lib/types";
+import { locationLabel } from "@/lib/artworkTaxonomy";
 
 export interface SharedWork {
   title: string;
@@ -105,7 +106,9 @@ export async function createSharedPortfolio(opts: CreateShareOptions): Promise<C
       edition: a.edition || undefined,
       price: opts.showPrices && typeof a.price === "number" && a.price > 0 ? a.price : undefined,
       statusLabel: opts.statusLabels[a.status] ?? titleize(String(a.status)),
-      location: opts.showLocation && a.location ? a.location : undefined,
+      location: opts.showLocation && a.location
+        ? [locationLabel(a.location), a.locationDetail].filter(Boolean).join(" · ")
+        : undefined,
       imageUrl: a.imageUrl ? await downscaleImage(a.imageUrl) : undefined,
     });
   }

@@ -288,7 +288,7 @@ function AgreementBuilder({ onClose }: { onClose: () => void }) {
   const toggle = (id: string) =>
     setSelected(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
 
-  const eligible = artworks.filter(a => a.status === "in_studio" || a.status === "on_consignment");
+  const eligible = artworks.filter(a => a.status === "available");
 
   const generate = () => {
     if (!consignee.trim() || selected.length === 0) {
@@ -392,7 +392,7 @@ ${notes ? `<h2>Additional notes</h2><p>${notes}</p>` : ""}
           status: "active",
           ...patch,
         });
-        updateArtwork(a.id, { status: "on_consignment", location: consignee });
+        updateArtwork(a.id, { location: "on_consignment", locationDetail: consignee });
       }
     });
     toast.success("Agreement generated and saved");

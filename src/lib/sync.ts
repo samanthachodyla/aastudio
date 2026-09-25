@@ -11,6 +11,7 @@
 // ============================================================================
 import { supabase } from "@/integrations/supabase/client";
 import { readOutbox, recordInsert, recordUpdate, recordDelete, resolve, pendingCount, dropPendingDeletes } from "@/lib/outbox";
+import { normalizeArtwork } from "@/lib/artworkTaxonomy";
 
 // Loosely-typed handle so we can hit the new tables without regenerated types.
 const db = supabase as unknown as {
@@ -211,6 +212,12 @@ export async function loadAllForUser(userId: string): Promise<HydratedData> {
   // the user sees a real error instead of a silently empty studio.
   if (failures.length === entries.length) {
     throw failures[0].error;
+  }
+
+  // Coerce legacy single-axis artworks into the two-axis (status/location) shape
+  // so the whole app sees a consistent model regardless of a row's vintage.
+  if (Array.isArray(collections.artworks)) {
+    collections.artworks = collections.artworks.map(normalizeArtwork);
   }
 
   let inboxConnection: Record<string, any> | null = null;

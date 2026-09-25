@@ -137,7 +137,7 @@ const Dashboard = () => {
   }, [opportunities, invoices, flaggedEmails, scheduledPosts, contentIdeas, contacts, expenses, firstName]);
 
   const stats = useMemo(() => {
-    const inStudio = artworks.filter(a => a.status === "in_studio").length;
+    const inStudio = artworks.filter(a => a.location === "in_studio").length;
     const ytdRev = invoices.filter(i => i.status === "paid").reduce((s, i) => s + i.amount, 0);
     const outstanding = invoices.filter(i => i.status === "sent" || i.status === "overdue").reduce((s, i) => s + i.amount, 0);
     const openLeads = leads.filter(l => l.status !== "won" && l.status !== "lost").length;

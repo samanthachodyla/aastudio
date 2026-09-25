@@ -250,7 +250,9 @@ export const useStore = create<State>()(
         const item: Consignment = { ...c, id: uid() };
         set({ consignments: [item, ...get().consignments] });
         track(pushInsert("consignments", item));
-        if (c.status === "active") get().updateArtwork(c.artworkId, { status: "on_consignment", location: c.galleryName });
+        // Consigning changes only WHERE the piece is, not its disposition — it's
+        // still available (for sale) until the consignment records a sale.
+        if (c.status === "active") get().updateArtwork(c.artworkId, { location: "on_consignment", locationDetail: c.galleryName });
         return item;
       },
       updateConsignment: (id, patch) => {
@@ -258,11 +260,11 @@ export const useStore = create<State>()(
         track(pushUpdate("consignments", id, patch));
         if (patch.status === "active") {
           const c = get().consignments.find(x => x.id === id);
-          if (c) get().updateArtwork(c.artworkId, { status: "on_consignment", location: c.galleryName });
+          if (c) get().updateArtwork(c.artworkId, { location: "on_consignment", locationDetail: c.galleryName });
         }
         if (patch.status === "returned") {
           const c = get().consignments.find(x => x.id === id);
-          if (c) get().updateArtwork(c.artworkId, { status: "in_studio", location: undefined });
+          if (c) get().updateArtwork(c.artworkId, { location: "in_studio", locationDetail: undefined });
         }
       },
       deleteConsignment: (id) => {

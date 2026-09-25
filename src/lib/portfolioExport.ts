@@ -6,6 +6,7 @@
 // round-trip, so the PDF is fully offline and pixel-faithful.
 import { fmtMoney } from "@/lib/store";
 import type { Artwork, ArtworkStatus } from "@/lib/types";
+import { locationLabel } from "@/lib/artworkTaxonomy";
 
 export interface PortfolioOptions {
   artworks: Artwork[];
@@ -68,9 +69,10 @@ function workRow(a: Artwork, opts: PortfolioOptions): string {
     : "";
 
   const avail = `<span class="avail">${esc(statusLabel(a.status, opts.statusLabels))}</span>`;
-  const loc = opts.showLocation && a.location
-    ? `<div class="loc">${esc(a.location)}</div>`
+  const locText = opts.showLocation && a.location
+    ? [locationLabel(a.location), a.locationDetail].filter(Boolean).join(" · ")
     : "";
+  const loc = locText ? `<div class="loc">${esc(locText)}</div>` : "";
 
   // Image on the left; title, medium, size, price, status and location beside it.
   return `

@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 
 const variants: Record<string, string> = {
+  available: "bg-surface text-foreground",
   in_studio: "bg-surface text-foreground",
   on_consignment: "bg-foreground/5 text-foreground border-foreground/20",
   sold: "bg-foreground text-background",
@@ -54,6 +55,7 @@ const variants: Record<string, string> = {
 };
 
 const labels: Record<string, string> = {
+  available: "Available",
   in_studio: "In studio",
   on_consignment: "On consignment",
   sold: "Sold",
