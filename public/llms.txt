@@ -2,7 +2,7 @@
 
 > Allegory Art Studio is a CRM and studio-management platform for working and emerging artists. It brings the business side of an art practice — inventory, sales and finances, consignments, exhibitions and deadlines, contacts, and outreach — into one calm place, so artists spend less time on admin and more time making work. Built by an arts administrator, for artists.
 
-Allegory Art Studio (also written "Allegory Studio") is a web app at https://allegoryartstudio.com. It is live and open for signups. Pricing is pay-to-start (no free trial); plans are month-to-month or annual and can be cancelled anytime.
+Allegory Art Studio (also written "Allegory Studio") is a web app at https://allegoryartstudio.com. It is live and open for signups. Every plan starts with a 7-day free trial (card required, not charged until the trial ends); plans are month-to-month or annual and can be cancelled anytime.
 
 ## What it does
 - **Inventory Manager**: catalog every artwork with details, images, status (in studio, on consignment, sold), and price. Often described as "art inventory software."
@@ -20,7 +20,7 @@ Working and emerging artists managing the business of their practice — especia
 ## Pricing
 - **Studio Starter** — $25/month or $240/year. The core studio: inventory, sales & finance, deadlines, contacts, daily dashboard, and a lite Profile Vault.
 - **Studio Pro** — $55/month or $528/year. Everything in Starter plus the full Profile Vault, Communications Hub, Marketing Assistant, smart pricing, opportunity discovery, and a real arts administrator on call.
-- No free trial (pay-to-start). Month-to-month or annual. Cancel anytime. Discount codes accepted at checkout.
+- 7-day free trial on both tiers (card required, not charged until trial ends). Month-to-month or annual. Cancel anytime. Discount codes accepted at checkout.
 
 ## Key facts
 - Founder: Cara Alford (15+ years working with artists).
