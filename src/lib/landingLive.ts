@@ -31,7 +31,7 @@ export function toLiveLanding(html: string): string {
 
   // Hero eyebrow tag.
   out = out.replace('<span class="hero-tag">Launching August 1</span>',
-    '<span class="hero-tag">Now live for artists</span>');
+    '<span class="hero-tag">Allegory Art Studio management platform</span>');
 
   // Replace both waitlist signup forms with sign-up call-to-action buttons.
   // Both the hero and the final CTA sit on light (cream) backgrounds, so the

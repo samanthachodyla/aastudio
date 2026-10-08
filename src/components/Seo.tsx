@@ -11,7 +11,7 @@ import { useEffect } from "react";
 const SITE = "https://allegoryartstudio.com";
 const DEFAULT_TITLE = "Allegory Studio — CRM for Artists & Studio Management Software";
 const DEFAULT_DESCRIPTION =
-  "Allegory Studio is the CRM for artists and studio management software for working artists — art inventory software, sales, consignments, exhibitions, and outreach, running quietly in the background.";
+  "Allegory Studio is the CRM for artists and studio management software for working artists — art inventory software, sales, commissions, exhibitions, and outreach, running quietly in the background.";
 
 interface SeoProps {
   title?: string;
