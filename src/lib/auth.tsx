@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUserProfile } from "@/lib/userProfile";
 import { useSubscription } from "@/lib/subscription";
 import { saveFbMatch, clearFbMatch } from "@/lib/fbMatch";
+import { analytics } from "@heycatch/sdk";
 
 interface AuthState {
   session: Session | null;
@@ -22,9 +23,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Subscribe first so we never miss an auth event that fires during init.
     let lastUserId: string | null = null;
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, next) => {
       setSession(next);
       syncProfile(next?.user ?? null);
+      // HeyCatch identity: tie events to this member on sign-in, and go
+      // anonymous again on sign-out.
+      if (next?.user) syncAnalyticsIdentity(next.user);
+      else if (event === "SIGNED_OUT") { try { analytics.resetIdentity(); } catch { /* best-effort */ } }
       // When the signed-in user changes (sign in / sign out / account switch),
       // clear the cached subscription so the paywall re-checks for THIS account
       // instead of inheriting the previous user's access. Without this, signing
@@ -42,6 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then(({ data }) => {
         setSession(data.session);
         syncProfile(data.session?.user ?? null);
+        if (data.session?.user) syncAnalyticsIdentity(data.session.user);
       })
       // Never hang the whole app on a failed session check — fall through to login.
       .catch((e) => console.error("[auth] getSession failed", e))
@@ -65,6 +71,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
+}
+
+/** Send the signed-in member's identity to HeyCatch so analytics events attach
+ *  to a real person (shown as "Name <email>") instead of an anonymous id. The
+ *  id is the stable Supabase user id — the same one the browser and any future
+ *  server events share. Best-effort; never blocks auth. */
+function syncAnalyticsIdentity(user: User) {
+  try {
+    const name = String(
+      (user.user_metadata?.full_name as string) || (user.user_metadata?.name as string) || "",
+    ).trim();
+    analytics.setIdentity(user.id, { email: user.email || undefined, name: name || undefined });
+  } catch { /* analytics best-effort */ }
 }
 
 /** Keep the local profile store in sync with the authenticated user: their email

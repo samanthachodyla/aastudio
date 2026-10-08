@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { saveFbMatch } from "@/lib/fbMatch";
+import { analytics } from "@heycatch/sdk";
 
 /**
  * Post-checkout landing for the pay-first signup flow. Stripe has captured the
@@ -71,12 +72,21 @@ export default function Welcome() {
         fbq?.("track", "StartTrial", { value, currency: "USD", predicted_ltv: value, content_name: label }, { eventID: `trial_${sid}` });
       } catch { /* analytics is best-effort */ }
       // Account is ready — sign them straight in.
-      const { error } = await supabase.auth.signInWithPassword({ email: json.email, password });
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({ email: json.email, password });
       if (error) {
         toast.success("Your account is ready — please sign in.");
         navigate("/login", { replace: true });
         return;
       }
+      // HeyCatch: the client is the only place that knows a signup just completed
+      // (the account is created server-side, then we sign them in here). Identify
+      // first so the event attaches to the right person, then record the outcome.
+      try {
+        if (signInData?.user) {
+          analytics.setIdentity(signInData.user.id, { email: json.email, name: json.name || undefined });
+        }
+        analytics.trackEvent("signup_completed", { plan: json.plan || undefined, cycle: json.cycle || undefined });
+      } catch { /* analytics best-effort */ }
       toast.success("You're all set — welcome to Allegory Studio. ✦");
       navigate("/dashboard", { replace: true });
     } catch {
