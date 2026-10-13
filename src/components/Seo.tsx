@@ -9,9 +9,9 @@ import { useEffect } from "react";
  * a marketing site whose one indexable page is the landing page.
  */
 const SITE = "https://allegoryartstudio.com";
-const DEFAULT_TITLE = "Allegory Studio — CRM for Artists & Studio Management Software";
+const DEFAULT_TITLE = "Allegory Art Studio — CRM for Artists & Studio Management Software";
 const DEFAULT_DESCRIPTION =
-  "Allegory Studio is the CRM for artists and studio management software for working artists — art inventory software, sales, commissions, exhibitions, and outreach, running quietly in the background.";
+  "Allegory Art Studio is the CRM for artists and studio management software for working artists — art inventory software, sales, commissions, exhibitions, and outreach, running quietly in the background.";
 
 interface SeoProps {
   title?: string;
