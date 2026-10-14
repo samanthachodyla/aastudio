@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(data.session);
         syncProfile(data.session?.user ?? null);
       })
-      // Never hang the whole app on a failed session check — fall through to login.
+      // Never hang the whole app on a failed session check, fall through to login.
       .catch((e) => console.error("[auth] getSession failed", e))
       .finally(() => setLoading(false));
 
@@ -69,8 +69,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 /** Keep the local profile store in sync with the authenticated user: their email
  *  (also feeds the Pixel's Advanced Matching), and their display NAME, which the
- *  PDF/portfolio exports use. The name is sourced from the account itself — auth
- *  metadata first, then the profiles row — so a comped artist who never opened
+ *  PDF/portfolio exports use. The name is sourced from the account itself, auth
+ *  metadata first, then the profiles row, so a comped artist who never opened
  *  Settings still gets their name on exports instead of just their email. When a
  *  DIFFERENT account signs in on the same device we reseed from that account, so
  *  one artist's name never bleeds onto another's exports. A name the user typed
@@ -83,7 +83,7 @@ function syncProfile(user: User | null) {
   ).trim();
 
   if (email !== user.email) {
-    // A new/different account on this device — reset the name to this account's.
+    // A new/different account on this device, reset the name to this account's.
     setProfile({ email: user.email, fullName: metaName });
   } else if (!fullName && metaName) {
     setProfile({ fullName: metaName });

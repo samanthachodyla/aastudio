@@ -1,6 +1,6 @@
 // Single source of truth for the two-axis artwork model:
-//   status   (disposition) — Available / Sold / Donated / NFS
-//   location (physical)    — In studio / On consignment / On loan / In gallery /
+//   status   (disposition), Available / Sold / Donated / NFS
+//   location (physical)   , In studio / On consignment / On loan / In gallery /
 //                            In transit / In storage
 // plus `locationDetail`, a free-text specific place shown for on_consignment and
 // in_gallery. Everything (form, filters, exports, labels, migration) reads from

@@ -16,7 +16,7 @@ async function logEvent(eventType: string, path: string) {
   try {
     await db.from("usage_events").insert({ event_type: eventType, path, session_id: SESSION_ID });
   } catch {
-    /* ignore — analytics is best-effort */
+    /* ignore, analytics is best-effort */
   }
 }
 

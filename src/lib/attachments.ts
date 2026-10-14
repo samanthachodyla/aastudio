@@ -1,7 +1,7 @@
 // Opportunity file attachments live in their OWN store, persisted to IndexedDB
 // rather than localStorage. Attachments are base64 data URLs (up to a few MB
 // each), which would quickly exhaust the ~5MB localStorage quota shared by the
-// main prefs store — and a QuotaExceededError there throws synchronously and
+// main prefs store, and a QuotaExceededError there throws synchronously and
 // can break unrelated writes. IndexedDB has a far larger quota and, being a
 // separate async store, can never interfere with the prefs bucket.
 import { create } from "zustand";

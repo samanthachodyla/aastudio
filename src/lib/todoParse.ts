@@ -2,7 +2,7 @@
 // Todoist-style quick-add parsing + date helpers for the dashboard to-do list.
 //
 // Lets the artist type a task in one line and have priority, due date and
-// recurrence pulled out of it — e.g. "Email the gallery tomorrow !1" or
+// recurrence pulled out of it, e.g. "Email the gallery tomorrow !1" or
 // "Water studio plants every week". Everything is optional; plain text still
 // just makes a plain task. Dates are local YYYY-MM-DD strings to avoid timezone
 // drift.

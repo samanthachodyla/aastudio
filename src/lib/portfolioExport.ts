@@ -1,4 +1,4 @@
-// Portfolio export — turns selected inventory into a polished, on-brand PDF that
+// Portfolio export, turns selected inventory into a polished, on-brand PDF that
 // an artist can hand to a collector, gallery, or store as an "available works"
 // presentation. No dependencies: we render a self-contained, print-optimized HTML
 // document into a new window and trigger the browser's Save-as-PDF. Because
@@ -13,7 +13,7 @@ export interface PortfolioOptions {
   artistName: string;
   /** Optional logo/wordmark data URL (reuses the invoice logo). */
   logo?: string;
-  /** Contact line shown on the cover — usually the artist's email. */
+  /** Contact line shown on the cover, usually the artist's email. */
   contact?: string;
   /** Cover title, e.g. "Available Works". */
   title?: string;
@@ -133,7 +133,7 @@ export function buildPortfolioHtml(opts: PortfolioOptions): string {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>${esc(opts.artistName || "Allegory")} — ${esc(opts.title || "Available Works")}</title>
+<title>${esc(opts.artistName || "Allegory")}, ${esc(opts.title || "Available Works")}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Work+Sans:wght@300;400;500&display=swap" rel="stylesheet" />

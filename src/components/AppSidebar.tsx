@@ -50,7 +50,7 @@ export function AppSidebar() {
         <div className="px-4 pt-6 pb-2">
           {!collapsed ? (
             <>
-              <Link to="/dashboard" aria-label="Allegory Studio — Dashboard">
+              <Link to="/dashboard" aria-label="Allegory Studio, Dashboard">
                 <img src="/Allegory_Studio_Logo.png" alt="Allegory Studio" style={{ width: 160, height: "auto" }} />
               </Link>
               {firstName && (
@@ -58,7 +58,7 @@ export function AppSidebar() {
               )}
             </>
           ) : (
-            <Link to="/dashboard" aria-label="Allegory Studio — Dashboard" className="block">
+            <Link to="/dashboard" aria-label="Allegory Studio, Dashboard" className="block">
               <img src="/AAC_Brandmark-03_Emerald.png" alt="Allegory Studio" style={{ width: 32, height: "auto" }} className="mx-auto" />
             </Link>
           )}

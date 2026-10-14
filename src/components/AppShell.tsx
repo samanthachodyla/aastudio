@@ -19,7 +19,7 @@ export function AppShell({ title, eyebrow, description, actions, children }: Pro
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background flex-col">
-        {/* Forest-green announcement bar — echoes allegoryartconsulting.com */}
+        {/* Forest-green announcement bar, echoes allegoryartconsulting.com */}
         <div className="bg-primary text-[11px] tracking-[0.28em] uppercase text-center py-2 font-medium" style={{ color: "#032419" }}>
           Allegory Studio · for working artists
         </div>

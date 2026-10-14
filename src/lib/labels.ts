@@ -18,7 +18,7 @@ export const PAGE_LABELS: Record<string, string> = {
 
 /** Pretty name for a path, falling back to the raw path. */
 export function labelForPath(path: string | null | undefined): string {
-  if (!path) return "—";
+  if (!path) return "-";
   return PAGE_LABELS[path] ?? path;
 }
 

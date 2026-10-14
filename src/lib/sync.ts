@@ -2,7 +2,7 @@
 // Supabase sync layer for the studio store.
 //
 // Strategy: the Zustand store stays the in-memory read model the pages already
-// use. This module handles persistence — hydrating the store from Supabase on
+// use. This module handles persistence, hydrating the store from Supabase on
 // login, writing every mutation through to Supabase, and a one-time import of
 // any pre-existing localStorage data.
 //
@@ -78,14 +78,14 @@ const TABLE_TO_STORE_KEY: Record<string, string> = Object.fromEntries(
 function emitPending() {
   try {
     window.dispatchEvent(new CustomEvent("allegory:pending", { detail: pendingCount(activeUserId) }));
-  } catch { /* no window (SSR) — ignore */ }
+  } catch { /* no window (SSR), ignore */ }
 }
 
 // ---- write-through helpers -------------------------------------------------
 // Every write is recorded in the persistent outbox FIRST, attempted against
 // Supabase, then cleared from the outbox only once the server confirms it. A
 // write that fails stays in the outbox (surviving reloads) and is retried on the
-// next hydrate — so a failed write is never silently lost. Callers still get the
+// next hydrate, so a failed write is never silently lost. Callers still get the
 // thrown error to surface a toast.
 export async function pushInsert(table: string, item: Record<string, any>) {
   const uid = activeUserId;
@@ -123,7 +123,7 @@ export async function pushDelete(table: string, id: string) {
 //
 // Stale/failed DELETE ops are dropped first and never applied: a delete only
 // survives to hydrate if it failed to reach the server, so the row still exists
-// in the database — re-applying it here is exactly what made a member's saved
+// in the database, re-applying it here is exactly what made a member's saved
 // inventory "disappear" from view while it sat safe on the server (and a later
 // retry could have wiped it). Dropping them keeps the data and clears the stuck
 // queue. Only unsynced inserts/updates (which carry real data) are merged.
@@ -161,7 +161,7 @@ export async function replayOutbox(userId: string) {
       resolve(userId, op.opId);
       emitPending();
     } catch (e) {
-      // Still failing (e.g. the schema fix isn't applied yet) — keep it queued
+      // Still failing (e.g. the schema fix isn't applied yet), keep it queued
       // and try again on the next hydrate.
       console.warn(`[sync] replay still failing for ${op.table}/${op.rowId}`, e);
     }
@@ -187,7 +187,7 @@ export interface HydratedData {
 }
 
 /** Load every entity for a single user (scoped explicitly so admins still only
- *  load their OWN studio here — cross-user reads happen in the Reports page). */
+ *  load their OWN studio here, cross-user reads happen in the Reports page). */
 export async function loadAllForUser(userId: string): Promise<HydratedData> {
   const collections: Record<string, any[]> = {};
   const entries = Object.entries(ENTITY_TABLES);
@@ -200,7 +200,7 @@ export async function loadAllForUser(userId: string): Promise<HydratedData> {
         if (error) throw error;
         collections[storeKey] = (data ?? []).map(rowFromDb);
       } catch (e) {
-        // One failing table shouldn't blank the whole studio — load what we can.
+        // One failing table shouldn't blank the whole studio, load what we can.
         console.error(`[sync] failed to load ${table}`, e);
         collections[storeKey] = [];
         failures.push({ table, error: e });
@@ -208,7 +208,7 @@ export async function loadAllForUser(userId: string): Promise<HydratedData> {
     })
   );
 
-  // If EVERY table failed, this is systemic (auth/network/RLS) — surface it so
+  // If EVERY table failed, this is systemic (auth/network/RLS), surface it so
   // the user sees a real error instead of a silently empty studio.
   if (failures.length === entries.length) {
     throw failures[0].error;
@@ -284,7 +284,7 @@ export async function importLocalDataIfNeeded(userId: string): Promise<boolean> 
     raw = null;
   }
 
-  // Nothing legacy in this browser — mark migrated so we don't recheck each login.
+  // Nothing legacy in this browser, mark migrated so we don't recheck each login.
   if (!raw) {
     try {
       localStorage.setItem(migratedFlag(userId), new Date().toISOString());
@@ -301,7 +301,7 @@ export async function importLocalDataIfNeeded(userId: string): Promise<boolean> 
   const state = parsed?.state ?? parsed;
 
   // Best-effort, one-time migration of legacy browser data. It must NEVER block
-  // hydration (every failure is caught), and — critically — it must NEVER delete
+  // hydration (every failure is caught), and, critically, it must NEVER delete
   // the local backup unless every row reached the server. Otherwise a failed
   // sync would destroy data that never made it to the database.
   let hadError = false;
@@ -330,10 +330,10 @@ export async function importLocalDataIfNeeded(userId: string): Promise<boolean> 
   }
 
   if (hadError) {
-    // Something didn't sync — KEEP the local backup and do NOT mark migrated, so
+    // Something didn't sync, KEEP the local backup and do NOT mark migrated, so
     // no data is lost and the import retries on the next login. Hydration still
     // proceeds normally (this function never throws).
-    console.warn("[sync] legacy import had errors — preserving local backup for retry");
+    console.warn("[sync] legacy import had errors, preserving local backup for retry");
     return false;
   }
 

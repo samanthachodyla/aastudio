@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { SyncStatusBanner } from "@/components/SyncStatusBanner";
 
 // Supabase/PostgREST errors are plain objects (not Error instances), so pull the
-// real message out of whatever shape we're handed — otherwise the screen just
+// real message out of whatever shape we're handed, otherwise the screen just
 // says the generic fallback and hides the actual cause.
 function errMessage(e: unknown): string {
   if (e instanceof Error && e.message) return e.message;

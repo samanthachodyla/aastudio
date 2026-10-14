@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { fmtMoney } from "@/lib/store";
 import { loadSharedPortfolio, type SharedPortfolioData } from "@/lib/sharePortfolio";
 
-/** Public, read-only "available works" portfolio shown at /p/:slug. No auth —
+/** Public, read-only "available works" portfolio shown at /p/:slug. No auth -
  *  reads a snapshot the artist published from their inventory. */
 const SharedPortfolio = () => {
   const { slug = "" } = useParams();
@@ -18,7 +18,7 @@ const SharedPortfolio = () => {
       if (!d) { setState("missing"); return; }
       setData(d);
       setState("ready");
-      document.title = `${d.artistName ? d.artistName + " — " : ""}${d.title}`;
+      document.title = `${d.artistName ? d.artistName + ", " : ""}${d.title}`;
     })();
     return () => { active = false; };
   }, [slug]);
@@ -60,7 +60,7 @@ const SharedPortfolio = () => {
         </div>
         {data.contact && (
           <a
-            href={`mailto:${data.contact}?subject=${encodeURIComponent("Inquiry — " + data.title)}`}
+            href={`mailto:${data.contact}?subject=${encodeURIComponent("Inquiry, " + data.title)}`}
             className="inline-block mt-6 text-sm rounded-sm border border-foreground/20 px-5 py-2 hover:bg-foreground hover:text-background transition-colors"
           >
             Inquire about a work
@@ -68,7 +68,7 @@ const SharedPortfolio = () => {
         )}
       </header>
 
-      {/* Gallery — each work as a row: image on the left, details beside it. */}
+      {/* Gallery, each work as a row: image on the left, details beside it. */}
       <main className="max-w-4xl mx-auto px-6 pb-20">
         <div className="divide-y divide-border border-t border-border">
           {works.map((w, i) => (
@@ -106,7 +106,7 @@ const SharedPortfolio = () => {
         </div>
       </main>
 
-      {/* Footer — the "Made with Allegory" hook */}
+      {/* Footer, the "Made with Allegory" hook */}
       <footer className="border-t border-border">
         <div className="max-w-5xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <div className="eyebrow text-muted-foreground">

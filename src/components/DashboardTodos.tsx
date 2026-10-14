@@ -11,7 +11,7 @@ const PRIORITY_COLOR: Record<TodoPriority, string> = {
   1: "#d1453b", // red
   2: "#eb8909", // amber
   3: "#246fe0", // blue
-  4: "", // none — muted border only
+  4: "", // none, muted border only
 };
 const prColor = (p?: TodoPriority) => (p && p !== 4 ? PRIORITY_COLOR[p] : "");
 
@@ -79,7 +79,7 @@ export function DashboardTodos() {
 
         <span className="flex-1 text-[15px] leading-snug">{t.text}</span>
 
-        {/* Due date — the whole chip opens a native date picker; ✕ clears it. */}
+        {/* Due date, the whole chip opens a native date picker; ✕ clears it. */}
         <label
           className={`relative shrink-0 inline-flex items-center gap-1 text-[11px] rounded-sm px-1.5 py-1 cursor-pointer border transition-colors ${
             meta.bucket === "overdue"
@@ -152,7 +152,7 @@ export function DashboardTodos() {
               value={text}
               onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submit(); } }}
-              placeholder="Add a task — e.g. “Email the gallery tomorrow !1”"
+              placeholder="Add a task, e.g. “Email the gallery tomorrow !1”"
               className="flex-1"
             />
             <Button size="sm" className="gap-2 shrink-0" onClick={submit} disabled={!text.trim()}>
@@ -167,7 +167,7 @@ export function DashboardTodos() {
         {/* Active list, grouped by date section */}
         {active.length === 0 ? (
           <div className="px-6 py-8 text-sm text-muted-foreground italic text-center">
-            {archived.length > 0 ? "All done — nice. Add another above." : "Nothing yet — add your first task."}
+            {archived.length > 0 ? "All done, nice. Add another above." : "Nothing yet, add your first task."}
           </div>
         ) : (
           <div>
@@ -185,7 +185,7 @@ export function DashboardTodos() {
           </div>
         )}
 
-        {/* Archive — completed items land here automatically */}
+        {/* Archive, completed items land here automatically */}
         {archived.length > 0 && (
           <div className="border-t border-border">
             <div className="px-6 py-3 flex items-center justify-between">

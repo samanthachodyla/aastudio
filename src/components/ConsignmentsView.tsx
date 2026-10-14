@@ -93,7 +93,7 @@ export function ConsignmentsView() {
     updateConsignment(c.id, { status: "sold" });
     updateArtwork(aw.id, { status: "sold" });
     addOpportunity({
-      title: `Payment due — ${aw.title}`,
+      title: `Payment due, ${aw.title}`,
       organization: c.galleryName,
       deadline: new Date(Date.now() + (c.paymentTerms ? termsDays[c.paymentTerms] : 30) * 86400000).toISOString(),
       type: "delivery",
@@ -109,7 +109,7 @@ export function ConsignmentsView() {
     const total = items.reduce((s, r) => s + r.retail, 0);
     const w = window.open("", "_blank", "width=900,height=1100");
     if (!w) return;
-    w.document.write(`<!doctype html><html><head><title>Consignment statement — ${consigneeName}</title>
+    w.document.write(`<!doctype html><html><head><title>Consignment statement, ${consigneeName}</title>
 <style>body{font-family:Georgia,serif;padding:60px;color:#1a1a1a;max-width:760px;margin:auto;background:#f5f3ee}
 h1{font-weight:400;font-size:38px;margin:0;letter-spacing:-.01em}
 .eyebrow{font-family:Helvetica,sans-serif;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#666}
@@ -128,7 +128,7 @@ ${fullName ? `<div class="eyebrow" style="margin-top:4px">${fullName} · Artist<
 <table>
   <tr><th>Work</th><th>Details</th><th>Date out</th><th>Split</th><th class="right">Retail</th></tr>
   ${items.map(r => `<tr>
-    <td><em>${r.aw?.title ?? "—"}</em><div class="muted">${r.aw?.year ?? ""}</div></td>
+    <td><em>${r.aw?.title ?? "-"}</em><div class="muted">${r.aw?.year ?? ""}</div></td>
     <td>${r.aw?.medium ?? ""}${r.aw?.dimensions ? `<br/>${r.aw.dimensions}` : ""}</td>
     <td>${fmtDate(r.c.dateOut ?? r.c.startDate)}</td>
     <td>${r.c.splitType === "flat" ? fmtMoney(r.c.splitValue ?? 0) : `${r.c.splitValue ?? r.c.commissionPct}%`}</td>
@@ -200,12 +200,12 @@ ${fullName ? `<div class="eyebrow" style="margin-top:4px">${fullName} · Artist<
                 const expected = c.expectedReturn ?? c.endDate;
                 return (
                   <tr key={c.id} className="hover:bg-surface/50 group">
-                    <td className="px-4 py-3 font-display italic">{aw?.title ?? "—"} <span className="text-xs not-italic text-muted-foreground">· {aw?.year}</span></td>
+                    <td className="px-4 py-3 font-display italic">{aw?.title ?? "-"} <span className="text-xs not-italic text-muted-foreground">· {aw?.year}</span></td>
                     <td className="px-4 py-3">{c.galleryName}</td>
                     <td className="px-4 py-3 text-muted-foreground text-xs">{fmtDate(c.dateOut ?? c.startDate)}</td>
-                    <td className="px-4 py-3 text-muted-foreground text-xs">{expected ? fmtDate(expected) : "—"}</td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs">{expected ? fmtDate(expected) : "-"}</td>
                     <td className={`px-4 py-3 tabular-nums text-xs ${days !== null && days < 14 ? "text-destructive" : "text-muted-foreground"}`}>
-                      {days === null ? "—" : `${days}d`}
+                      {days === null ? "-" : `${days}d`}
                     </td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">
                       {c.splitType === "flat" ? fmtMoney(c.splitValue ?? 0) : `${c.splitValue ?? c.commissionPct}%`}
@@ -263,7 +263,7 @@ ${fullName ? `<div class="eyebrow" style="margin-top:4px">${fullName} · Artist<
           <UpgradeCard
             description={upgradeOpen === "statement"
               ? "Generate professional consignment statements in seconds, with everything pulled straight from your inventory and contacts."
-              : "Create a polished consignment agreement in seconds — parties, artworks, terms, all formatted and ready to send for signature."}
+              : "Create a polished consignment agreement in seconds, parties, artworks, terms, all formatted and ready to send for signature."}
             compact
           />
         </DialogContent>
@@ -318,7 +318,7 @@ p{margin:6px 0}
 <hr/>
 
 <h2>Parties</h2>
-<p><strong>Artist:</strong> ${fullName || "—"}</p>
+<p><strong>Artist:</strong> ${fullName || "-"}</p>
 <p><strong>Consignee:</strong> ${consignee}</p>
 
 <h2>Works consigned</h2>

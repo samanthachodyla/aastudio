@@ -19,7 +19,7 @@ export default function Terms() {
   return (
     <div className="min-h-screen bg-[#f5f3ee] text-[#11281c]" style={{ fontFamily: "'Work Sans', system-ui, sans-serif" }}>
       <Seo
-        title="Terms & Conditions — Allegory Studio"
+        title="Terms & Conditions, Allegory Studio"
         description="The Terms & Conditions governing use of Allegory Studio, the CRM and studio management software for working artists."
         canonicalPath="/terms"
       />
@@ -83,8 +83,8 @@ export default function Terms() {
         <Section n="5." title="Data Privacy &amp; Security">
           <p>Your trust matters to us, and protecting your data is foundational to how Allegory Studio is built.</p>
           <ul className="list-disc pl-5 space-y-2">
-            <li><b>We will never sell your personal data.</b> Your information — your artwork records, sales figures,
-            contacts, and account details — is not a product. We do not sell it to advertisers, data brokers, or any
+            <li><b>We will never sell your personal data.</b> Your information, your artwork records, sales figures,
+            contacts, and account details, is not a product. We do not sell it to advertisers, data brokers, or any
             third party.</li>
             <li><b>Security.</b> We use industry-standard safeguards, including encryption in transit and at rest, secure
             authentication, and access controls, to protect your data.</li>
@@ -101,8 +101,8 @@ export default function Terms() {
         </Section>
 
         <Section n="6." title="AI-Powered Features">
-          <p>Certain features of the Service — including marketing assistance, pricing suggestions, tailored statements,
-          and opportunity discovery — use artificial intelligence to generate suggestions and content.</p>
+          <p>Certain features of the Service, including marketing assistance, pricing suggestions, tailored statements,
+          and opportunity discovery, use artificial intelligence to generate suggestions and content.</p>
           <ul className="list-disc pl-5 space-y-2">
             <li>AI-generated outputs are suggestions, not professional advice. Pricing recommendations, market insights,
             and generated text should be reviewed and verified by you before use.</li>
@@ -125,7 +125,7 @@ export default function Terms() {
         </Section>
 
         <Section n="8." title="Our Intellectual Property">
-          <p>The Service — including its software, design, features, branding, and content we create — is owned by
+          <p>The Service, including its software, design, features, branding, and content we create, is owned by
           Allegory Studio and protected by intellectual property laws. These Terms do not grant you any rights to our
           trademarks, logos, or platform technology beyond the limited right to use the Service as intended.</p>
         </Section>

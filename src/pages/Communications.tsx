@@ -58,7 +58,7 @@ const Communications = () => {
       connectedAt: new Date().toISOString(),
     });
     toast.success(`Connected to ${providerLabel(provider)}`, {
-      description: "Demo mode — sample flagged correspondence loaded.",
+      description: "Demo mode, sample flagged correspondence loaded.",
     });
   };
 
@@ -67,7 +67,7 @@ const Communications = () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("connected")) {
       window.history.replaceState({}, "", "/communications");
-      toast.success("Gmail connected — syncing your inbox…");
+      toast.success("Gmail connected, syncing your inbox…");
       (async () => {
         try {
           const { data: { session } } = await supabase.auth.getSession();
@@ -88,13 +88,13 @@ const Communications = () => {
       // Human-readable reason. Config-side errors are clearly flagged as ours so
       // the member knows it isn't something they did. The raw code is logged for
       // support. Kept on screen longer so it's not missed.
-      const CONFIG = "Email connect isn't fully set up on our end yet — this is on us, not you. We've been notified and will get it working.";
+      const CONFIG = "Email connect isn't fully set up on our end yet, this is on us, not you. We've been notified and will get it working.";
       const MESSAGES: Record<string, string> = {
         missing_code: "The Google sign-in didn't complete. Please click Connect Gmail and finish the Google prompts.",
         bad_state: "Your session expired before the connection finished. Please try Connect Gmail again.",
         missing_nylas_api_key: CONFIG,
         missing_supabase_key: CONFIG,
-        token_exchange_failed: "We couldn't finish connecting to Google — usually a setup issue on our side. We're on it; please try again shortly.",
+        token_exchange_failed: "We couldn't finish connecting to Google, usually a setup issue on our side. We're on it; please try again shortly.",
         server_error: "Something went wrong finishing the connection on our end. We've been notified.",
       };
       console.error("[nylas] connect failed:", err);
@@ -166,7 +166,7 @@ const Communications = () => {
     <AppShell
       eyebrow="Communications Hub"
       title="An email triage layer, not another inbox."
-      description="A signal layer, not another inbox. Allegory surfaces the emails and messages that actually need your attention — inquiries, leads, deadlines, and opportunities — and leaves everything else alone."
+      description="A signal layer, not another inbox. Allegory surfaces the emails and messages that actually need your attention, inquiries, leads, deadlines, and opportunities, and leaves everything else alone."
       actions={
         inboxConnection ? (
           <div className="flex items-center gap-2">
@@ -186,7 +186,7 @@ const Communications = () => {
         ) : previewMode ? (
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground italic">
-              Preview mode — sample data
+              Preview mode, sample data
             </span>
             <Button size="sm" variant="ghost" onClick={exitPreview}>Exit preview</Button>
           </div>
@@ -282,7 +282,7 @@ function ConnectPanel({ onConnect, onPreview }: { onConnect: (p: InboxProvider) 
       <Inbox className="h-10 w-10 mx-auto text-muted-foreground mb-5" strokeWidth={1.2} />
       <h3 className="font-display text-2xl mb-3">Connect your inbox</h3>
       <p className="text-sm text-muted-foreground max-w-md mx-auto mb-7 leading-relaxed">
-        Connect your email or Instagram DMs and Allegory Studio will flag the messages that matter — inquiries, leads, open calls, and anything with a deadline — without replacing your existing workflow.
+        Connect your email or Instagram DMs and Allegory Studio will flag the messages that matter, inquiries, leads, open calls, and anything with a deadline, without replacing your existing workflow.
       </p>
       <div className="flex items-center justify-center gap-3 flex-wrap">
         <Button onClick={() => onConnect("gmail")} className="gap-2">
@@ -296,7 +296,7 @@ function ConnectPanel({ onConnect, onPreview }: { onConnect: (p: InboxProvider) 
         </Button>
       </div>
       <p className="text-[11px] text-muted-foreground mt-6 italic max-w-md mx-auto">
-        Gmail connects securely through Nylas — Allegory only reads what it needs to flag replies, and you can disconnect anytime. Outlook and Instagram DMs are coming soon.
+        Gmail connects securely through Nylas, Allegory only reads what it needs to flag replies, and you can disconnect anytime. Outlook and Instagram DMs are coming soon.
       </p>
       <div className="mt-4">
         <button onClick={onPreview} className="text-xs text-muted-foreground underline hover:text-foreground">

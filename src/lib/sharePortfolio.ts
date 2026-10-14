@@ -1,4 +1,4 @@
-// Shareable portfolio links — the artist publishes a selection of works as a
+// Shareable portfolio links, the artist publishes a selection of works as a
 // public, read-only web page (/p/:slug) to send collectors, galleries, and
 // stores. We store a self-contained SNAPSHOT (title, details, downscaled image)
 // in the `shared_portfolios` table so the public page needs no auth and the

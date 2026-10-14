@@ -53,7 +53,7 @@ const ProfileVault = () => {
     <AppShell
       eyebrow={`Profile Vault${isPro ? "" : " · Lite"}`}
       title="The materials you reach for, always current."
-      description="Statements, bios, and CVs — versioned, labelled, export-ready. One source of truth across every application."
+      description="Statements, bios, and CVs, versioned, labelled, export-ready. One source of truth across every application."
       actions={tab !== "press" && canAdd(tab as TextKind) ? <NewDocButton kind={tab as TextKind} /> : undefined}
     >
       {showOnboarding && <OnboardingPanel onDone={markVaultOnboarded} />}
@@ -89,9 +89,9 @@ const ProfileVault = () => {
                 title={k === "bio" ? "Bio variants live in Pro" : k === "statement" ? "Statement library lives in Pro" : "Full CV builder lives in Pro"}
                 description={
                   k === "bio"
-                    ? "You have one bio on Starter. Upgrade to Pro to build a library of bio variants tailored to galleries, grants, press, and social — so you’re never scrambling for the right words again."
+                    ? "You have one bio on Starter. Upgrade to Pro to build a library of bio variants tailored to galleries, grants, press, and social, so you’re never scrambling for the right words again."
                     : k === "statement"
-                    ? "Your statement library lives in Pro. Adapt your voice to any opportunity — residencies, grants, gallery submissions, commissions."
+                    ? "Your statement library lives in Pro. Adapt your voice to any opportunity, residencies, grants, gallery submissions, commissions."
                     : "Pro unlocks a full CV builder with formatted PDF and Word export, plus unlimited revisions."
                 }
                 compact
@@ -111,7 +111,7 @@ const ProfileVault = () => {
           {isPro ? <PressLog items={pressItems} /> : (
             <UpgradeCard
               title="Press &amp; Publications log"
-              description="Pro keeps a running log of every mention, review, and feature — date, outlet, link, and excerpt — so the next press kit writes itself."
+              description="Pro keeps a running log of every mention, review, and feature, date, outlet, link, and excerpt, so the next press kit writes itself."
             />
           )}
         </TabsContent>
@@ -160,14 +160,14 @@ function OnboardingPanel({ onDone }: { onDone: () => void }) {
           {done ? (
             <>
               <h3 className="font-display text-2xl mb-2">Here’s your professional profile, organized and ready to use.</h3>
-              <p className="text-sm text-muted-foreground mb-4">Edit any section to refine — or add a bio and statement next.</p>
+              <p className="text-sm text-muted-foreground mb-4">Edit any section to refine, or add a bio and statement next.</p>
               <Button size="sm" onClick={onDone}>Got it</Button>
             </>
           ) : (
             <>
               <h3 className="font-display text-2xl mb-2">Upload your CV, bio, or statement</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                We’ll organize it into a clean, structured profile you can reach for any time — no re-typing, no scrambling.
+                We’ll organize it into a clean, structured profile you can reach for any time, no re-typing, no scrambling.
               </p>
               <input ref={fileRef} type="file" accept="application/pdf" className="hidden" onChange={onFile} />
               <div className="flex flex-wrap items-center gap-3">
@@ -204,7 +204,7 @@ function PressLog({ items }: { items: PressItem[] }) {
   return (
     <div className="space-y-5">
       <div className="flex items-baseline justify-between">
-        <p className="text-sm text-muted-foreground">Every mention, review, and feature — kept close at hand.</p>
+        <p className="text-sm text-muted-foreground">Every mention, review, and feature, kept close at hand.</p>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="gap-2"><Plus className="h-3.5 w-3.5" /> Log press</Button>
@@ -313,7 +313,7 @@ function DocCard({ doc, isPro = true }: { doc: VaultDoc; isPro?: boolean }) {
     if (!isPro) { setUpsellOpen(true); return; }
     if (doc.body) { setTailorOpen(true); return; }
     toast.message("Add the text first", {
-      description: "Paste this document's text so the AI can tailor it — the file upload keeps the PDF, but the AI needs the words.",
+      description: "Paste this document's text so the AI can tailor it, the file upload keeps the PDF, but the AI needs the words.",
     });
     setEditOpen(true);
   };
@@ -382,7 +382,7 @@ function DocCard({ doc, isPro = true }: { doc: VaultDoc; isPro?: boolean }) {
           <DialogHeader><DialogTitle className="font-display text-2xl font-normal">Tailored statements</DialogTitle></DialogHeader>
           <UpgradeCard
             title="A Studio Pro feature"
-            description="Pro shapes your statement to fit the specific opportunity in front of you — residency, grant, gallery, commission. Your original stays untouched."
+            description="Pro shapes your statement to fit the specific opportunity in front of you, residency, grant, gallery, commission. Your original stays untouched."
             compact
           />
         </DialogContent>
@@ -441,7 +441,7 @@ function TailorDialog({ doc, onClose }: { doc: VaultDoc; onClose: () => void }) 
     const today = new Date().toISOString().slice(0, 10);
     addVaultDoc({
       kind: doc.kind,
-      title: `${doc.title} — tailored ${today}`,
+      title: `${doc.title}, tailored ${today}`,
       body: result,
       notes: selected === "manual" ? "Tailored version" : `Tailored for: ${opportunities.find(o => o.id === selected)?.title || ""}`,
     });
@@ -513,7 +513,7 @@ function TailorDialog({ doc, onClose }: { doc: VaultDoc; onClose: () => void }) 
             {loading ? "Tailoring…" : "Tailor document"}
           </Button>
           <p className="text-xs text-muted-foreground italic mt-2">
-            The tailored version will be saved alongside your original — nothing gets overwritten.
+            The tailored version will be saved alongside your original, nothing gets overwritten.
           </p>
         </div>
 
@@ -596,7 +596,7 @@ function DocForm({ kind, initial, onClose }: { kind: VaultDocKind; initial?: Vau
       <form className="grid gap-4 mt-2" onSubmit={submit}>
         <div>
           <Label>Title</Label>
-          <Input value={title} onChange={e => setTitle(e.target.value)} maxLength={120} placeholder='e.g. "Statement — 150 words" or "CV updated Jan 2025"' required />
+          <Input value={title} onChange={e => setTitle(e.target.value)} maxLength={120} placeholder='e.g. "Statement, 150 words" or "CV updated Jan 2025"' required />
         </div>
         <div>
           <Label>Body</Label>

@@ -1,8 +1,8 @@
 // ============================================================================
-// App version watcher — makes sure a shipped fix actually reaches people.
+// App version watcher, makes sure a shipped fix actually reaches people.
 //
 // The studio is a single-page app with no service worker, so a browser tab left
-// open for days keeps running whatever code it loaded then — even after we ship
+// open for days keeps running whatever code it loaded then, even after we ship
 // a fix. That's exactly how a member could keep hitting a bug we'd already fixed
 // (their tab never reloaded the new bundle).
 //
@@ -42,7 +42,7 @@ async function fetchRemoteBuildId(): Promise<string | null> {
     const id = data && typeof data.buildId === "string" ? data.buildId : null;
     return id || null;
   } catch {
-    return null; // offline / blocked — just try again later
+    return null; // offline / blocked, just try again later
   }
 }
 
@@ -66,7 +66,7 @@ export function startVersionWatcher(): void {
 
   window.setTimeout(check, 15_000);            // shortly after first load
   window.setInterval(check, 5 * 60 * 1000);    // then every 5 minutes
-  // The moment a long-idle tab is brought back to the foreground — the ideal
+  // The moment a long-idle tab is brought back to the foreground, the ideal
   // time to notice a new version.
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") void check();

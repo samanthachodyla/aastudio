@@ -26,7 +26,7 @@ interface State {
 
   vaultDocs: VaultDoc[];
   pressItems: PressItem[];
-  vaultOnboarded: boolean;          // UI pref — persisted locally
+  vaultOnboarded: boolean;          // UI pref, persisted locally
   inboxConnection: InboxConnection | null;
   flaggedEmails: FlaggedEmail[];
 
@@ -35,13 +35,13 @@ interface State {
   scheduledPosts: ScheduledPost[];
   newsletters: Newsletter[];
 
-  customStatuses: string[];          // UI pref — persisted locally
+  customStatuses: string[];          // UI pref, persisted locally
   addCustomStatus: (label: string) => void;
 
-  customOpportunityTypes: string[];  // UI pref — persisted locally
+  customOpportunityTypes: string[];  // UI pref, persisted locally
   addCustomOpportunityType: (label: string) => void;
 
-  todos: Todo[];                     // dashboard to-dos — persisted locally, not server-backed
+  todos: Todo[];                     // dashboard to-dos, persisted locally, not server-backed
   addTodo: (input: string | Partial<Omit<Todo, "id" | "done" | "createdAt">> & { text: string }) => void;
   toggleTodo: (id: string) => void;
   updateTodo: (id: string, patch: Partial<Omit<Todo, "id" | "createdAt">>) => void;
@@ -120,7 +120,7 @@ const today = () => new Date().toISOString();
 function track(p: Promise<unknown>) {
   p.catch((e) => {
     console.error("[sync] write failed", e);
-    toast.error("That change didn't save — check your connection and reload before closing this tab.", {
+    toast.error("That change didn't save, check your connection and reload before closing this tab.", {
       duration: 12000,
     });
   });
@@ -173,7 +173,7 @@ export const useStore = create<State>()(
         set({ customOpportunityTypes: [...get().customOpportunityTypes, v] });
       },
 
-      // To-dos are local-only (localStorage) — no write-through to Supabase.
+      // To-dos are local-only (localStorage), no write-through to Supabase.
       addTodo: (input) => {
         const src = typeof input === "string" ? { text: input } : input;
         const v = (src.text || "").trim();
@@ -250,7 +250,7 @@ export const useStore = create<State>()(
         const item: Consignment = { ...c, id: uid() };
         set({ consignments: [item, ...get().consignments] });
         track(pushInsert("consignments", item));
-        // Consigning changes only WHERE the piece is, not its disposition — it's
+        // Consigning changes only WHERE the piece is, not its disposition, it's
         // still available (for sale) until the consignment records a sale.
         if (c.status === "active") get().updateArtwork(c.artworkId, { location: "on_consignment", locationDetail: c.galleryName });
         return item;
@@ -490,11 +490,11 @@ export const useStore = create<State>()(
 export function mockFlaggedEmails(): FlaggedEmail[] {
   const t = Date.now();
   return [
-    { id: uid(), sender: "M. Caldwell", senderEmail: "mcaldwell@private.com", subject: "Inquiry — Field Notes No. 4", preview: "I saw your piece at Foundry last month and haven't stopped thinking about it. Is it still available, and could you share pricing and dimensions?…", receivedAt: new Date(t - 2 * 3600000).toISOString(), status: "needs_reply" },
+    { id: uid(), sender: "M. Caldwell", senderEmail: "mcaldwell@private.com", subject: "Inquiry, Field Notes No. 4", preview: "I saw your piece at Foundry last month and haven't stopped thinking about it. Is it still available, and could you share pricing and dimensions?…", receivedAt: new Date(t - 2 * 3600000).toISOString(), status: "needs_reply" },
     { id: uid(), sender: "J. Park, Foundry Gallery", senderEmail: "jp@foundry.gallery", subject: "Studio visit + group show in spring", preview: "We're curating a group exhibition opening in March and your recent work feels like a strong fit. Could we schedule a studio visit in the next few weeks?…", receivedAt: new Date(t - 26 * 3600000).toISOString(), status: "needs_reply" },
-    { id: uid(), sender: "Aperture Editors", senderEmail: "openings@aperture.org", subject: "Re: Submission received — New Geographies", preview: "Following up on our last note — wanted to confirm you received the editorial committee's questions from two weeks ago…", receivedAt: new Date(t - 9 * 86400000).toISOString(), status: "awaiting_response" },
+    { id: uid(), sender: "Aperture Editors", senderEmail: "openings@aperture.org", subject: "Re: Submission received, New Geographies", preview: "Following up on our last note, wanted to confirm you received the editorial committee's questions from two weeks ago…", receivedAt: new Date(t - 9 * 86400000).toISOString(), status: "awaiting_response" },
     { id: uid(), sender: "Creative Capital Digest", senderEmail: "newsletter@creative-capital.org", subject: "This week: MacDowell residency open call closes Jan 15", preview: "…also in this issue: new grant from the Pollock-Krasner Foundation (deadline Feb 1), and the Rauschenberg Residency is accepting applications through March…", receivedAt: new Date(t - 12 * 3600000).toISOString(), status: "fyi" },
-    { id: uid(), sender: "S. Okafor", senderEmail: "sokafor@artconsultancy.co", subject: "Following up — collector placement", preview: "Circling back on my note from three weeks ago. I have a client actively looking for a work in the scale we discussed and would love to revisit…", receivedAt: new Date(t - 21 * 86400000).toISOString(), status: "needs_reply" },
+    { id: uid(), sender: "S. Okafor", senderEmail: "sokafor@artconsultancy.co", subject: "Following up, collector placement", preview: "Circling back on my note from three weeks ago. I have a client actively looking for a work in the scale we discussed and would love to revisit…", receivedAt: new Date(t - 21 * 86400000).toISOString(), status: "needs_reply" },
   ];
 }
 

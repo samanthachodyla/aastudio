@@ -33,14 +33,14 @@ const PROVIDERS: Provider[] = [
     name: "Wave",
     blurb: "Import paid invoices and customer records.",
     status: "limited",
-    note: "Wave closed its public API to new apps in 2024 — CSV import is the supported path.",
+    note: "Wave closed its public API to new apps in 2024, CSV import is the supported path.",
   },
   {
     id: "squarespace",
     name: "Squarespace Invoicing",
     blurb: "Pull invoice and order history from your Squarespace store.",
     status: "limited",
-    note: "No public invoicing API — orders sync via Commerce API; invoices via CSV.",
+    note: "No public invoicing API, orders sync via Commerce API; invoices via CSV.",
   },
 ];
 
@@ -101,7 +101,7 @@ export function IntegrationsPanel() {
     });
     setBusy(null);
     toast.success(`${p.name} connected`, {
-      description: "Demo connection — no data is being exchanged yet.",
+      description: "Demo connection, no data is being exchanged yet.",
     });
   };
 
@@ -130,7 +130,7 @@ export function IntegrationsPanel() {
             Sync invoices and payments two ways.{" "}
             {connectedCount > 0
               ? `${connectedCount} connected.`
-              : "Scaffold only — no data is exchanged yet."}
+              : "Scaffold only, no data is exchanged yet."}
           </p>
         </div>
 

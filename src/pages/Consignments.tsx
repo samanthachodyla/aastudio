@@ -63,7 +63,7 @@ hr{border:none;border-top:1px solid #ccc;margin:24px 0}.sig{margin-top:60px;disp
                   {stale && <span className="text-[10px] uppercase tracking-wider text-warning">{days} days · review</span>}
                 </div>
                 <h3 className="font-display text-2xl mb-1">
-                  <span className="italic">{aw?.title ?? "—"}</span>
+                  <span className="italic">{aw?.title ?? "-"}</span>
                   <span className="text-muted-foreground text-base ml-3">at {c.galleryName}</span>
                 </h3>
                 <div className="text-sm text-muted-foreground">
@@ -72,7 +72,7 @@ hr{border:none;border-top:1px solid #ccc;margin:24px 0}.sig{margin-top:60px;disp
                 <div className="grid grid-cols-3 gap-6 mt-5 text-sm">
                   <div><div className="eyebrow mb-1">Term</div><div>{fmtDate(c.startDate)} → {fmtDate(c.endDate)}</div></div>
                   <div><div className="eyebrow mb-1">Commission</div><div className="tabular-nums">{c.commissionPct}%</div></div>
-                  <div><div className="eyebrow mb-1">Contact</div><div>{c.contactName ?? "—"}</div></div>
+                  <div><div className="eyebrow mb-1">Contact</div><div>{c.contactName ?? "-"}</div></div>
                 </div>
               </div>
               <div className="flex md:flex-col gap-2 md:items-end justify-end">

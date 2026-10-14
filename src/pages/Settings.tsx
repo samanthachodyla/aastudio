@@ -31,7 +31,7 @@ const Settings = () => {
     const reader = new FileReader();
     reader.onload = () => {
       setProfile({ invoiceLogo: String(reader.result) });
-      toast.success("Logo saved — it'll appear on your invoices.");
+      toast.success("Logo saved, it'll appear on your invoices.");
     };
     reader.readAsDataURL(file);
   };
@@ -54,7 +54,7 @@ const Settings = () => {
       const json = await res.json();
       if (json.url) { window.location.href = json.url; return; }
       toast.error(json.error === "No billing account yet"
-        ? "You don't have a billing account yet — choose a plan first."
+        ? "You don't have a billing account yet, choose a plan first."
         : (json.error || "Couldn't open billing."));
     } catch {
       toast.error("Couldn't reach billing. Please try again.");
@@ -164,7 +164,7 @@ const Settings = () => {
           </div>
         </section>
 
-        {/* Developer tier switcher — DEV builds only. In production, tier access is
+        {/* Developer tier switcher, DEV builds only. In production, tier access is
             derived from the real subscription, never a client-side toggle. */}
         {import.meta.env.DEV && (
         <section className="hairline-card p-6 border-dashed">

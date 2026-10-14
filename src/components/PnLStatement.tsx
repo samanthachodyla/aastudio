@@ -99,7 +99,7 @@ export function PnLStatement() {
       paid: paid.map(i => ({
         number: i.number,
         buyer: i.buyerName,
-        work: i.artworkId ? (workTitle(i.artworkId) ?? "—") : (i.customWork?.title ?? "—"),
+        work: i.artworkId ? (workTitle(i.artworkId) ?? "-") : (i.customWork?.title ?? "-"),
         amount: i.amount,
         date: i.paidAt!,
       })),
@@ -116,7 +116,7 @@ export function PnLStatement() {
     if (!w) return;
     const paidRows = report.paid.map(p => `<tr><td>${fmtDate(p.date)}</td><td>${p.number}</td><td>${p.buyer}</td><td><em>${p.work}</em></td><td class="right">${fmtMoney(p.amount)}</td></tr>`).join("") ||
       `<tr><td colspan="5" style="text-align:center;color:#999;font-style:italic;padding:20px">No paid invoices in this period.</td></tr>`;
-    const expRows = report.exp.map(e => `<tr><td>${fmtDate(e.date)}</td><td>${e.description ?? e.vendor ?? "—"}</td><td>${catLabel(e.category)}</td><td class="right">${fmtMoney(e.amount)}</td></tr>`).join("") ||
+    const expRows = report.exp.map(e => `<tr><td>${fmtDate(e.date)}</td><td>${e.description ?? e.vendor ?? "-"}</td><td>${catLabel(e.category)}</td><td class="right">${fmtMoney(e.amount)}</td></tr>`).join("") ||
       `<tr><td colspan="4" style="text-align:center;color:#999;font-style:italic;padding:20px">No expenses in this period.</td></tr>`;
     w.document.write(`<!doctype html><html><head><title>P&L · ${range.label}</title>
 <style>
@@ -276,7 +276,7 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
                 report?.exp.map(e => (
                   <tr key={e.id}>
                     <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">{fmtDate(e.date)}</td>
-                    <td className="px-4 py-3">{e.description ?? e.vendor ?? "—"}</td>
+                    <td className="px-4 py-3">{e.description ?? e.vendor ?? "-"}</td>
                     <td className="px-4 py-3 text-muted-foreground">{catLabel(e.category)}</td>
                     <td className="px-4 py-3 tabular-nums text-right">{fmtMoney(e.amount)}</td>
                   </tr>

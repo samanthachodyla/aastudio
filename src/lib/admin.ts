@@ -76,7 +76,7 @@ export async function fetchAdminDataset(): Promise<AdminDataset> {
     db.from("opportunities").select("user_id,id"),
     // Plan/cycle per user. Admins see everyone once the "admins read all
     // subscriptions" RLS policy is added; otherwise this returns just their own
-    // row (harmless — other members show "—" in the Plan column until then).
+    // row (harmless, other members show "-" in the Plan column until then).
     db.from("subscriptions").select("user_id,plan,cycle,status"),
   ]);
 

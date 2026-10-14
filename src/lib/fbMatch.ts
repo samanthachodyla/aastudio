@@ -5,13 +5,13 @@
 // to each event. IP, user-agent and fbp are collected automatically (100%), but
 // EMAIL is only present when we explicitly hand it to the Pixel. Without Advanced
 // Matching, only Lead/Purchase events (where we happen to know the email) carry
-// it — which caps match quality and, crucially, leaves PageView (the bulk of
+// it, which caps match quality and, crucially, leaves PageView (the bulk of
 // events) with no email at all.
 //
 // This module remembers the best identity we know for the visitor (logged-in
 // member, or a returning lead/newsletter signup) and hands it to the Pixel as
 // Advanced Matching, so email rides along on EVERY browser event, PageView
-// included. Values are passed UNHASHED — the Pixel normalizes and SHA-256-hashes
+// included. Values are passed UNHASHED, the Pixel normalizes and SHA-256-hashes
 // them client-side (never send plaintext to Meta ourselves).
 //
 // The identity is also persisted to localStorage and re-applied at Pixel init in
@@ -26,7 +26,7 @@ export interface FbMatch {
   em?: string;          // email
   fn?: string;          // first name
   ln?: string;          // last name
-  external_id?: string; // stable app user id — a strong, privacy-safe match key
+  external_id?: string; // stable app user id, a strong, privacy-safe match key
 }
 
 function adsDenied(): boolean {
@@ -75,14 +75,14 @@ export function saveFbMatch(data: FbMatch): void {
   try {
     localStorage.setItem(KEY, JSON.stringify(merged));
   } catch {
-    /* storage unavailable — still push to the live Pixel below */
+    /* storage unavailable, still push to the live Pixel below */
   }
   try {
     const fbq = (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq;
     // Re-initializing with the same Pixel id updates its Advanced Matching data.
     if (fbq) fbq("init", PIXEL_ID, merged);
   } catch {
-    /* Pixel not ready yet — index.html re-reads localStorage on the next load */
+    /* Pixel not ready yet, index.html re-reads localStorage on the next load */
   }
 }
 

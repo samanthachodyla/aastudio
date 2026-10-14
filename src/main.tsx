@@ -9,7 +9,7 @@ captureAttribution();
 
 // If the user arrived from a Supabase password-recovery email, the token can
 // land on any path (depending on the project's redirect config). Route them to
-// the reset page *before* React renders — keeping the token in the URL so the
+// the reset page *before* React renders, keeping the token in the URL so the
 // Supabase client can still establish the recovery session once we're there.
 (() => {
   const { pathname, search, hash } = window.location;

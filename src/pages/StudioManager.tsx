@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { useUserProfile } from "@/lib/userProfile";
 
 // NOTE: Both the contact form submission (StudioManagerChat) and call request
-// below should route to a backend email relay (e.g. SendGrid or Postmark) —
+// below should route to a backend email relay (e.g. SendGrid or Postmark) -
 // placeholder for backend wiring in a later release.
 
 const callSchema = z.object({
@@ -75,7 +75,7 @@ function CallRequestForm({ onSubmitted }: { onSubmitted: () => void }) {
           maxLength={2000}
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
-          placeholder="Describe your question or challenge in a few sentences — this helps us prepare and confirm the session is a good fit."
+          placeholder="Describe your question or challenge in a few sentences, this helps us prepare and confirm the session is a good fit."
         />
       </div>
       <div>
@@ -90,7 +90,7 @@ function CallRequestForm({ onSubmitted }: { onSubmitted: () => void }) {
       <div>
         <Button type="submit" disabled={submitting} className="gap-2">
           {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          {submitting ? "Submitting…" : "Submit request — $75"}
+          {submitting ? "Submitting…" : "Submit request, $75"}
         </Button>
         <p className="text-xs text-muted-foreground italic mt-2">
           Once we receive your request, we'll review it and send you a payment link and calendar invite within 1–2 business days. We confirm all sessions manually to make sure we're the right fit for your question.
@@ -108,7 +108,7 @@ const StudioManager = () => {
     <AppShell
       eyebrow="Studio Support"
       title="We're in your corner."
-      description="Send a question to a real arts administrator — about a sale, a deadline, a grant application, or anything else on your plate. We'll reply by email, usually within 2 business days. Your privacy is protected — our email addresses are never shared or visible."
+      description="Send a question to a real arts administrator, about a sale, a deadline, a grant application, or anything else on your plate. We'll reply by email, usually within 2 business days. Your privacy is protected, our email addresses are never shared or visible."
     >
       <img src="/AAC_Brandmark-03_Emerald.png" alt="Allegory Studio" style={{ width: 48, height: "auto" }} className="mx-auto mb-6" />
       <StudioManagerChat />
@@ -126,7 +126,7 @@ const StudioManager = () => {
           <div className="eyebrow mb-2">Add-on · Office hours</div>
           <h2 className="font-display text-2xl mb-2">Got a bigger question?</h2>
           <p className="text-sm text-muted-foreground max-w-2xl">
-            Sometimes a conversation is worth a thousand emails. Book a 30-minute call with an arts administrator to dig into a specific challenge — a grant application, a pricing decision, a career inflection point. $75 per session.
+            Sometimes a conversation is worth a thousand emails. Book a 30-minute call with an arts administrator to dig into a specific challenge, a grant application, a pricing decision, a career inflection point. $75 per session.
           </p>
         </div>
         <div className="rule mb-6" />
@@ -134,7 +134,7 @@ const StudioManager = () => {
         <Dialog open={callOpen} onOpenChange={(o) => { setCallOpen(o); if (!o) setCallSent(false); }}>
           <DialogTrigger asChild>
             <Button variant="outline" className="gap-2">
-              <Calendar className="h-3.5 w-3.5" /> Request a call — $75
+              <Calendar className="h-3.5 w-3.5" /> Request a call, $75
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-xl">

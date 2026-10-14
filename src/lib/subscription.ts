@@ -13,7 +13,7 @@ export interface Subscription {
 }
 
 // Statuses that grant access to the paid product. `past_due` is included so a
-// single card decline doesn't instantly lock a paying member out mid-work —
+// single card decline doesn't instantly lock a paying member out mid-work -
 // Stripe retries the charge over its dunning window; access is only removed once
 // the subscription actually lapses to `canceled`/`unpaid`.
 const ACTIVE_STATUSES = new Set(["active", "trialing", "comp", "past_due"]);

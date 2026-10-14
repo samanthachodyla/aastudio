@@ -6,7 +6,7 @@ import { pendingCount } from "@/lib/outbox";
 /**
  * A persistent, non-dismissable indicator that some studio changes haven't
  * reached the server yet. Unlike a toast, it stays put until every queued write
- * is confirmed saved — so a stuck write is never invisible. The data itself is
+ * is confirmed saved, so a stuck write is never invisible. The data itself is
  * held safely in the outbox (localStorage) and retried automatically; this just
  * makes the state legible and offers a manual retry.
  */
@@ -44,7 +44,7 @@ export function SyncStatusBanner() {
         <CloudOff className="h-4 w-4 shrink-0" />
         <span>
           {count} {count === 1 ? "change is" : "changes are"} still saving. They're kept safe on this device and we're
-          retrying — please keep this tab open.
+          retrying, please keep this tab open.
         </span>
         <button
           onClick={retry}

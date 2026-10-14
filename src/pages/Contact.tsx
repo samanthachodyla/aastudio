@@ -50,7 +50,7 @@ const Contact = () => {
 
         {sent ? (
           <div className="hairline-card p-8 text-center">
-            <h2 className="font-display text-2xl mb-3">Thanks — almost there.</h2>
+            <h2 className="font-display text-2xl mb-3">Thanks, almost there.</h2>
             <p className="text-sm text-muted-foreground mb-6">
               Your email app should have opened, addressed to <span className="text-foreground">{CONTACT_EMAIL}</span>.
               Just hit send. If nothing opened, email us directly at the address below.

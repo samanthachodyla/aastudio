@@ -86,7 +86,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
       return <LoaderScreen />;
     }
     if (!hasActiveAccess(subscription)) {
-      // Just returned from checkout — finalize (above) rather than bounce.
+      // Just returned from checkout, finalize (above) rather than bounce.
       if (justCheckedOut && finalizing) {
         return <LoaderScreen label="Finalizing your subscription…" />;
       }

@@ -5,13 +5,13 @@ import { useEffect } from "react";
  * canonical link, and (optionally) a noindex robots tag while a page is mounted,
  * then restores the site defaults on unmount so values never leak across routes.
  *
- * This is a lightweight, dependency-free stand-in for react-helmet — enough for
+ * This is a lightweight, dependency-free stand-in for react-helmet, enough for
  * a marketing site whose one indexable page is the landing page.
  */
 const SITE = "https://allegoryartstudio.com";
-const DEFAULT_TITLE = "Allegory Art Studio — CRM for Artists & Studio Management Software";
+const DEFAULT_TITLE = "Allegory Art Studio, CRM for Artists & Studio Management Software";
 const DEFAULT_DESCRIPTION =
-  "Allegory Art Studio is the CRM for artists and studio management software for working artists — art inventory software, sales, commissions, exhibitions, and outreach, running quietly in the background.";
+  "Allegory Art Studio is the CRM for artists and studio management software for working artists, art inventory software, sales, commissions, exhibitions, and outreach, running quietly in the background.";
 
 interface SeoProps {
   title?: string;

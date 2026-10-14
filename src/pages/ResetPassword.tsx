@@ -37,7 +37,7 @@ const ResetPassword = () => {
         setReady(true);
         finish();
       } else {
-        // No session yet — give the recovery event a grace period to arrive
+        // No session yet, give the recovery event a grace period to arrive
         // (cold start / slow network) before declaring the link invalid.
         graceTimer = setTimeout(() => {
           if (!settled) finish();
@@ -65,7 +65,7 @@ const ResetPassword = () => {
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
-      toast.success("Password updated — you're signed in.");
+      toast.success("Password updated, you're signed in.");
       navigate("/dashboard", { replace: true });
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Couldn't update your password. Request a new reset link.");

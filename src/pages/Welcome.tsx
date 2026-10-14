@@ -47,12 +47,12 @@ export default function Welcome() {
       }
       // Set Advanced Matching from the just-created account BEFORE the Purchase
       // fires, so this conversion (and their following PageViews) carry a hashed
-      // email + name — lifts Event Match Quality.
+      // email + name, lifts Event Match Quality.
       {
         const [amFn, ...amRest] = String(json.name || "").trim().split(/\s+/).filter(Boolean);
         saveFbMatch({ em: json.email, fn: amFn, ln: amRest.join(" ") });
       }
-      // The account was just created and the 7-day trial started — no charge yet.
+      // The account was just created and the 7-day trial started, no charge yet.
       // So fire sign_up + start_trial (NOT purchase; purchase fires server-side on
       // the first real payment). Event IDs are shared with the server's CAPI events
       // so Meta de-dupes. start_trial carries the plan's price as its value.
@@ -70,14 +70,14 @@ export default function Welcome() {
         fbq?.("track", "CompleteRegistration", { content_name: label }, { eventID: `signup_${sid}` });
         fbq?.("track", "StartTrial", { value, currency: "USD", predicted_ltv: value, content_name: label }, { eventID: `trial_${sid}` });
       } catch { /* analytics is best-effort */ }
-      // Account is ready — sign them straight in.
+      // Account is ready, sign them straight in.
       const { error } = await supabase.auth.signInWithPassword({ email: json.email, password });
       if (error) {
-        toast.success("Your account is ready — please sign in.");
+        toast.success("Your account is ready, please sign in.");
         navigate("/login", { replace: true });
         return;
       }
-      toast.success("You're all set — welcome to Allegory Studio. ✦");
+      toast.success("You're all set, welcome to Allegory Studio. ✦");
       navigate("/dashboard", { replace: true });
     } catch {
       toast.error("Something went wrong. Please try again, or email hello@allegoryartstudio.com.");
@@ -87,7 +87,7 @@ export default function Welcome() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Seo title="Welcome — Allegory Studio" canonicalPath="/welcome" noindex />
+      <Seo title="Welcome, Allegory Studio" canonicalPath="/welcome" noindex />
       <div
         className="bg-primary text-[11px] tracking-[0.28em] uppercase text-center py-2 font-medium"
         style={{ color: "#032419" }}
@@ -108,7 +108,7 @@ export default function Welcome() {
             <div className="eyebrow mb-2">You're in ✦</div>
             <h1 className="font-display text-3xl tracking-tight mb-2">Set your password</h1>
             <p className="text-sm text-muted-foreground mb-6">
-              Your 7-day free trial is active — you won't be charged until it ends. Choose a password to finish creating your account and jump into your studio.
+              Your 7-day free trial is active, you won't be charged until it ends. Choose a password to finish creating your account and jump into your studio.
             </p>
 
             {!sid ? (

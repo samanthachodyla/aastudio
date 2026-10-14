@@ -5,7 +5,7 @@ import { LockedModule } from "./LockedModule";
 import { useSubscription, hasActiveAccess } from "@/lib/subscription";
 
 /** Gates the Pro-only modules. Entitlement is derived from the REAL subscription
- *  (active/comp access AND plan "pro") — never a client-writable store — so a
+ *  (active/comp access AND plan "pro"), never a client-writable store, so a
  *  Starter subscriber can't unlock Pro by flipping a local toggle. During the
  *  beta (BETA_ALL_PRO) everyone has Pro. TierGate renders inside RequireAuth,
  *  so the subscription is already loaded here (no locked-content flash). */

@@ -19,8 +19,8 @@ export default function Privacy() {
   return (
     <div className="min-h-screen bg-[#f5f3ee] text-[#11281c]" style={{ fontFamily: "'Work Sans', system-ui, sans-serif" }}>
       <Seo
-        title="Privacy Policy — Allegory Studio"
-        description="How Allegory Studio collects, uses, and protects your information — and the choices and privacy rights you have."
+        title="Privacy Policy, Allegory Studio"
+        description="How Allegory Studio collects, uses, and protects your information, and the choices and privacy rights you have."
         canonicalPath="/privacy"
       />
       <div className="max-w-3xl mx-auto px-6 py-14 md:py-20">
@@ -38,7 +38,7 @@ export default function Privacy() {
 
         <Section n="1." title="Information We Collect">
           <p><b>Information you provide.</b> When you create an account we collect your name and email address, and any
-          profile details you add. As you use the Service, you create and upload content — artwork images and records,
+          profile details you add. As you use the Service, you create and upload content, artwork images and records,
           inventory, sales and finance data, contacts, documents, and notes ("Your Content").</p>
           <p><b>Payment information.</b> If you subscribe to a paid plan, our payment processor collects and processes
           your payment details on our behalf. We do not store full card numbers on our systems.</p>
@@ -46,8 +46,8 @@ export default function Privacy() {
           account, we access only the data needed to provide that feature, with your authorization, and you can
           disconnect at any time.</p>
           <p><b>Information collected automatically.</b> Like most websites, we and our analytics providers collect
-          limited technical and usage information — such as device and browser type, pages viewed, referring links, and
-          general location inferred from your IP address — using cookies and similar technologies. See our{" "}
+          limited technical and usage information, such as device and browser type, pages viewed, referring links, and
+          general location inferred from your IP address, using cookies and similar technologies. See our{" "}
           <Link to="/cookies" className="text-[#2c533f] underline">Cookie Policy</Link> for details.</p>
         </Section>
 
@@ -64,7 +64,7 @@ export default function Privacy() {
         </Section>
 
         <Section n="3." title="We Do Not Sell Your Content">
-          <p>Your Content — your artwork records, sales figures, contacts, and account details — is yours. We do not sell
+          <p>Your Content, your artwork records, sales figures, contacts, and account details, is yours. We do not sell
           it, and we do not use it to train third-party AI models without your consent. We use trusted service providers
           to operate the Service; they may process data only on our behalf and under confidentiality obligations. For
           how we treat advertising and analytics identifiers under U.S. state "sale/share" laws, see Sections 5 and 7.</p>
@@ -74,7 +74,7 @@ export default function Privacy() {
           <p>We share information only as needed to run the Service:</p>
           <ul className="list-disc pl-5 space-y-2">
             <li><b>Service providers.</b> Hosting and database (Supabase, Vercel), a payment processor, email delivery,
-            inbox connectivity (where you enable it), and AI providers that power generative features — each processing
+            inbox connectivity (where you enable it), and AI providers that power generative features, each processing
             data on our behalf.</li>
             <li><b>Analytics &amp; advertising partners.</b> Google Analytics and the Meta Pixel help us understand
             traffic and measure marketing. These may involve cookies and identifiers as described in our Cookie Policy.</li>
@@ -123,8 +123,8 @@ export default function Privacy() {
         </Section>
 
         <Section n="8." title="Security">
-          <p>We use industry-standard safeguards — including encryption in transit and at rest, secure authentication,
-          and access controls — to protect your information. No method of transmission or storage is completely secure,
+          <p>We use industry-standard safeguards, including encryption in transit and at rest, secure authentication,
+          and access controls, to protect your information. No method of transmission or storage is completely secure,
           but we work continuously to protect your data.</p>
         </Section>
 

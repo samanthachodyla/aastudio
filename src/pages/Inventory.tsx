@@ -111,7 +111,7 @@ const Inventory = () => {
     exportableStatuses.map(s => s.value)
   );
 
-  // Portfolio (PDF) export state — the artist toggles exactly which pieces go in.
+  // Portfolio (PDF) export state, the artist toggles exactly which pieces go in.
   const [portfolioOpen, setPortfolioOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [portfolioTitle, setPortfolioTitle] = useState("Available Works");
@@ -155,7 +155,7 @@ const Inventory = () => {
     if (data.length === 0) { toast.error("Select at least one piece."); return; }
     const ok = exportArtworkLabels({ artworks: data, artistName: fullName || "", showPrices: labelShowPrices, perRow: labelPerRow });
     if (!ok) { toast.error("Please allow pop-ups for this site, then try again."); return; }
-    toast.success(`Labels ready — in the print dialog choose “Save as PDF”, Margins “Default”.`);
+    toast.success(`Labels ready, in the print dialog choose “Save as PDF”, Margins “Default”.`);
     setLabelsOpen(false);
   };
 
@@ -179,7 +179,7 @@ const Inventory = () => {
       toast.error("Please allow pop-ups for this site, then try the export again.");
       return;
     }
-    toast.success(`Portfolio ready — in the print dialog choose “Save as PDF”, set Margins to “Default”, and turn on “Background graphics”.`);
+    toast.success(`Portfolio ready, in the print dialog choose “Save as PDF”, set Margins to “Default”, and turn on “Background graphics”.`);
     setPortfolioOpen(false);
   };
 
@@ -216,7 +216,7 @@ const Inventory = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
-      toast.error("Copy failed — select the link and copy it manually.");
+      toast.error("Copy failed, select the link and copy it manually.");
     }
   };
 
@@ -237,9 +237,9 @@ const Inventory = () => {
       added++;
     });
     setImportOpen(false);
-    if (added && skipped) toast.success(`Imported ${added} new work${added === 1 ? "" : "s"} — skipped ${skipped} already in your catalogue.`);
+    if (added && skipped) toast.success(`Imported ${added} new work${added === 1 ? "" : "s"}, skipped ${skipped} already in your catalogue.`);
     else if (added) toast.success(`Imported ${added} work${added === 1 ? "" : "s"}.`);
-    else toast.message(`Nothing new to import — all ${skipped} ${skipped === 1 ? "is" : "are"} already in your catalogue.`);
+    else toast.message(`Nothing new to import, all ${skipped} ${skipped === 1 ? "is" : "are"} already in your catalogue.`);
   };
 
   const toggleExportStatus = (s: ArtworkStatus) => {
@@ -420,7 +420,7 @@ const Inventory = () => {
                   </label>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="font-medium">PDF</span> opens a print view — choose “Save as PDF”.
+                  <span className="font-medium">PDF</span> opens a print view, choose “Save as PDF”.
                   A <span className="font-medium">link</span> is a live web page anyone can open.
                 </p>
                 {shareUrl && (
@@ -462,7 +462,7 @@ const Inventory = () => {
               </DialogHeader>
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Printable wall / exhibition labels — title, medium, size{labelShowPrices ? ", price" : ""}, and your name.
+                  Printable wall / exhibition labels, title, medium, size{labelShowPrices ? ", price" : ""}, and your name.
                 </p>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -562,7 +562,7 @@ const Inventory = () => {
               <button
                 type="button"
                 onClick={() => setSortDir(d => d === "asc" ? "desc" : "asc")}
-                title={sortDir === "asc" ? "Ascending — tap for descending" : "Descending — tap for ascending"}
+                title={sortDir === "asc" ? "Ascending, tap for descending" : "Descending, tap for ascending"}
                 aria-label="Toggle sort direction"
                 className="h-8 w-8 shrink-0 flex items-center justify-center rounded-sm border border-border bg-card text-muted-foreground hover:text-foreground transition-colors"
               >
@@ -608,7 +608,7 @@ const Inventory = () => {
                           {locationLabel(a.location)}
                           {a.locationDetail && <span className="block text-[11px] opacity-70">{a.locationDetail}</span>}
                         </>
-                      ) : "—"}
+                      ) : "-"}
                     </td>
                     <td className="px-4 py-4 tabular-nums text-right">{fmtMoney(a.price)}</td>
                     <td className="px-4 py-4 text-right">
@@ -670,7 +670,7 @@ const Inventory = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Edit existing work — same form, pre-filled */}
+      {/* Edit existing work, same form, pre-filled */}
       <Dialog open={!!editing} onOpenChange={(o) => { if (!o) setEditing(null); }}>
         {editing && <ArtworkForm key={editing.id} initial={editing} onSubmit={saveArtwork} />}
       </Dialog>
@@ -941,7 +941,7 @@ function ImportArtworksDialog({ onImport }: { onImport: (rows: Omit<Artwork, "id
           Upload a <span className="font-medium">.csv</span> file (export one from Excel, Numbers, or Google Sheets)
           or paste rows below. Columns are matched by header
           (<span className="font-mono text-xs">title, year, medium, dimensions, edition, price, status, location, specific location</span>)
-          — or, with no header, read in that order. Only <span className="font-medium">title</span> is required.
+         , or, with no header, read in that order. Only <span className="font-medium">title</span> is required.
         </p>
 
         <div>
@@ -968,7 +968,7 @@ function ImportArtworksDialog({ onImport }: { onImport: (rows: Omit<Artwork, "id
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">
             {raw.trim()
-              ? `${parsed.length} valid work${parsed.length === 1 ? "" : "s"} detected${parsed.length === 0 ? " — check that each row has a title." : "."}`
+              ? `${parsed.length} valid work${parsed.length === 1 ? "" : "s"} detected${parsed.length === 0 ? ", check that each row has a title." : "."}`
               : "Nothing to import yet."}
           </span>
           <Button disabled={parsed.length === 0} onClick={() => onImport(parsed)} className="gap-2">

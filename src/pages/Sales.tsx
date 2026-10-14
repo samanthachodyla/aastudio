@@ -67,7 +67,7 @@ const Sales = () => {
         category: (data.category || "materials") as ExpenseCategory,
         paymentType: (data.paymentType || "") as PaymentType | "",
       });
-      toast.success("Receipt scanned — review and save.");
+      toast.success("Receipt scanned, review and save.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Couldn't read that receipt.");
     } finally {
@@ -180,7 +180,7 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
 <hr/>
 <div class="meta">
   <div><div class="eyebrow">Issued</div><div class="block">${fmtDate(inv.issuedAt)}</div></div>
-  <div><div class="eyebrow">Due</div><div class="block">${inv.dueAt ? fmtDate(inv.dueAt) : "—"}</div></div>
+  <div><div class="eyebrow">Due</div><div class="block">${inv.dueAt ? fmtDate(inv.dueAt) : "-"}</div></div>
   <div><div class="eyebrow">Terms</div><div class="block">${inv.paymentTerms ?? "Net 30"}</div></div>
 </div>
 <div class="grid">
@@ -190,11 +190,11 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
   </div>
   <div>
     <div class="eyebrow">Ship to</div>
-    <div class="block">${shipping ? shipping.replace(/\n/g, "<br/>") : "—"}</div>
+    <div class="block">${shipping ? shipping.replace(/\n/g, "<br/>") : "-"}</div>
   </div>
 </div>
 <table><tr><th>Work</th><th>Details</th><th class="right">Amount</th></tr>
-<tr><td><em>${work?.title ?? "—"}</em></td><td>${work?.medium ?? ""}${work?.year ? `, ${work.year}` : ""}${work?.dimensions ? `<br/>${work.dimensions}` : ""}</td><td class="right">${fmtMoney(sub)}</td></tr>
+<tr><td><em>${work?.title ?? "-"}</em></td><td>${work?.medium ?? ""}${work?.year ? `, ${work.year}` : ""}${work?.dimensions ? `<br/>${work.dimensions}` : ""}</td><td class="right">${fmtMoney(sub)}</td></tr>
 </table>
 <div class="totals">
   <div class="trow"><span>Subtotal</span><span>${fmtMoney(sub)}</span></div>
@@ -203,7 +203,7 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
   <div class="trow grand"><span class="eyebrow">Total due</span><span class="total">${fmtMoney(inv.amount)}</span></div>
 </div>
 <hr/>
-<div style="font-family:Helvetica,sans-serif;font-size:11px;color:#666;text-align:center">Thank you. — Allegory Studio</div>
+<div style="font-family:Helvetica,sans-serif;font-size:11px;color:#666;text-align:center">Thank you., Allegory Studio</div>
 </body></html>`);
     w.document.close(); setTimeout(() => w.print(), 300);
   };
@@ -212,7 +212,7 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
     <AppShell
       eyebrow="Sales & Finance"
       title="The financial life of your practice."
-      description="Invoices, income, outstanding balances, and a clear view of how money is moving — everything in one place."
+      description="Invoices, income, outstanding balances, and a clear view of how money is moving, everything in one place."
     >
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="bg-transparent border-b border-border rounded-none w-full justify-start h-auto p-0 mb-8 overflow-x-auto">
@@ -318,11 +318,11 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
                         {inv.buyerEmail && <div className="text-xs text-muted-foreground">{inv.buyerEmail}</div>}
                       </td>
                       <td className="px-4 py-4 font-display italic">
-                        {work?.title ?? "—"}
+                        {work?.title ?? "-"}
                         {!inv.artworkId && inv.customWork && <span className="ml-2 not-italic font-sans text-[10px] uppercase tracking-wider text-muted-foreground">Custom</span>}
                       </td>
                       <td className="px-4 py-4 text-muted-foreground text-xs">{fmtDate(inv.issuedAt)}</td>
-                      <td className="px-4 py-4 text-muted-foreground text-xs">{inv.dueAt ? fmtDate(inv.dueAt) : "—"}</td>
+                      <td className="px-4 py-4 text-muted-foreground text-xs">{inv.dueAt ? fmtDate(inv.dueAt) : "-"}</td>
                       <td className="px-4 py-4">
                         <Select value={inv.status} onValueChange={(v: InvoiceStatus) => updateInvoice(inv.id, { status: v, paidAt: v === "paid" ? new Date().toISOString() : inv.paidAt })}>
                           <SelectTrigger className="h-7 w-32 text-xs border-0 bg-transparent p-0 hover:bg-surface px-2"><StatusPill status={inv.status} /></SelectTrigger>
@@ -480,7 +480,7 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
                         <td className="px-4 py-4 text-xs text-muted-foreground whitespace-nowrap tabular-nums">{fmtDate(e.date)}</td>
                         <td className="px-4 py-4">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium">{e.description ?? e.vendor ?? "—"}</span>
+                            <span className="font-medium">{e.description ?? e.vendor ?? "-"}</span>
                             {e.recurring && (
                               <span className="text-[10px] uppercase tracking-wider text-muted-foreground border border-border rounded-full px-2 py-0.5">
                                 {FREQUENCIES.find(f => f.value === e.frequency)?.label ?? "Recurring"}
@@ -494,7 +494,7 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
                           </span>
                         </td>
                         <td className="px-4 py-4 text-muted-foreground text-xs whitespace-nowrap">
-                          {e.paymentType ? PAYMENT_TYPES.find(p => p.value === e.paymentType)?.label ?? "—" : "—"}
+                          {e.paymentType ? PAYMENT_TYPES.find(p => p.value === e.paymentType)?.label ?? "-" : "-"}
                         </td>
                         <td className="px-4 py-4 tabular-nums text-right font-medium whitespace-nowrap">{fmtMoney(e.amount)}</td>
                         <td className="px-4 py-4 text-right whitespace-nowrap" onClick={(ev) => ev.stopPropagation()}>
@@ -619,7 +619,7 @@ function ExpenseForm({ expense, prefill, onSubmit }: {
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-[11px] text-muted-foreground mt-1">A tag only — no card or account numbers are stored.</p>
+            <p className="text-[11px] text-muted-foreground mt-1">A tag only, no card or account numbers are stored.</p>
           </div>
           <div className="col-span-2">
             <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
@@ -736,7 +736,7 @@ function InvoiceForm({ artworks, onSubmit }: { artworks: Artwork[]; onSubmit: (d
           >
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {artworks.map(a => <SelectItem key={a.id} value={a.id}>{a.title} — {fmtMoney(a.price)}</SelectItem>)}
+              {artworks.map(a => <SelectItem key={a.id} value={a.id}>{a.title}, {fmtMoney(a.price)}</SelectItem>)}
               <SelectItem value={CUSTOM}>＋ Custom work (not in inventory)</SelectItem>
             </SelectContent>
           </Select>

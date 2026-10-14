@@ -14,7 +14,7 @@ type Status = "checking" | "needed" | "done";
 
 /**
  * One-time demographics survey shown after a user's first sign-in. Renders the
- * app once the survey is complete (or if we can't determine status — analytics
+ * app once the survey is complete (or if we can't determine status, analytics
  * must never lock anyone out, so every error path fails open to the app).
  */
 export function SurveyGate({ children }: { children: ReactNode }) {
@@ -69,7 +69,7 @@ export function SurveyGate({ children }: { children: ReactNode }) {
       if (error) throw error;
       setStatus("done");
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Couldn't save — please try again.");
+      toast.error(err instanceof Error ? err.message : "Couldn't save, please try again.");
       setFailed(true); // reveal an escape hatch so a save error never traps the user
     } finally {
       setBusy(false);

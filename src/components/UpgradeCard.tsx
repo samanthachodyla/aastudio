@@ -12,7 +12,7 @@ interface Props {
 export function UpgradeCard({
   title = "A Studio Pro feature",
   description,
-  ctaLabel = "Upgrade to Pro — $55/mo",
+  ctaLabel = "Upgrade to Pro, $55/mo",
   compact = false,
 }: Props) {
   return (

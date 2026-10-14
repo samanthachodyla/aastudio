@@ -1,5 +1,5 @@
 // ============================================================================
-// Persistent write outbox — the studio's safety net against silent data loss.
+// Persistent write outbox, the studio's safety net against silent data loss.
 //
 // The store writes are optimistic + fire-and-forget: the UI updates instantly
 // and the Supabase write happens in the background. If that write ever fails
@@ -53,7 +53,7 @@ function write(userId: string, ops: PendingOp[]) {
     if (ops.length) localStorage.setItem(KEY(userId), JSON.stringify(ops));
     else localStorage.removeItem(KEY(userId));
   } catch {
-    /* quota exceeded or storage disabled — best-effort, never throw */
+    /* quota exceeded or storage disabled, best-effort, never throw */
   }
 }
 
@@ -81,7 +81,7 @@ export function recordInsert(
 /**
  * Queue an update. If the row still has an unsynced INSERT queued, the patch is
  * merged into that insert (so the eventual write carries the latest fields) and
- * "" is returned — there is no separate op for the caller to resolve, and the
+ * "" is returned, there is no separate op for the caller to resolve, and the
  * immediate server UPDATE (which would no-op on a not-yet-inserted row) is
  * harmless. Otherwise a normal update op is queued and its id returned.
  */
@@ -113,7 +113,7 @@ export function recordUpdate(
 
 /**
  * Queue a delete. If the row was never synced (an insert is still pending), all
- * queued ops for it are dropped and "" is returned — there is nothing on the
+ * queued ops for it are dropped and "" is returned, there is nothing on the
  * server to delete. Otherwise a delete op is queued and its id returned.
  */
 export function recordDelete(userId: string, table: string, storeKey: string, rowId: string): string {
@@ -141,7 +141,7 @@ export function resolve(userId: string, opId: string): void {
  *
  * Used on hydrate. A delete only stays queued if it FAILED to reach the server,
  * which means the row still exists in the database. Re-applying that delete on
- * load hid the row from the member while their data sat safely on the server —
+ * load hid the row from the member while their data sat safely on the server -
  * and a later successful retry could actually wipe it. Dropping stuck deletes on
  * load keeps the data (the safe direction) and clears the stuck queue. Inserts
  * and updates carry unsynced DATA, so they are never touched here.

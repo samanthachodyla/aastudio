@@ -22,7 +22,7 @@ const pageHtml = isLaunched() ? toLiveLanding(landingHtml) : landingHtml;
  * innerHTML don't execute.
  *
  * The waitlist form posts to a SEPARATE Supabase project (launch list only) via
- * a raw fetch — it never touches this app's auth Supabase client.
+ * a raw fetch, it never touches this app's auth Supabase client.
  */
 export default function Landing() {
   const { session, loading } = useAuth();
@@ -66,11 +66,11 @@ export default function Landing() {
         const phoneEl = form.querySelector<HTMLInputElement>('input[name="phone"]');
         const phone = (phoneEl?.value || "").trim();
         const hp = (form.querySelector<HTMLInputElement>('input[name="company"]')?.value || "").trim();
-        // Bot caught by the honeypot — show the normal success state so it moves
+        // Bot caught by the honeypot, show the normal success state so it moves
         // on, but record nothing and fire NO Lead event (Pixel or CAPI).
         if (hp) {
           form.classList.add("done");
-          if (msg) { msg.className = "signup-msg"; msg.textContent = "Thanks — you're on the list. ✦"; }
+          if (msg) { msg.className = "signup-msg"; msg.textContent = "Thanks, you're on the list. ✦"; }
           return;
         }
         if (!email) return;
@@ -83,7 +83,7 @@ export default function Landing() {
         if (btn) { btn.disabled = true; btn.textContent = "Sending…"; }
         if (msg) { msg.className = "signup-msg"; msg.textContent = ""; }
         // Remember this lead for Pixel Advanced Matching so their PageViews (and
-        // this Lead) carry a hashed email + name — lifts Event Match Quality.
+        // this Lead) carry a hashed email + name, lifts Event Match Quality.
         saveFbMatch({ em: email, fn: firstName, ln: lastName });
         // Capture UTM tags from the URL so each signup carries its campaign/post.
         const qs = new URLSearchParams(window.location.search);
@@ -132,9 +132,9 @@ export default function Landing() {
               msg.className = "signup-msg";
               msg.textContent = (formSource === "newsletter" || formSource === "popup")
                 ? "You're in! Your 20% code is on its way to your inbox. ✦"
-                : "Thanks — you're on the list. ✦";
+                : "Thanks, you're on the list. ✦";
             }
-            // GA4 generate_lead — fires only after a successful lead submission.
+            // GA4 generate_lead, fires only after a successful lead submission.
             try {
               (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", "generate_lead", {
                 form_source: formSource,
@@ -226,7 +226,7 @@ export default function Landing() {
 
     // ---- Pay-first: homepage plan buttons open Stripe Checkout directly, with
     // the cycle from the monthly/annual toggle. If checkout can't start we keep
-    // the visitor on the pricing section (the anchor's #pricing href) — we never
+    // the visitor on the pricing section (the anchor's #pricing href), we never
     // create an account before payment.
     const planButtons = Array.from(root.querySelectorAll<HTMLAnchorElement>("a[data-plan]"));
     const onPlanClick = async (e: Event) => {

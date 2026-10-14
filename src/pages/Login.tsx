@@ -84,7 +84,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Seo title="Sign in — Allegory Studio" canonicalPath="/login" noindex />
+      <Seo title="Sign in, Allegory Studio" canonicalPath="/login" noindex />
       <div
         className="bg-primary text-[11px] tracking-[0.28em] uppercase text-center py-2 font-medium"
         style={{ color: "#032419" }}

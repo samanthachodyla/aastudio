@@ -1,4 +1,4 @@
-// Disposition — what's happening with the piece commercially. Fixed set.
+// Disposition, what's happening with the piece commercially. Fixed set.
 export type ArtworkStatus = "available" | "sold" | "donated" | "nfs";
 // Where the piece physically is. Separate axis from disposition.
 export type ArtworkLocation =
@@ -14,7 +14,7 @@ export interface Artwork {
   price: number; // in cents to avoid float issues? keep dollars for simplicity
   status: ArtworkStatus;
   location?: ArtworkLocation; // where it physically is
-  locationDetail?: string; // specific place (gallery/consignor name) — for on_consignment / in_gallery
+  locationDetail?: string; // specific place (gallery/consignor name), for on_consignment / in_gallery
   imageUrl?: string;
   createdAt: string;
 }
@@ -39,7 +39,7 @@ export interface Invoice {
   shippingSameAsBilling?: boolean;
   // legacy / fallback
   buyerAddress?: string;
-  amount: number;              // grand total (subtotal + tax + shipping) — drives all rollups
+  amount: number;              // grand total (subtotal + tax + shipping), drives all rollups
   subtotal?: number;           // the work price before tax/shipping
   taxRate?: number;            // sales tax percent, e.g. 8.5
   taxAmount?: number;          // computed tax in dollars
@@ -162,7 +162,7 @@ export type ExpenseCategory =
 
 export type ExpenseFrequency = "monthly" | "quarterly" | "annual";
 
-// Tag only — never store actual card/account numbers.
+// Tag only, never store actual card/account numbers.
 export type PaymentType = "debit_card" | "credit_card" | "cash" | "check" | "bank_transfer" | "other";
 
 export interface Expense {

@@ -59,7 +59,7 @@ function monthlyValue(plan: string | null, cycle: string | null, status: string 
 }
 
 type Lifecycle = "Trialing" | "Paying" | "Past due" | "Comp" | "Churned" | "Active" | "Dormant" | "New";
-/** A member's stage — billing state first, then engagement recency. Drives the
+/** A member's stage, billing state first, then engagement recency. Drives the
  *  category filter and a quick read on account health. */
 function lifecycleOf(status: string | null, lastActive: string | null, joined: string | null): Lifecycle {
   if (status === "trialing") return "Trialing";
@@ -67,7 +67,7 @@ function lifecycleOf(status: string | null, lastActive: string | null, joined: s
   if (status === "comp") return "Comp";
   if (status === "canceled" || status === "unpaid") return "Churned";
   if (status === "active") return "Paying";
-  // No paid status — classify by engagement.
+  // No paid status, classify by engagement.
   const days = lastActive ? (Date.now() - new Date(lastActive).getTime()) / 86400000 : Infinity;
   if (days <= 7) return "Active";
   const joinedDays = joined ? (Date.now() - new Date(joined).getTime()) / 86400000 : Infinity;
@@ -104,7 +104,7 @@ function matchesCategory(r: UserAgg, cat: Category): boolean {
 type SortKey = "name" | "lifecycle" | "lastActive" | "pageViews" | "activeMinutes" | "artworks" | "invoices" | "revenue" | "mrr" | "joined";
 
 const fmtMinutes = (m: number) => {
-  if (m <= 0) return "—";
+  if (m <= 0) return "-";
   const h = Math.floor(m / 60);
   const min = m % 60;
   return h ? `${h}h ${min}m` : `${min}m`;
@@ -118,7 +118,7 @@ const tierLabel = (tier: string) => (BETA_ALL_PRO ? "Pro · beta" : tier === "pr
 // Plan + billing cycle at a glance, from the subscriptions table.
 const ACTIVE_SUB = ["active", "comp", "trialing"];
 const planLabel = (plan: string | null, cycle: string | null, status: string | null): string => {
-  if (!status) return "—"; // no subscription row at all
+  if (!status) return "-"; // no subscription row at all
   const t = plan === "pro" ? "Pro" : plan === "starter" ? "Starter" : "";
   const cyc = cycle === "annual" ? "Annual" : cycle === "monthly" ? "Monthly" : "";
   if (ACTIVE_SUB.includes(status)) {
@@ -126,7 +126,7 @@ const planLabel = (plan: string | null, cycle: string | null, status: string | n
     if (!t) return cyc ? `Active · ${cyc}` : "Active";
     return tag ? `${t} · ${tag}` : t;
   }
-  // Has a row but isn't active — surface the real state (a follow-up signal:
+  // Has a row but isn't active, surface the real state (a follow-up signal:
   // "incomplete" = tried to pay, "canceled" = churned, etc.).
   const state = status === "incomplete" ? "Incomplete"
     : status === "past_due" ? "Past due"
@@ -137,7 +137,7 @@ const planLabel = (plan: string | null, cycle: string | null, status: string | n
   return t ? `${t} · ${state}` : state;
 };
 
-// Private admin notes on a member — editable, saved to the member_notes table.
+// Private admin notes on a member, editable, saved to the member_notes table.
 function MemberNotes({ userId, initial }: { userId: string; initial: string }) {
   const [text, setText] = useState(initial);
   const [saving, setSaving] = useState(false);
@@ -149,7 +149,7 @@ function MemberNotes({ userId, initial }: { userId: string; initial: string }) {
       .from("member_notes")
       .upsert({ user_id: userId, notes: text, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
     setSaving(false);
-    if (error) toast.error("Couldn't save notes — is the member_notes table set up?");
+    if (error) toast.error("Couldn't save notes, is the member_notes table set up?");
     else toast.success("Notes saved.");
   };
   return (
@@ -158,7 +158,7 @@ function MemberNotes({ userId, initial }: { userId: string; initial: string }) {
       <Textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="Private notes about this member — plan changes, comps, follow-ups, anything worth remembering…"
+        placeholder="Private notes about this member, plan changes, comps, follow-ups, anything worth remembering…"
         rows={4}
       />
       <div className="mt-3">
@@ -210,7 +210,7 @@ const Reports = () => {
       });
       const json = await res.json();
       if (!res.ok || !json.ok) { toast.error(json.error || "Resync failed."); return; }
-      toast.success(`Resynced from Stripe — ${json.synced} member(s) updated.`);
+      toast.success(`Resynced from Stripe, ${json.synced} member(s) updated.`);
       fetchAdminDataset().then(setData).catch(() => {});
     } catch {
       toast.error("Couldn't reach the resync service.");
@@ -255,7 +255,7 @@ const Reports = () => {
         // Time-on-page: each heartbeat ≈ one active minute on its path.
         const minutesByPath = new Map<string, number>();
         for (const hb of heartbeats) {
-          const key = hb.path ?? "—";
+          const key = hb.path ?? "-";
           minutesByPath.set(key, (minutesByPath.get(key) ?? 0) + 1);
         }
         const timeByPath = [...minutesByPath.entries()]
@@ -273,8 +273,8 @@ const Reports = () => {
 
         return {
           id: p.id,
-          name: p.full_name || "—",
-          email: p.email || "—",
+          name: p.full_name || "-",
+          email: p.email || "-",
           isAdmin: p.is_admin,
           tier: p.tier || "starter",
           plan,
@@ -338,7 +338,7 @@ const Reports = () => {
     else { setSortBy(key); setSortDir(key === "name" ? "asc" : "desc"); }
   };
 
-  // Studio-wide business metrics (from existing data — no new capture needed).
+  // Studio-wide business metrics (from existing data, no new capture needed).
   const biz = useMemo(() => {
     const mrr = rows.reduce((s, r) => s + r.mrr, 0);
     const paying = rows.filter((r) => r.subStatus === "active").length;
@@ -362,7 +362,7 @@ const Reports = () => {
     const m = new Map<string, number>();
     for (const e of data.usage) {
       if (e.event_type !== "heartbeat") continue;
-      const key = e.path ?? "—";
+      const key = e.path ?? "-";
       m.set(key, (m.get(key) ?? 0) + 1);
     }
     return [...m.entries()].map(([path, minutes]) => ({ path, minutes })).sort((a, b) => b.minutes - a.minutes);
@@ -438,7 +438,7 @@ const Reports = () => {
         ))}
       </div>
 
-      {/* Business metrics — the growth story at a glance (from existing data). */}
+      {/* Business metrics, the growth story at a glance (from existing data). */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {[
           { label: "MRR", value: fmtMoney(Math.round(biz.mrr)), hint: "Monthly recurring revenue" },
@@ -475,7 +475,7 @@ const Reports = () => {
         </div>
         {biz.trialsStarted === 0 && (
           <p className="text-[11px] text-muted-foreground mt-4">
-            No trial data yet — run the migration, then click <span className="font-medium">Resync from Stripe</span> to backfill. New trials populate automatically.
+            No trial data yet, run the migration, then click <span className="font-medium">Resync from Stripe</span> to backfill. New trials populate automatically.
           </p>
         )}
       </div>
@@ -584,7 +584,7 @@ const Reports = () => {
                 <td className="px-4 py-3">
                   {(() => {
                     const label = planLabel(r.plan, r.cycle, r.subStatus);
-                    if (label === "—") return <span className="text-muted-foreground">—</span>;
+                    if (label === "-") return <span className="text-muted-foreground">-</span>;
                     const active = ACTIVE_SUB.includes(r.subStatus || "");
                     const cls = !active
                       ? "bg-muted text-muted-foreground" // incomplete / canceled / past due
@@ -603,7 +603,7 @@ const Reports = () => {
                 <td className="px-4 py-3 text-right tabular-nums">{fmtMinutes(r.activeMinutes)}</td>
                 <td className="px-4 py-3 text-right tabular-nums">{r.artworks}</td>
                 <td className="px-4 py-3 text-right tabular-nums">{r.invoices}</td>
-                <td className="px-4 py-3 text-right tabular-nums">{r.revenue > 0 ? fmtMoney(r.revenue) : "—"}</td>
+                <td className="px-4 py-3 text-right tabular-nums">{r.revenue > 0 ? fmtMoney(r.revenue) : "-"}</td>
               </tr>
             ))}
             {!visibleRows.length && (
@@ -624,14 +624,14 @@ const Reports = () => {
             <h2 className="font-display text-3xl tracking-tight">{selectedUser.name}</h2>
             <p className="text-sm text-muted-foreground">
               {selectedUser.email} ·{" "}
-              {planLabel(selectedUser.plan, selectedUser.cycle, selectedUser.subStatus) === "—"
+              {planLabel(selectedUser.plan, selectedUser.cycle, selectedUser.subStatus) === "-"
                 ? `Studio ${tierLabel(selectedUser.tier)}`
                 : planLabel(selectedUser.plan, selectedUser.cycle, selectedUser.subStatus)}{" "}
               · {selectedUser.opportunities} opportunities · {selectedUser.contacts} contacts
             </p>
           </div>
 
-          {/* Membership & activity — works for every member (not just beta) */}
+          {/* Membership & activity, works for every member (not just beta) */}
           <div className="hairline-card p-5">
             <div className="eyebrow mb-3">Membership &amp; activity</div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
@@ -645,7 +645,7 @@ const Reports = () => {
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-0.5">Sales tracked</div>
-                <div className="tabular-nums">{selectedUser.revenue > 0 ? fmtMoney(selectedUser.revenue) : "—"}</div>
+                <div className="tabular-nums">{selectedUser.revenue > 0 ? fmtMoney(selectedUser.revenue) : "-"}</div>
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-0.5">Joined</div>
@@ -681,22 +681,22 @@ const Reports = () => {
           {/* Private admin notes on this member */}
           <MemberNotes userId={selectedUser.id} initial={selectedNotes} />
 
-          {/* Survey responses — beta demographics only; hidden when there's none */}
+          {/* Survey responses, beta demographics only; hidden when there's none */}
           {(selectedUser.age != null || selectedUser.zip || selectedUser.desiredFeatures.length > 0) && (
           <div className="hairline-card p-5">
             <div className="eyebrow mb-3">Survey responses</div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
               <div>
                 <div className="text-xs text-muted-foreground mb-0.5">Age</div>
-                <div>{selectedUser.age ?? "—"}</div>
+                <div>{selectedUser.age ?? "-"}</div>
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-0.5">ZIP code</div>
-                <div>{selectedUser.zip ?? "—"}</div>
+                <div>{selectedUser.zip ?? "-"}</div>
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-0.5">Most-wanted features</div>
-                <div>{selectedUser.desiredFeatures.length ? selectedUser.desiredFeatures.join(", ") : "—"}</div>
+                <div>{selectedUser.desiredFeatures.length ? selectedUser.desiredFeatures.join(", ") : "-"}</div>
               </div>
             </div>
           </div>
@@ -735,7 +735,7 @@ const Reports = () => {
               <ul className="space-y-2 text-sm">
                 {selectedInvoices.slice(0, 12).map((i) => (
                   <li key={i.id} className="flex justify-between gap-3">
-                    <span className="truncate">{i.number || "—"} · {i.buyer_name || "—"}</span>
+                    <span className="truncate">{i.number || "-"} · {i.buyer_name || "-"}</span>
                     <span className="text-muted-foreground shrink-0">{i.status}{i.amount ? ` · ${fmtMoney(Number(i.amount))}` : ""}</span>
                   </li>
                 ))}

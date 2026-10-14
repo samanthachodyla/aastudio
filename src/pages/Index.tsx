@@ -17,12 +17,12 @@ const Dashboard = () => {
   const firstName = getFirstName(fullName);
   const refetchSubscription = useSubscription((s) => s.fetch);
 
-  // Returning from a successful Stripe Checkout — confirm and refresh access.
+  // Returning from a successful Stripe Checkout, confirm and refresh access.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("checkout") === "success") {
       // An existing member just started a subscription/trial (no charge yet during
-      // the free trial), so fire start_trial — not purchase. Purchase fires
+      // the free trial), so fire start_trial, not purchase. Purchase fires
       // server-side on the first real payment. Shares the event id with the
       // server's CAPI StartTrial so Meta de-dupes.
       try {
@@ -43,7 +43,7 @@ const Dashboard = () => {
         );
       } catch { /* analytics is best-effort */ }
       window.history.replaceState({}, "", "/dashboard");
-      toast.success("You're all set — welcome to Allegory Studio. ✦");
+      toast.success("You're all set, welcome to Allegory Studio. ✦");
       refetchSubscription();
     }
   }, [refetchSubscription]);
@@ -64,7 +64,7 @@ const Dashboard = () => {
     const unpaid = invoices.filter(i => i.status === "sent");
     if (overdueInv.length) items.push({
       tone: "alert", icon: AlertCircle,
-      text: `${overdueInv.length} overdue invoice${overdueInv.length > 1 ? "s" : ""} — ${fmtMoney(overdueInv.reduce((s, i) => s + i.amount, 0))} outstanding.`,
+      text: `${overdueInv.length} overdue invoice${overdueInv.length > 1 ? "s" : ""}, ${fmtMoney(overdueInv.reduce((s, i) => s + i.amount, 0))} outstanding.`,
       cta: { to: "/sales", label: "Send reminder" },
     });
     if (unpaid.length) items.push({
@@ -146,7 +146,7 @@ const Dashboard = () => {
       { label: "Works in studio", value: inStudio, sub: `of ${artworks.length} total`, to: "/inventory" },
       { label: "Revenue (paid)", value: fmtMoney(ytdRev), sub: "this period", to: "/sales" },
       { label: "Outstanding", value: fmtMoney(outstanding), sub: "awaiting payment", to: "/sales" },
-      { label: "Leads — to follow up with", value: openLeads, sub: openLeads === 1 ? "active conversation" : "active conversations", to: "/contacts" },
+      { label: "Leads, to follow up with", value: openLeads, sub: openLeads === 1 ? "active conversation" : "active conversations", to: "/contacts" },
       { label: "Contacts to nurture", value: nurture, sub: "due within 7 days", to: "/contacts" },
     ];
   }, [artworks, invoices, leads, contacts]);
@@ -166,7 +166,7 @@ const Dashboard = () => {
     <AppShell
       eyebrow={eyebrow}
       title="Today, in the studio."
-      description="Quiet observations from across your practice — what needs your attention before you get back to the work."
+      description="Quiet observations from across your practice, what needs your attention before you get back to the work."
     >
       {showWelcome && (
         <div

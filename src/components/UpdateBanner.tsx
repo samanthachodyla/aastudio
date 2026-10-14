@@ -10,14 +10,14 @@ import { pendingCount } from "@/lib/outbox";
 const RELOAD_GUARD_KEY = "allegory.reloadedForVersion";
 
 /**
- * Watches for a newer deployed build and gets the user onto it — so a fix we
+ * Watches for a newer deployed build and gets the user onto it, so a fix we
  * ship actually reaches people instead of sitting behind a tab that's been open
  * for days running old code.
  *
  * Two safe paths onto the new version:
  *  - a one-tap "Refresh" pill (always available), and
  *  - a silent auto-refresh the moment a backgrounded tab is brought back to the
- *    foreground — but only when it's safe: nothing is mid-typing and no writes
+ *    foreground, but only when it's safe: nothing is mid-typing and no writes
  *    are still saving. A per-version guard prevents any reload loop.
  */
 export function UpdateBanner() {
@@ -38,7 +38,7 @@ export function UpdateBanner() {
     if (!remote || remote === BUILD_ID) return;
 
     // If we already reloaded targeting this exact version and we're STILL not on
-    // it, don't auto-reload again — leave the manual pill and stop there.
+    // it, don't auto-reload again, leave the manual pill and stop there.
     let alreadyTried = false;
     try { alreadyTried = sessionStorage.getItem(RELOAD_GUARD_KEY) === remote; } catch { /* ignore */ }
     if (alreadyTried) return;
@@ -68,7 +68,7 @@ export function UpdateBanner() {
         className="flex items-center gap-2 rounded-md border border-emerald-300 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-900 shadow-lg hover:bg-emerald-100"
       >
         <RefreshCw className="h-4 w-4 shrink-0" />
-        A new version is available — Refresh
+        A new version is available, Refresh
       </button>
     </div>
   );

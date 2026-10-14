@@ -34,7 +34,7 @@ const Marketing = () => {
     <AppShell
       eyebrow="Marketing Assistant"
       title="A consistent presence, without the constant juggle."
-      description="Ideas and captions — one calm workspace for everything that goes out into the world."
+      description="Ideas and captions, one calm workspace for everything that goes out into the world."
     >
       <Tabs defaultValue="ideas" className="w-full">
         <TabsList className="bg-transparent border-b border-border rounded-none w-full justify-start h-auto p-0 mb-8 overflow-x-auto">
@@ -181,7 +181,7 @@ function IdeasTab() {
       </div>
 
       {contentIdeas.length === 0 ? (
-        <EmptyCard icon={Lightbulb} title="No ideas yet" body="Capture loose thoughts here — finished posts can come later." />
+        <EmptyCard icon={Lightbulb} title="No ideas yet" body="Capture loose thoughts here, finished posts can come later." />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {contentIdeas.map(i => (
@@ -267,7 +267,7 @@ function CaptionsTab() {
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     <StatusPill status={c.platform} />
-                    {aw && <span className="text-xs font-display italic text-muted-foreground">— {aw.title}</span>}
+                    {aw && <span className="text-xs font-display italic text-muted-foreground">- {aw.title}</span>}
                   </div>
                   <div className="flex items-center gap-2">
                     <Select value={c.status} onValueChange={(v: CaptionStatus) => updateCaptionDraft(c.id, { status: v })}>
@@ -316,7 +316,7 @@ function CaptionForm({ onSubmit }: { onSubmit: (d: { platform: SocialPlatform; a
             <Select value={artworkId} onValueChange={setArtworkId}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">— None —</SelectItem>
+                <SelectItem value="__none__">- None -</SelectItem>
                 {artworks.map(a => <SelectItem key={a.id} value={a.id}>{a.title}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -400,7 +400,7 @@ function ScheduleTab() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
-        <p className="text-xs text-muted-foreground max-w-md italic">Social publishing integrations coming soon — for now, a calm planner.</p>
+        <p className="text-xs text-muted-foreground max-w-md italic">Social publishing integrations coming soon, for now, a calm planner.</p>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="gap-2"><Plus className="h-3.5 w-3.5" /> Schedule post</Button>
@@ -565,7 +565,7 @@ function ScheduleForm({ onSubmit, drafts }: { onSubmit: (d: Omit<ScheduledPost, 
             <Select value={draftId} onValueChange={useDraft}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="__custom__">— Write fresh —</SelectItem>
+                <SelectItem value="__custom__">- Write fresh -</SelectItem>
                 {drafts.map(d => <SelectItem key={d.id} value={d.id}>{d.text.slice(0, 60)}{d.text.length > 60 ? "…" : ""}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -783,7 +783,7 @@ function NewsletterTab() {
               {draftLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
               {draftLoading ? "Drafting…" : "Help me draft this"}
             </Button>
-            <p className="text-xs text-muted-foreground italic mt-2">Your draft is a starting point — edit it until it sounds like you.</p>
+            <p className="text-xs text-muted-foreground italic mt-2">Your draft is a starting point, edit it until it sounds like you.</p>
           </div>
           {draftError && <p className="text-xs text-destructive">{draftError}</p>}
         </div>
@@ -802,7 +802,7 @@ function NewsletterTab() {
       </section>
 
       <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
-        <p className="text-xs text-muted-foreground max-w-md italic">Mailchimp and Klaviyo integrations coming soon — for now, draft and export.</p>
+        <p className="text-xs text-muted-foreground max-w-md italic">Mailchimp and Klaviyo integrations coming soon, for now, draft and export.</p>
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setPrefill(null); } }}>
           <DialogTrigger asChild>
             <Button size="sm" className="gap-2" onClick={() => { setEditing(null); setPrefill(null); }}><Plus className="h-3.5 w-3.5" /> New newsletter</Button>

@@ -56,11 +56,11 @@ export function CookieConsent() {
     if (stored === "granted" || stored === "declined") {
       applyConsent(stored); // re-apply the saved choice on every load
     } else if (gpc) {
-      // Respect the browser Do-Not-Sell/Share signal automatically — no banner.
+      // Respect the browser Do-Not-Sell/Share signal automatically, no banner.
       try { localStorage.setItem(KEY, "declined"); } catch { /* ignore */ }
       applyConsent("declined");
     } else {
-      setOpen(true); // first visit, no signal — ask
+      setOpen(true); // first visit, no signal, ask
     }
 
     // Let a footer link (or anything) reopen preferences.

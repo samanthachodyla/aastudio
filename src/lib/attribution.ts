@@ -1,14 +1,14 @@
 // ============================================================================
 // Marketing attribution.
 //
-// On every visit we record where the visitor came from — UTMs, click IDs,
-// referrer, landing page, date — into localStorage, keeping BOTH the FIRST-touch
+// On every visit we record where the visitor came from, UTMs, click IDs,
+// referrer, landing page, date, into localStorage, keeping BOTH the FIRST-touch
 // (original source, set once and never overwritten) and the LAST-touch (most
 // recent source). Once the visitor becomes a customer we write this to their
 // profile, so their original + latest acquisition source stays connected to the
 // account across every marketing channel.
 //
-// No PII (email/name) is captured or sent here — only campaign tags and the
+// No PII (email/name) is captured or sent here, only campaign tags and the
 // click/measurement IDs ad platforms use for matching. Capture of ad IDs and the
 // GA client ID respects the site's analytics/ads opt-out flags.
 // ============================================================================
@@ -104,7 +104,7 @@ export function getLastTouch(): Attribution | null { return read(LAST_KEY); }
 /** Persist attribution to the signed-in member's profile: last-touch refreshes
  *  each time; first-touch is written only once (never overwrites the original);
  *  the GA client id + Meta fbp/fbc are kept current for server-side matching.
- *  Best-effort — tolerates the columns not existing yet, and respects opt-out. */
+ *  Best-effort, tolerates the columns not existing yet, and respects opt-out. */
 export async function syncAttributionToProfile(userId: string): Promise<void> {
   try {
     if (denyAnalytics()) return;

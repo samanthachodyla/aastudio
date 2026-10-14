@@ -23,7 +23,7 @@ export function LockedModule({ moduleName, description, eyebrow = "Studio Pro" }
         <p className="text-sm mb-2 inline-flex items-center gap-2 justify-center">
           <Sparkles className="h-4 w-4 text-primary" strokeWidth={1.5} />
           <span>
-            Available with <span className="font-medium">Studio Pro</span> — including access to a{" "}
+            Available with <span className="font-medium">Studio Pro</span>, including access to a{" "}
             <span className="font-medium">real arts administrator</span>.
           </span>
         </p>
@@ -31,7 +31,7 @@ export function LockedModule({ moduleName, description, eyebrow = "Studio Pro" }
           Monthly strategy calls, priority support, and guidance on grants, exhibitions, pricing, and collector relationships.
         </p>
         <Button asChild size="lg" className="rounded-sm">
-          <Link to="/pricing">Upgrade to Studio Pro — $55/month</Link>
+          <Link to="/pricing">Upgrade to Studio Pro, $55/month</Link>
         </Button>
       </div>
     </AppShell>

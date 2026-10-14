@@ -181,7 +181,7 @@ const Contacts = () => {
                     <div>
                       <div className="font-display text-lg leading-tight">{c.name}</div>
                       <div className="text-xs text-muted-foreground truncate">
-                        {c.email || c.location || "—"}
+                        {c.email || c.location || "-"}
                       </div>
                     </div>
                     <div><StatusPill status={c.type} /></div>
@@ -191,10 +191,10 @@ const Contacts = () => {
                         : <span className="italic">never</span>}
                     </div>
                     <div className={`text-xs ${overdue ? "text-destructive font-medium" : "text-muted-foreground"}`}>
-                      {c.followUpAt ? fmtDate(c.followUpAt) : <span className="italic">—</span>}
+                      {c.followUpAt ? fmtDate(c.followUpAt) : <span className="italic">-</span>}
                     </div>
                     <div className="text-right tabular-nums text-sm">
-                      {c.totalSpend > 0 ? fmtMoney(c.totalSpend) : <span className="text-muted-foreground">—</span>}
+                      {c.totalSpend > 0 ? fmtMoney(c.totalSpend) : <span className="text-muted-foreground">-</span>}
                     </div>
                   </li>
                 );
@@ -290,12 +290,12 @@ const Contacts = () => {
                         <div className="font-medium">{l.name}</div>
                         {l.contactInfo && <div className="text-xs text-muted-foreground">{l.contactInfo}</div>}
                       </td>
-                      <td className="px-4 py-4 text-muted-foreground">{l.interest || "—"}</td>
+                      <td className="px-4 py-4 text-muted-foreground">{l.interest || "-"}</td>
                       <td className="px-4 py-4 text-muted-foreground max-w-md">
-                        <p className="whitespace-pre-wrap leading-relaxed">{l.notes || "—"}</p>
+                        <p className="whitespace-pre-wrap leading-relaxed">{l.notes || "-"}</p>
                       </td>
                       <td className="px-4 py-4 text-xs text-muted-foreground whitespace-nowrap">
-                        {l.followUpAt ? fmtDate(l.followUpAt) : "—"}
+                        {l.followUpAt ? fmtDate(l.followUpAt) : "-"}
                       </td>
                       <td className="px-4 py-4">
                         <Select
@@ -495,7 +495,7 @@ function ContactDrawer({
         <TabsContent value="linked" className="space-y-5">
           <div>
             <div className="eyebrow mb-2">Total spend</div>
-            <div className="font-display text-3xl">{contact.totalSpend > 0 ? fmtMoney(contact.totalSpend) : "—"}</div>
+            <div className="font-display text-3xl">{contact.totalSpend > 0 ? fmtMoney(contact.totalSpend) : "-"}</div>
           </div>
 
           <div>
@@ -529,7 +529,7 @@ function ContactDrawer({
               <ul className="divide-y divide-border border border-border">
                 {relatedLeads.map(l => (
                   <li key={l.id} className="px-3 py-2 flex items-center justify-between text-sm">
-                    <span className="truncate">{l.interest || "—"}</span>
+                    <span className="truncate">{l.interest || "-"}</span>
                     <StatusPill status={l.status} />
                   </li>
                 ))}
@@ -561,7 +561,7 @@ function ContactDrawer({
           <Textarea
             value={contact.notes ?? ""}
             onChange={(e) => onUpdate({ notes: e.target.value })}
-            placeholder="Quiet observations about this person — preferences, history, context."
+            placeholder="Quiet observations about this person, preferences, history, context."
             className="min-h-[160px]"
           />
         </TabsContent>
@@ -821,7 +821,7 @@ function ImportContactsDialog({ onImport }: { onImport: (rows: Omit<Contact, "id
       <div className="grid gap-4 mt-2">
         <p className="text-sm text-muted-foreground">
           Upload a <span className="font-medium">.csv</span> file or paste rows below. Columns are matched by header
-          (<span className="font-mono text-xs">name, email, phone, location, type, notes</span>) — or, with no header,
+          (<span className="font-mono text-xs">name, email, phone, location, type, notes</span>), or, with no header,
           read in that order. Only <span className="font-medium">name</span> is required.
         </p>
 
@@ -849,7 +849,7 @@ function ImportContactsDialog({ onImport }: { onImport: (rows: Omit<Contact, "id
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">
             {raw.trim()
-              ? `${parsed.length} valid contact${parsed.length === 1 ? "" : "s"} detected${parsed.length === 0 ? " — check that each row has a name." : "."}`
+              ? `${parsed.length} valid contact${parsed.length === 1 ? "" : "s"} detected${parsed.length === 0 ? ", check that each row has a name." : "."}`
               : "Nothing to import yet."}
           </span>
           <Button disabled={parsed.length === 0} onClick={() => onImport(parsed)} className="gap-2">

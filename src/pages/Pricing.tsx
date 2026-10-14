@@ -27,7 +27,7 @@ const STARTER_FEATURES = [
   "Inventory Manager",
   "Sales & Finance",
   "Deadline & Opportunity Tracker",
-  "Contacts — light CRM",
+  "Contacts, light CRM",
   "Finance Dashboard",
   "Daily Check-In dashboard",
   "Cancel anytime",
@@ -80,7 +80,7 @@ const COMPARE_ROWS: CompareRow[] = [
   { label: "Sale flow with auto-split", starter: true, pro: true },
   { label: "Consignment Statements generator", starter: false, pro: true },
   { label: "Agreement Builder (PDF generator)", starter: false, pro: true,
-    tooltip: "Pro generates a complete consignment agreement PDF from a simple form — no templates to track down, no formatting headaches." },
+    tooltip: "Pro generates a complete consignment agreement PDF from a simple form, no templates to track down, no formatting headaches." },
 
   { label: "Communications Hub", starter: false, pro: true },
   { label: "Marketing Assistant", starter: false, pro: true },
@@ -100,7 +100,7 @@ const Pricing = () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("checkout") === "cancel") {
       window.history.replaceState({}, "", "/pricing");
-      toast.message("Checkout canceled — no charge was made.");
+      toast.message("Checkout canceled, no charge was made.");
     }
   }, []);
 
@@ -118,9 +118,9 @@ const Pricing = () => {
         body: JSON.stringify({ plan, cycle }),
       });
       const json = await res.json();
-      // Already subscribed — don't start a second checkout (avoids double charges).
+      // Already subscribed, don't start a second checkout (avoids double charges).
       if (json.alreadySubscribed) {
-        toast.success("You're already subscribed — taking you to your studio.");
+        toast.success("You're already subscribed, taking you to your studio.");
         window.location.href = "/dashboard";
         return;
       }
@@ -181,7 +181,7 @@ const Pricing = () => {
           </div>
           {cycle === "annual" && (
             <div className="text-xs text-muted-foreground mb-4 flex items-center gap-2">
-              <span>${ANNUAL.starter.total} billed annually —</span>
+              <span>${ANNUAL.starter.total} billed annually -</span>
               <Badge className="bg-accent text-accent-foreground rounded-sm text-[10px] tracking-wider">
                 save ${ANNUAL.starter.savings}
               </Badge>
@@ -226,7 +226,7 @@ const Pricing = () => {
           </div>
           {cycle === "annual" && (
             <div className="text-xs text-muted-foreground mb-4 flex items-center gap-2">
-              <span>${ANNUAL.pro.total} billed annually —</span>
+              <span>${ANNUAL.pro.total} billed annually -</span>
               <Badge className="bg-accent text-accent-foreground rounded-sm text-[10px] tracking-wider">
                 save ${ANNUAL.pro.savings}
               </Badge>
@@ -243,7 +243,7 @@ const Pricing = () => {
               <span className="text-sm font-medium">Built by a working arts administrator</span>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Allegory Studio was designed from the inside of the arts world — by someone who has
+              Allegory Studio was designed from the inside of the arts world, by someone who has
               worked with artists, galleries, and institutions for years. Pro subscribers get direct
               access to ask questions and get guidance when they need it.
             </p>
@@ -257,7 +257,7 @@ const Pricing = () => {
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Pricing guidance, tailored statements, opportunity discovery, and content
-              suggestions — tools that work quietly in the background so you can focus on the work.
+              suggestions, tools that work quietly in the background so you can focus on the work.
             </p>
           </div>
 

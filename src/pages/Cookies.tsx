@@ -28,7 +28,7 @@ export default function Cookies() {
   return (
     <div className="min-h-screen bg-[#f5f3ee] text-[#11281c]" style={{ fontFamily: "'Work Sans', system-ui, sans-serif" }}>
       <Seo
-        title="Cookie Policy — Allegory Studio"
+        title="Cookie Policy, Allegory Studio"
         description="The cookies and similar technologies Allegory Studio uses, why we use them, and how to control your preferences."
         canonicalPath="/cookies"
       />
@@ -45,13 +45,13 @@ export default function Cookies() {
         </p>
 
         <Section n="1." title="What Are Cookies?">
-          <p>Cookies are small text files stored on your device when you visit a website. Similar technologies — such as
-          local storage and pixels — work in comparable ways. They help sites function, remember your preferences, and
+          <p>Cookies are small text files stored on your device when you visit a website. Similar technologies, such as
+          local storage and pixels, work in comparable ways. They help sites function, remember your preferences, and
           understand how the site is used.</p>
         </Section>
 
         <Section n="2." title="Types of Cookies We Use">
-          <p><b>Essential.</b> Required for the site and app to work — for example, keeping you securely signed in and
+          <p><b>Essential.</b> Required for the site and app to work, for example, keeping you securely signed in and
           remembering your cookie choice. These cannot be switched off.</p>
           <p><b>Analytics.</b> Help us understand how visitors find and use the site so we can improve it (Google
           Analytics).</p>
@@ -97,8 +97,8 @@ export default function Cookies() {
         <Section n="5." title="Third-Party Providers">
           <p>Some cookies are set by third parties whose own policies govern their use:</p>
           <ul className="list-disc pl-5 space-y-2">
-            <li>Google — <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" className="text-[#2c533f] underline">Privacy Policy</a></li>
-            <li>Meta — <a href="https://www.facebook.com/policy.php" target="_blank" rel="noopener" className="text-[#2c533f] underline">Data Policy</a></li>
+            <li>Google, <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" className="text-[#2c533f] underline">Privacy Policy</a></li>
+            <li>Meta, <a href="https://www.facebook.com/policy.php" target="_blank" rel="noopener" className="text-[#2c533f] underline">Data Policy</a></li>
           </ul>
         </Section>
 

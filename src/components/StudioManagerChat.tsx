@@ -97,7 +97,7 @@ export function StudioManagerChat() {
           rows={4}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Give us as much context as you'd like — the more detail, the better we can help."
+          placeholder="Give us as much context as you'd like, the more detail, the better we can help."
           maxLength={4000}
           required
         />
@@ -109,7 +109,7 @@ export function StudioManagerChat() {
           <Input id="sm-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={100} required />
         </div>
         <div>
-          <Label htmlFor="sm-email">Your email — we'll reply here</Label>
+          <Label htmlFor="sm-email">Your email, we'll reply here</Label>
           <Input id="sm-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={255} required />
         </div>
       </div>

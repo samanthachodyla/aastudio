@@ -18,7 +18,7 @@ export function toLiveLanding(html: string): string {
     .join('Start your 7-day free trial');
 
   // Every "first access" call-to-action anchor now scrolls to the pricing plans,
-  // where choosing a plan opens Stripe Checkout. Payment comes first — no account
+  // where choosing a plan opens Stripe Checkout. Payment comes first, no account
   // is created until checkout is paid (see Welcome.tsx / finish-signup), so these
   // never deep-link to an account-first form.
   out = out.split('href="#signup"').join('href="#pricing"');
@@ -26,7 +26,7 @@ export function toLiveLanding(html: string): string {
 
   // Pricing section: retire the remaining pre-launch "reserve a spot" framing.
   out = out.split('Join the launch list and get first access.')
-    .join('Start with a 7-day free trial — no commitment, cancel anytime.');
+    .join('Start with a 7-day free trial, no commitment, cancel anytime.');
   out = out.split('>Reserve your spot</a>').join('>Get started</a>');
 
   // Hero eyebrow tag.
@@ -35,7 +35,7 @@ export function toLiveLanding(html: string): string {
 
   // Replace both waitlist signup forms with sign-up call-to-action buttons.
   // Both the hero and the final CTA sit on light (cream) backgrounds, so the
-  // secondary button is a ghost outline — btn-light would be cream-on-cream and
+  // secondary button is a ghost outline, btn-light would be cream-on-cream and
   // effectively invisible.
   // "Start your studio" (data-plan="pro") opens Stripe Checkout directly for
   // Studio Pro monthly via the same a[data-plan] handler the pricing buttons use
@@ -53,7 +53,7 @@ export function toLiveLanding(html: string): string {
   out = out.replace('<span class="eyebrow">Launching August 1, 2026</span>',
     '<span class="eyebrow">Allegory Art Studio</span>');
   out = out.replace('Get first access and be among the first artists in when we open on August 1.',
-    'Start managing your studio today — set up in minutes.');
+    'Start managing your studio today, set up in minutes.');
 
   // Footer micro line.
   out = out.split('<div class="micro">Launching August 1</div>')
@@ -63,7 +63,7 @@ export function toLiveLanding(html: string): string {
   out = out.replace(
     /<details open><summary>When does Allegory Art Studio launch\?[\s\S]*?<\/details>/,
     '<details open><summary>How do I get started? <span class="pl">+</span></summary>' +
-    '<div class="ans">Create your account, choose a plan, and you\'re in — most artists are set up in a few minutes. ' +
+    '<div class="ans">Create your account, choose a plan, and you\'re in, most artists are set up in a few minutes. ' +
     'Have a discount code? Add it at checkout.</div></details>'
   );
 
@@ -77,6 +77,6 @@ export function toLiveIndexHead(html: string): string {
     .replace('"name": "When does Allegory Art Studio launch?"', '"name": "How do I get started?"')
     .replace(
       '"text": "We launch publicly on August 1, 2026. Get first access now and we\'ll let you know the moment we go live."',
-      '"text": "Create your account, choose a plan, and you\'re in — most artists are set up in a few minutes. Have a discount code? Add it at checkout."'
+      '"text": "Create your account, choose a plan, and you\'re in, most artists are set up in a few minutes. Have a discount code? Add it at checkout."'
     );
 }

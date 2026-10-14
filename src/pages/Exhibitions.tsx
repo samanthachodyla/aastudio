@@ -24,7 +24,7 @@ const typeLabels: Record<string, string> = {
   prize: "Prize",
   commission: "Commission",
   delivery: "Delivery deadline",
-  // Legacy / Opportunity-Finder types — kept so existing opportunities still render.
+  // Legacy / Opportunity-Finder types, kept so existing opportunities still render.
   open_call: "Open call",
   show: "Show",
 };
@@ -37,7 +37,7 @@ const ADD_NEW_OPP_TYPE = "__add_new_opp_type__";
 // readable label. Known types use their curated label; anything else is
 // shown as-is (or de-underscored/capitalized if it looks slug-like).
 const labelForType = (t?: string): string => {
-  if (!t) return "—";
+  if (!t) return "-";
   if (typeLabels[t]) return typeLabels[t];
   if (/^[a-z0-9_]+$/.test(t)) {
     return t.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
@@ -74,7 +74,7 @@ type PendingAttachment = Omit<OppAttachment, "id" | "addedAt">;
 
 function readAttachment(file: File): Promise<PendingAttachment | null> {
   if (file.size > MAX_ATT_BYTES) {
-    toast.error(`"${file.name}" is over 5MB — please attach a smaller file.`);
+    toast.error(`"${file.name}" is over 5MB, please attach a smaller file.`);
     return Promise.resolve(null);
   }
   return new Promise((resolve) => {
@@ -141,7 +141,7 @@ function AttachmentRow({ att, onRemove }: { att: OppAttachment | PendingAttachme
 }
 
 // Text fields the opportunity search reads. Add a new field here (e.g. "location")
-// to include it in search — that's the only change required.
+// to include it in search, that's the only change required.
 const OPPORTUNITY_SEARCH_FIELDS: (keyof Opportunity)[] = [
   "title", "organization", "notes", "requirements", "award",
 ];
@@ -181,7 +181,7 @@ const Exhibitions = () => {
     <AppShell
       eyebrow="Deadlines & applications"
       title="Everything with a deadline."
-      description="Submissions, grants, commissions, deliverables. Sorted by what's next — one place for anything the calendar needs to know about."
+      description="Submissions, grants, commissions, deliverables. Sorted by what's next, one place for anything the calendar needs to know about."
     >
       <Tabs defaultValue="deadlines" className="w-full">
         <TabsList className="bg-transparent border-b border-border rounded-none w-full justify-start h-auto p-0 mb-8 overflow-x-auto">
@@ -355,7 +355,7 @@ const Exhibitions = () => {
                         {(() => {
                           const linked = o.vaultDocId ? vaultDocs.find(d => d.id === o.vaultDocId) : undefined;
                           if (o.vaultDocId && !linked) {
-                            return <p className="text-[11px] text-muted-foreground mt-1 italic">That Vault file was removed — pick another.</p>;
+                            return <p className="text-[11px] text-muted-foreground mt-1 italic">That Vault file was removed, pick another.</p>;
                           }
                           if (linked?.fileData) {
                             return (
@@ -365,9 +365,9 @@ const Exhibitions = () => {
                             );
                           }
                           if (linked) {
-                            return <p className="text-[11px] text-muted-foreground mt-1 italic">Linked — open it in Profile Vault to edit or tailor its text.</p>;
+                            return <p className="text-[11px] text-muted-foreground mt-1 italic">Linked, open it in Profile Vault to edit or tailor its text.</p>;
                           }
-                          return <p className="text-[11px] text-muted-foreground mt-1 italic">Pull a bio, statement, or CV from your Vault so it's one click away — then tailor it to this opportunity's notes.</p>;
+                          return <p className="text-[11px] text-muted-foreground mt-1 italic">Pull a bio, statement, or CV from your Vault so it's one click away, then tailor it to this opportunity's notes.</p>;
                         })()}
                       </div>
                     </div>
@@ -517,7 +517,7 @@ function OpportunityForm({ onSubmit }: { onSubmit: (d: any, files: PendingAttach
           </div>
           {pendingAttachments.length === 0 ? (
             <p className="text-xs text-muted-foreground italic">
-              Optional — attach a prospectus, application PDF, or reference image (PDF, Word, or images up to 5MB each).
+              Optional, attach a prospectus, application PDF, or reference image (PDF, Word, or images up to 5MB each).
             </p>
           ) : (
             <ul className="grid gap-2">
@@ -567,7 +567,7 @@ const asUrl = (v?: string): string | null => {
 
 // Always give a suggestion a clickable destination: its real URL when the AI
 // returns one, otherwise a web search for the name + organization so the user
-// can jump straight to finding it — never dead, un-clickable text.
+// can jump straight to finding it, never dead, un-clickable text.
 const suggestionUrl = (s: Suggestion): string => {
   const real = asUrl(s.where_to_find);
   if (real) return real;
@@ -608,7 +608,7 @@ function OpportunityFinder({ existingTitles, onAdd }: {
     onAdd({
       title: s.name,
       organization: s.organization ?? "",
-      deadline: (new Date(Date.now() + 60 * 86400000).toISOString()).slice(0, 10), // placeholder — refine in Deadlines
+      deadline: (new Date(Date.now() + 60 * 86400000).toISOString()).slice(0, 10), // placeholder, refine in Deadlines
       type: mapSuggestionType(s.type),
       status,
       notes: [

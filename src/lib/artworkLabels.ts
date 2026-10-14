@@ -1,4 +1,4 @@
-// Printable artwork labels — gallery/exhibition wall labels or inventory tags for
+// Printable artwork labels, gallery/exhibition wall labels or inventory tags for
 // selected works. Renders a self-contained, print-optimized HTML sheet into a new
 // window and triggers Save-as-PDF, exactly like the portfolio export. Images are
 // data URLs so everything embeds with no network round-trip.
@@ -48,7 +48,7 @@ export function buildLabelsHtml(opts: LabelOptions): string {
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>${esc(opts.artistName || "Allegory")} — Labels</title>
+<title>${esc(opts.artistName || "Allegory")}, Labels</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Work+Sans:wght@300;400;500&display=swap" rel="stylesheet" />

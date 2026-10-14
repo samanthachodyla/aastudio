@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Allegory Studio — Gallery White editorial design system */
+/* Allegory Studio - Gallery White editorial design system */
 @layer base {
   :root {
     --background: 42 24% 96%;          /* #f5f3ee */
@@ -17,7 +17,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 150 30% 10%;
 
-    /* Allegory forest green — matches the site's announcement bar / wordmark */
+    /* Allegory forest green - matches the site's announcement bar / wordmark */
     --primary: 150 45% 12%;            /* #11281c */
     --primary-foreground: 42 24% 96%;
     --primary-glow: 145 30% 24%;       /* lighter forest for accents */
