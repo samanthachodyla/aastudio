@@ -1,0 +1,112 @@
+/* Scoped styles for the public Resource Library (/resources). Everything lives
+   under .aas-res so it never touches the app's global styles, and list/heading
+   rules are explicit because the app's CSS reset strips them. Light-only to
+   match the marketing site. Background is a warm neutral (no pink). */
+.aas-res{
+  --bg:#f7f5ef; --surface:#ffffff; --ink:#032419; --ink-2:#3b4f44;
+  --muted:#6f7b73; --line:#e6e1d5;
+  --green:#032419; --peri:#7a98d3; --chart:#cfc581; --terra:#e27a55; --mari:#e2ad44; --peach:#efd2c4; --brown:#522513;
+  --shadow:0 18px 44px -30px rgba(3,36,25,.4);
+  --cat:#032419; --cat-ink:#f7f5ef;
+  --font-display:"Fraunces", Georgia, "Times New Roman", serif;
+  --font-body:"Work Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  min-height:100vh; background:var(--bg); color:var(--ink);
+  font-family:var(--font-body); font-weight:400; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+.aas-res *{box-sizing:border-box}
+.aas-res a{color:inherit; text-decoration:none}
+.aas-res .wrap{width:100%; max-width:1140px; margin-inline:auto; padding-inline:22px}
+.aas-res .read-wrap{width:100%; max-width:720px; margin-inline:auto; padding-inline:22px}
+
+/* Masthead */
+.aas-res .mast{position:sticky; top:0; z-index:20; background:color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter:blur(9px); border-bottom:1px solid var(--line);}
+.aas-res .mast .wrap{display:flex; align-items:center; gap:14px; min-height:64px; flex-wrap:wrap;}
+.aas-res .mast .brand{display:inline-flex; align-items:center; gap:12px;}
+.aas-res .mast .logo{height:30px; width:auto; display:block;}
+.aas-res .mast .tag{font-size:9.5px; font-weight:600; text-transform:uppercase; letter-spacing:.2em; color:#032419; background:var(--mari); padding:4px 9px; border-radius:2px;}
+.aas-res .mast .spacer{flex:1}
+.aas-res .mast .app{font-size:13px; font-weight:600; color:#f7f5ef; background:var(--green); padding:9px 17px; border-radius:2px; white-space:nowrap; transition:background .2s, transform .15s;}
+.aas-res .mast .app:hover{background:#0a3a28; transform:translateY(-1px)}
+
+/* Hero */
+.aas-res .hero{padding-block:62px 30px;}
+.aas-res .eyebrow{display:inline-block; font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:.24em; color:#032419; background:var(--chart); padding:5px 11px; border-radius:2px;}
+.aas-res .hero h1{font-family:var(--font-display); font-weight:500; font-size:clamp(40px,6.6vw,70px); line-height:1.02; letter-spacing:-.015em; text-wrap:balance; margin:20px 0 0;}
+.aas-res .hero h1 em{font-style:italic; color:var(--terra)}
+.aas-res .hero p.lead{max-width:58ch; font-size:17.5px; color:var(--ink-2); margin:22px 0 0;}
+.aas-res .swatches{display:flex; gap:6px; margin-top:30px; max-width:520px; flex-wrap:wrap;}
+.aas-res .swatches span{height:34px; flex:1 1 40px; border-radius:3px; min-width:34px;}
+
+/* Category nav */
+.aas-res .catnav{position:sticky; top:64px; z-index:15; background:color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter:blur(9px); border-top:1px solid var(--line); border-bottom:1px solid var(--line); margin-top:30px;}
+.aas-res .catnav .wrap{display:flex; gap:4px; overflow-x:auto; padding-block:9px; scrollbar-width:none;}
+.aas-res .catnav .wrap::-webkit-scrollbar{display:none}
+.aas-res .catnav a{display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:500; color:var(--muted); white-space:nowrap; padding:7px 13px; border-radius:999px; transition:background .2s, color .2s;}
+.aas-res .catnav a .dot{width:9px; height:9px; border-radius:50%; background:var(--cat); flex:none;}
+.aas-res .catnav a:hover{color:var(--ink); background:color-mix(in srgb, var(--cat) 16%, transparent)}
+
+/* Library sections */
+.aas-res section.block{padding-block:30px 52px; scroll-margin-top:124px;}
+.aas-res .sec-head{background:var(--cat); color:var(--cat-ink); border-radius:5px; padding:26px 28px; margin-bottom:22px; display:flex; align-items:baseline; gap:10px 20px; flex-wrap:wrap;}
+.aas-res .sec-head h2{font-family:var(--font-display); font-weight:500; font-size:clamp(26px,3.4vw,38px); letter-spacing:-.015em; margin:0;}
+.aas-res .sec-head p{font-size:14px; margin:0; max-width:46ch; opacity:.85;}
+.aas-res .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(262px,1fr)); gap:16px;}
+.aas-res a.card{position:relative; background:var(--surface); border:1px solid var(--line); border-top:4px solid var(--cat); border-radius:4px; padding:22px 20px 20px; display:flex; flex-direction:column; gap:11px; min-width:0; color:inherit; transition:transform .18s ease, box-shadow .2s ease, border-color .2s;}
+.aas-res a.card:hover{transform:translateY(-4px); box-shadow:var(--shadow); border-color:var(--cat);}
+.aas-res .kind{align-self:flex-start; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.14em; color:var(--ink); background:color-mix(in srgb, var(--cat) 26%, var(--surface)); padding:4px 9px; border-radius:2px;}
+.aas-res a.card h3{font-family:var(--font-display); font-weight:600; font-size:22px; line-height:1.16; margin:0; letter-spacing:-.01em;}
+.aas-res a.card p{font-size:13.5px; color:var(--ink-2); margin:0; line-height:1.55;}
+.aas-res .read{margin-top:auto; padding-top:4px; font-size:12px; font-weight:600; letter-spacing:.02em; color:var(--ink); display:inline-flex; align-items:center; gap:6px;}
+.aas-res .read svg{width:13px; height:13px; color:var(--cat)}
+
+/* CTA */
+.aas-res .cta{margin-block:56px; background:var(--green); color:#f4e7e0; border-radius:6px; padding:clamp(36px,5vw,58px); text-align:center; position:relative; overflow:hidden;}
+.aas-res .cta .bar{position:absolute; inset:0 0 auto 0; height:6px; display:flex}
+.aas-res .cta .bar i{flex:1}
+.aas-res .cta .eyebrow{color:#032419}
+.aas-res .cta h2{font-family:var(--font-display); font-weight:500; font-size:clamp(29px,4.2vw,44px); letter-spacing:-.015em; text-wrap:balance; margin:16px auto 0; max-width:20ch; color:#fdf6f1;}
+.aas-res .cta p{color:#d6e4db; max-width:52ch; margin:16px auto 0; font-size:15.5px;}
+.aas-res .cta a.btn{display:inline-block; margin-top:26px; background:var(--mari); color:#032419; font-weight:600; font-size:14.5px; padding:14px 30px; border-radius:3px; transition:transform .15s, background .2s;}
+.aas-res .cta a.btn:hover{transform:translateY(-2px); background:var(--terra)}
+.aas-res .cta .sub{margin-top:14px; font-size:12px; color:#9db7a6; letter-spacing:.02em}
+
+.aas-res footer{padding-block:28px 48px; color:var(--muted); font-size:12.5px; display:flex; gap:10px 20px; flex-wrap:wrap; align-items:center;}
+.aas-res footer a:hover{color:var(--terra)}
+.aas-res footer .spacer{flex:1}
+
+/* Reading view */
+.aas-res #guide{padding-block:28px 10px;}
+.aas-res .back{display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; letter-spacing:.02em; color:var(--ink); margin-bottom:24px;}
+.aas-res .back:hover{color:var(--terra)} .aas-res .back svg{width:14px; height:14px}
+.aas-res .g-eyebrow{display:inline-block; font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:.2em; color:var(--cat-ink); background:var(--cat); padding:5px 11px; border-radius:2px;}
+.aas-res .g-title{font-family:var(--font-display); font-weight:500; font-size:clamp(31px,5.2vw,48px); line-height:1.06; letter-spacing:-.015em; text-wrap:balance; margin:16px 0 0;}
+.aas-res .g-rule{height:3px; width:66px; background:var(--cat); border-radius:2px; margin:18px 0 0;}
+.aas-res .g-dek{font-size:17.5px; color:var(--ink-2); margin:16px 0 0; line-height:1.5;}
+.aas-res .g-meta{display:flex; gap:12px; align-items:center; margin:16px 0 0; padding-bottom:22px; border-bottom:1px solid var(--line); font-size:12px; color:var(--muted); letter-spacing:.02em;}
+.aas-res .g-body{margin-top:26px; font-size:16.5px; color:var(--ink); line-height:1.72;}
+.aas-res .g-body > :first-child{margin-top:0}
+.aas-res .g-body h3{font-family:var(--font-display); font-weight:600; font-size:26px; letter-spacing:-.01em; margin:36px 0 10px;}
+.aas-res .g-body p{margin:0 0 16px}
+.aas-res .g-body ul{list-style:disc; margin:0 0 16px; padding-left:24px}
+.aas-res .g-body ol{list-style:decimal; margin:0 0 16px; padding-left:24px}
+.aas-res .g-body li{margin:0 0 8px}
+.aas-res .g-body li::marker{color:var(--cat); font-weight:600}
+.aas-res .g-body strong{font-weight:600}
+.aas-res .g-body em{font-style:italic}
+.aas-res .g-body .keybox{background:color-mix(in srgb, var(--cat) 12%, var(--surface)); border:1px solid color-mix(in srgb, var(--cat) 34%, var(--line)); border-left:4px solid var(--cat); border-radius:4px; padding:18px 20px; margin:0 0 20px;}
+.aas-res .g-body .keybox h4{margin:0 0 9px; font-size:10.5px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--ink);}
+.aas-res .g-body .keybox ul{list-style:disc; margin:0; padding-left:22px} .aas-res .g-body .keybox li{margin:0 0 6px; font-size:15px}
+.aas-res .g-body .note{font-size:13.5px; color:var(--muted); font-style:italic; border-left:3px solid color-mix(in srgb, var(--cat) 50%, var(--line)); padding-left:14px; margin:0 0 18px;}
+.aas-res .g-table-wrap{overflow-x:auto; margin:0 0 18px; border:1px solid var(--line); border-radius:5px}
+.aas-res table.g-table{border-collapse:collapse; width:100%; font-size:13.5px; min-width:420px}
+.aas-res table.g-table th, .aas-res table.g-table td{text-align:left; padding:9px 13px; border-bottom:1px solid var(--line); white-space:nowrap}
+.aas-res table.g-table th{font-weight:600; background:color-mix(in srgb, var(--cat) 16%, var(--surface)); font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--ink)}
+.aas-res table.g-table tr:last-child td{border-bottom:none}
+.aas-res .g-foot{margin-top:40px; padding-top:26px; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:18px;}
+.aas-res .g-cta{background:color-mix(in srgb, var(--cat) 13%, var(--surface)); border:1px solid color-mix(in srgb, var(--cat) 30%, var(--line)); border-radius:6px; padding:22px;}
+.aas-res .g-cta p{margin:0; font-size:15px; color:var(--ink-2)}
+.aas-res .g-cta a{color:var(--ink); font-weight:600; text-decoration:underline; text-decoration-color:var(--cat); text-underline-offset:3px} .aas-res .g-cta a:hover{color:var(--terra)}
+
+.aas-res :focus-visible{outline:2px solid var(--terra); outline-offset:2px; border-radius:2px}
+@media (prefers-reduced-motion:reduce){ .aas-res *{transition:none!important; scroll-behavior:auto!important} }
+@media (max-width:560px){ .aas-res .hero{padding-block:42px 24px} .aas-res section.block{padding-block:24px 40px} .aas-res .sec-head{padding:20px 20px} }

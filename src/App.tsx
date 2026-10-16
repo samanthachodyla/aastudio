@@ -29,6 +29,8 @@ const Welcome = lazy(() => import("./pages/Welcome.tsx"));
 const SharedPortfolio = lazy(() => import("./pages/SharedPortfolio.tsx"));
 const Contact = lazy(() => import("./pages/Contact.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
+const Resources = lazy(() => import("./pages/Resources.tsx"));
+const ResourceGuide = lazy(() => import("./pages/ResourceGuide.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 import { TierGate } from "./components/TierGate";
 import { AuthProvider } from "./lib/auth";
@@ -70,6 +72,8 @@ const App = () => (
               <Route path="/p/:slug" element={<SharedPortfolio />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<About />} />
+              <Route path="/resources" element={<Resources />} />
+              <Route path="/resources/:slug" element={<ResourceGuide />} />
 
               {/* Authenticated app */}
               <Route path="/dashboard" element={<RequireAuth><Index /></RequireAuth>} />
