@@ -5,6 +5,7 @@ import fs from "node:fs";
 import { componentTagger } from "lovable-tagger";
 import { isLaunched, toLiveLanding, toLiveIndexHead } from "./src/lib/landingLive";
 import { resourceRoutes } from "./src/lib/resourcesPrerender";
+import { marketingRoutes } from "./src/lib/marketingContent";
 
 // Shared guard: strips the prerendered #prerender block before React boots on any
 // route it doesn't belong to, so no page flashes another route's content.
@@ -44,58 +45,93 @@ function prerenderLanding(): Plugin {
   };
 }
 
-// Build-time prerender for the Resource Library. Emits a static HTML file per
-// resources route (/resources and every guide) with the real content, a
-// route-specific title/description/canonical, and the resources CSS inlined, so
-// each guide is fully readable by crawlers and AI answer engines without JS.
-// React re-renders #root on boot, exactly like the landing page.
+// Shared build-time page prerenderer. Takes the built index.html as a base and,
+// for each route, emits a static HTML file with the route's real content in
+// #root, a route-specific title/description/canonical, and the given stylesheet
+// inlined, so each page is fully readable by crawlers and AI answer engines
+// without JavaScript. React re-renders #root on boot, exactly like the landing
+// page. Used for both the Resource Library and the standalone marketing pages.
+interface StaticPage { path: string; file: string; title: string; description: string; html: string }
+function emitStaticPages(
+  emit: (fileName: string, source: string) => void,
+  bundle: Record<string, { type: string; source?: string | Uint8Array }>,
+  routes: StaticPage[],
+  cssRelPath: string,
+): void {
+  const index = bundle["index.html"];
+  if (!index || index.type !== "asset") return;
+  const base = typeof index.source === "string" ? index.source : Buffer.from(index.source as Uint8Array).toString("utf8");
+
+  let css = "";
+  try {
+    css = fs.readFileSync(path.resolve(__dirname, cssRelPath), "utf8");
+  } catch { /* styling still comes from the bundled stylesheet */ }
+  const cssTag = css ? "<style>" + css + "</style>" : "";
+
+  const setMeta = (html: string, attr: string, value: string): string => {
+    const re = new RegExp(`(<meta ${attr} content=")[^"]*(")`);
+    return re.test(html) ? html.replace(re, `$1${value.replace(/"/g, "&quot;")}$2`) : html;
+  };
+
+  for (const r of routes) {
+    let html = base;
+    const canonical = "https://allegoryartstudio.com" + r.path;
+    html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${r.title}</title>`);
+    html = setMeta(html, 'name="description"', r.description);
+    html = setMeta(html, 'property="og:title"', r.title);
+    html = setMeta(html, 'property="og:description"', r.description);
+    html = setMeta(html, 'property="og:url"', canonical);
+    html = setMeta(html, 'name="twitter:title"', r.title);
+    html = setMeta(html, 'name="twitter:description"', r.description);
+    html = html.replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${canonical}" />`);
+    if (cssTag) html = html.replace("</head>", cssTag + "</head>");
+
+    // Swap the landing #root block for this route's prerendered content.
+    const startMarker = '<div id="root">';
+    const endMarker = PRERENDER_GUARD + "</div>";
+    const s = html.indexOf(startMarker);
+    const e = html.indexOf(endMarker);
+    if (s >= 0 && e > s) {
+      html = html.slice(0, s) + '<div id="root">' + r.html + "</div>" + html.slice(e + endMarker.length);
+    } else {
+      html = html.replace('<div id="root"></div>', '<div id="root">' + r.html + "</div>");
+    }
+
+    emit(r.file, html);
+  }
+}
+
+// Prerender the Resource Library (/resources and every guide).
 function prerenderResources(): Plugin {
   return {
     name: "prerender-resources",
     apply: "build",
     enforce: "post",
     generateBundle(_opts, bundle) {
-      const index = bundle["index.html"];
-      if (!index || index.type !== "asset") return;
-      const base = typeof index.source === "string" ? index.source : Buffer.from(index.source).toString("utf8");
+      emitStaticPages(
+        (fileName, source) => this.emitFile({ type: "asset", fileName, source }),
+        bundle as Record<string, { type: string; source?: string | Uint8Array }>,
+        resourceRoutes(),
+        "src/styles/resources.css",
+      );
+    },
+  };
+}
 
-      let css = "";
-      try {
-        css = fs.readFileSync(path.resolve(__dirname, "src/styles/resources.css"), "utf8");
-      } catch { /* styling still comes from the bundled stylesheet */ }
-      const cssTag = css ? "<style>" + css + "</style>" : "";
-
-      const setMeta = (html: string, attr: string, value: string): string => {
-        const re = new RegExp(`(<meta ${attr} content=")[^"]*(")`);
-        return re.test(html) ? html.replace(re, `$1${value.replace(/"/g, "&quot;")}$2`) : html;
-      };
-
-      for (const r of resourceRoutes()) {
-        let html = base;
-        const canonical = "https://allegoryartstudio.com" + r.path;
-        html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${r.title}</title>`);
-        html = setMeta(html, 'name="description"', r.description);
-        html = setMeta(html, 'property="og:title"', r.title);
-        html = setMeta(html, 'property="og:description"', r.description);
-        html = setMeta(html, 'property="og:url"', canonical);
-        html = setMeta(html, 'name="twitter:title"', r.title);
-        html = setMeta(html, 'name="twitter:description"', r.description);
-        html = html.replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${canonical}" />`);
-        if (cssTag) html = html.replace("</head>", cssTag + "</head>");
-
-        // Swap the landing #root block for this route's prerendered content.
-        const startMarker = '<div id="root">';
-        const endMarker = PRERENDER_GUARD + "</div>";
-        const s = html.indexOf(startMarker);
-        const e = html.indexOf(endMarker);
-        if (s >= 0 && e > s) {
-          html = html.slice(0, s) + '<div id="root">' + r.html + "</div>" + html.slice(e + endMarker.length);
-        } else {
-          html = html.replace('<div id="root"></div>', '<div id="root">' + r.html + "</div>");
-        }
-
-        this.emitFile({ type: "asset", fileName: r.file, source: html });
-      }
+// Prerender the standalone marketing pages (/features, /plans, /faq) so each is
+// its own indexable, analytics-trackable URL. The homepage keeps its sections.
+function prerenderMarketing(): Plugin {
+  return {
+    name: "prerender-marketing",
+    apply: "build",
+    enforce: "post",
+    generateBundle(_opts, bundle) {
+      emitStaticPages(
+        (fileName, source) => this.emitFile({ type: "asset", fileName, source }),
+        bundle as Record<string, { type: string; source?: string | Uint8Array }>,
+        marketingRoutes(),
+        "src/styles/marketing.css",
+      );
     },
   };
 }
@@ -142,6 +178,7 @@ export default defineConfig(({ mode }) => {
       mode === "development" && componentTagger(),
       prerenderLanding(),
       prerenderResources(),
+      prerenderMarketing(),
       emitVersion(buildId),
     ].filter(Boolean),
     resolve: {

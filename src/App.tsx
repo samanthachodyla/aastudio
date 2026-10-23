@@ -30,6 +30,7 @@ const SharedPortfolio = lazy(() => import("./pages/SharedPortfolio.tsx"));
 const Contact = lazy(() => import("./pages/Contact.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
 const Resources = lazy(() => import("./pages/Resources.tsx"));
+const MarketingPage = lazy(() => import("./pages/MarketingPage.tsx"));
 const ResourceGuide = lazy(() => import("./pages/ResourceGuide.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 import { TierGate } from "./components/TierGate";
@@ -72,6 +73,10 @@ const App = () => (
               <Route path="/p/:slug" element={<SharedPortfolio />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<About />} />
+              {/* Standalone, indexable marketing pages (homepage sections also live on /) */}
+              <Route path="/features" element={<MarketingPage slug="features" />} />
+              <Route path="/plans" element={<MarketingPage slug="plans" />} />
+              <Route path="/faq" element={<MarketingPage slug="faq" />} />
               <Route path="/resources" element={<Resources />} />
               <Route path="/resources/:slug" element={<ResourceGuide />} />
 
