@@ -27,6 +27,9 @@
 .aas-res .mast .spacer{flex:1}
 .aas-res .mast .app{font-size:13px; font-weight:600; color:#f7f5ef; background:var(--green); padding:9px 17px; border-radius:2px; white-space:nowrap; transition:background .2s, transform .15s;}
 .aas-res .mast .app:hover{background:#0a3a28; transform:translateY(-1px)}
+.aas-res .mast-nav{display:flex; gap:2px; flex-wrap:wrap;}
+.aas-res .mast-nav a{font-size:12.5px; font-weight:500; color:var(--ink-2); padding:7px 11px; border-radius:999px; transition:background .2s, color .2s;}
+.aas-res .mast-nav a:hover{color:var(--ink); background:color-mix(in srgb, var(--green) 12%, transparent);}
 
 /* Hero */
 .aas-res .hero{padding-block:62px 30px;}
@@ -109,4 +112,4 @@
 
 .aas-res :focus-visible{outline:2px solid var(--terra); outline-offset:2px; border-radius:2px}
 @media (prefers-reduced-motion:reduce){ .aas-res *{transition:none!important; scroll-behavior:auto!important} }
-@media (max-width:560px){ .aas-res .hero{padding-block:42px 24px} .aas-res section.block{padding-block:24px 40px} .aas-res .sec-head{padding:20px 20px} }
+@media (max-width:560px){ .aas-res .hero{padding-block:42px 24px} .aas-res section.block{padding-block:24px 40px} .aas-res .sec-head{padding:20px 20px} .aas-res .mast-nav a:not([href="/"]){display:none} }

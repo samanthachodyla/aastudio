@@ -35,6 +35,12 @@ const ResourceGuide = () => {
             <img className="logo" src="/Allegory_Studio_Logo.png" alt="Allegory Art Studio" />
             <span className="tag">Resource Library</span>
           </Link>
+          <nav className="mast-nav" aria-label="Primary">
+            <Link to="/">Home</Link>
+            <Link to="/features">Features</Link>
+            <Link to="/plans">Plans</Link>
+            <Link to="/faq">FAQ</Link>
+          </nav>
           <span className="spacer" />
           <Link to="/#pricing" className="app">Start free trial →</Link>
         </div>

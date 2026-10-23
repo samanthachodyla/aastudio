@@ -20,6 +20,7 @@ const MAST =
   '<a class="brand" href="/" aria-label="Allegory Art Studio home">' +
   '<img class="logo" src="/Allegory_Studio_Logo.png" alt="Allegory Art Studio"/>' +
   '<span class="tag">Resource Library</span></a>' +
+  '<nav class="mast-nav" aria-label="Primary"><a href="/">Home</a><a href="/features">Features</a><a href="/plans">Plans</a><a href="/faq">FAQ</a></nav>' +
   '<span class="spacer"></span>' +
   '<a class="app" href="/#pricing">Start free trial →</a></div></header>';
 

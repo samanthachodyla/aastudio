@@ -20,7 +20,7 @@ const MAST =
   '<header class="mast"><div class="wrap">' +
   '<a class="brand" href="/" aria-label="Allegory Art Studio home">' +
   '<img class="logo" src="/Allegory_Studio_Logo.png" alt="Allegory Art Studio"/></a>' +
-  '<nav aria-label="Primary"><a href="/features">Features</a><a href="/plans">Plans</a><a href="/faq">FAQ</a><a href="/resources">Resources</a></nav>' +
+  '<nav aria-label="Primary"><a href="/">Home</a><a href="/features">Features</a><a href="/plans">Plans</a><a href="/faq">FAQ</a><a href="/resources">Resources</a></nav>' +
   '<span class="spacer"></span>' +
   '<a class="app" href="/#pricing">Start free trial →</a></div></header>';
 

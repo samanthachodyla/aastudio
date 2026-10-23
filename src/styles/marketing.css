@@ -105,4 +105,4 @@
 
 .aas-mkt :focus-visible{outline:2px solid var(--terra); outline-offset:2px; border-radius:2px;}
 @media (prefers-reduced-motion:reduce){ .aas-mkt *{transition:none!important} }
-@media (max-width:560px){ .aas-mkt .hero{padding-block:40px 20px} .aas-mkt .mast nav{display:none} }
+@media (max-width:560px){ .aas-mkt .hero{padding-block:40px 20px} .aas-mkt .mast nav a:not([href="/"]){display:none} }
