@@ -131,12 +131,10 @@
 .allegory-lp .opening .proof{flex:none}
 .allegory-lp .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
 .allegory-lp .hero h1{font-size:clamp(38px,4.7vw,60px);letter-spacing:-.02em}
-.allegory-lp .hero h1 em{font-style:italic;color:var(--terra)}
+.allegory-lp .hero h1 em{font-style:italic;color:var(--peri);white-space:nowrap}
 .allegory-lp .hero .lead{font-size:18px;color:var(--ink-2);margin:18px 0 26px;max-width:520px}
 .allegory-lp .hero .cta-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
 .allegory-lp .hero .trust{margin-top:6px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:10px}
-.allegory-lp .hero-swatches{display:flex;gap:6px;margin-top:22px;max-width:380px}
-.allegory-lp .hero-swatches span{height:28px;flex:1;border-radius:3px}
 .allegory-lp .hero .trust .star{color:var(--gold);letter-spacing:2px}
 .allegory-lp .hero-tag{display:inline-block;font-family:var(--font-b);font-size:14px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--sage)}
 /* hero device mock */
@@ -173,8 +171,19 @@
 .allegory-lp .proof .item .l{font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.72;margin-top:8px}
 /* ----------  Features grid  ---------- */
 .allegory-lp .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
-.allegory-lp .feat{background:var(--bg);padding:24px 24px;transition:background .25s}
-.allegory-lp .feat:hover{background:var(--card)}
+.allegory-lp .feat{background:var(--bg);padding:24px 24px;transition:background .25s,box-shadow .25s,transform .25s;position:relative;overflow:hidden;isolation:isolate}
+.allegory-lp .feat:hover{background:var(--card);transform:translateY(-3px);box-shadow:0 18px 40px -30px rgba(3,36,25,.5)}
+.allegory-lp .feat>*{position:relative;z-index:1}
+/* A brand-colored paint splatter fades in on hover (different color per card),
+   masked from an inline SVG so it stays crisp and tintable. */
+.allegory-lp .feat::after{content:"";position:absolute;top:-14px;right:-14px;width:132px;height:132px;z-index:0;pointer-events:none;background-color:var(--splat,var(--terra));-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20120%20120'%3E%3Cpath%20d='M58%2020c14-4%2030%206%2031%2020%201%2010-6%2016-2%2026%203%208%2012%2013%209%2023-3%2011-18%2014-29%2011-9-2-14-10-24-11-11-1-22-7-21-19%201-10%2012-13%2017-22%205-9%204-24%2019-28z'/%3E%3Ccircle%20cx='96'%20cy='30'%20r='6'/%3E%3Ccircle%20cx='104'%20cy='48'%20r='3.5'/%3E%3Ccircle%20cx='22'%20cy='40'%20r='4.5'/%3E%3Ccircle%20cx='30'%20cy='96'%20r='5'/%3E%3Ccircle%20cx='92'%20cy='96'%20r='4'/%3E%3Ccircle%20cx='14'%20cy='70'%20r='3'/%3E%3Cellipse%20cx='100'%20cy='70'%20rx='3'%20ry='6'/%3E%3C/svg%3E")no-repeat center/contain;mask:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20120%20120'%3E%3Cpath%20d='M58%2020c14-4%2030%206%2031%2020%201%2010-6%2016-2%2026%203%208%2012%2013%209%2023-3%2011-18%2014-29%2011-9-2-14-10-24-11-11-1-22-7-21-19%201-10%2012-13%2017-22%205-9%204-24%2019-28z'/%3E%3Ccircle%20cx='96'%20cy='30'%20r='6'/%3E%3Ccircle%20cx='104'%20cy='48'%20r='3.5'/%3E%3Ccircle%20cx='22'%20cy='40'%20r='4.5'/%3E%3Ccircle%20cx='30'%20cy='96'%20r='5'/%3E%3Ccircle%20cx='92'%20cy='96'%20r='4'/%3E%3Ccircle%20cx='14'%20cy='70'%20r='3'/%3E%3Cellipse%20cx='100'%20cy='70'%20rx='3'%20ry='6'/%3E%3C/svg%3E")no-repeat center/contain;opacity:0;transform:scale(.55) rotate(-10deg);transform-origin:top right;transition:opacity .3s ease,transform .45s cubic-bezier(.2,.8,.3,1)}
+.allegory-lp .feat:hover::after{opacity:.4;transform:scale(1) rotate(0)}
+.allegory-lp .feat-grid .feat:nth-child(1){--splat:var(--peri)}
+.allegory-lp .feat-grid .feat:nth-child(2){--splat:var(--terra)}
+.allegory-lp .feat-grid .feat:nth-child(3){--splat:var(--gold)}
+.allegory-lp .feat-grid .feat:nth-child(4){--splat:var(--chart)}
+.allegory-lp .feat-grid .feat:nth-child(5){--splat:var(--brown)}
+.allegory-lp .feat-grid .feat:nth-child(6){--splat:var(--sage)}
 .allegory-lp .feat .ic{width:26px;height:26px;color:var(--sage);margin-bottom:12px}
 .allegory-lp .feat .ic svg{width:100%;height:100%;stroke-width:1.4}
 .allegory-lp .feat h3{font-size:18px;margin-bottom:5px}
@@ -468,9 +477,6 @@
         <p class="signup-msg" role="status" aria-live="polite"></p>
       </form>
       <div class="trust">Developed by an arts admin, for artists.</div>
-      <div class="hero-swatches" aria-hidden="true">
-        <span style="background:#032419"></span><span style="background:#7a98d3"></span><span style="background:#e27a55"></span><span style="background:#cfc581"></span><span style="background:#e2ad44"></span><span style="background:#efd2c4"></span><span style="background:#522513"></span>
-      </div>
     </div>
     <div class="reveal">
       <div class="device">
