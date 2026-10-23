@@ -70,7 +70,11 @@ function emitStaticPages(
 
   const setMeta = (html: string, attr: string, value: string): string => {
     const re = new RegExp(`(<meta ${attr} content=")[^"]*(")`);
-    return re.test(html) ? html.replace(re, `$1${value.replace(/"/g, "&quot;")}$2`) : html;
+    if (!re.test(html)) return html;
+    const safe = value.replace(/"/g, "&quot;");
+    // Function replacer so "$" sequences in the value (e.g. "$25") are inserted
+    // literally and never treated as capture-group references.
+    return html.replace(re, (_m, p1: string, p2: string) => p1 + safe + p2);
   };
 
   for (const r of routes) {
