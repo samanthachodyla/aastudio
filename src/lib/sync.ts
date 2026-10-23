@@ -130,6 +130,11 @@ export async function pushDelete(table: string, id: string) {
 export function overlayOutbox(userId: string, collections: Record<string, any[]>) {
   dropPendingDeletes(userId);
   for (const op of readOutbox(userId)) {
+    // If this table didn't load this cycle (left out because its fetch failed),
+    // don't recreate it here from outbox rows alone, that would replace the
+    // member's real, already-loaded data with just the unsynced few. Leave it
+    // absent so hydrate preserves what's already on screen.
+    if (!(op.storeKey in collections)) continue;
     const list = (collections[op.storeKey] ||= []);
     const idx = list.findIndex((r) => r.id === op.rowId);
     if (op.kind === "insert") {
@@ -191,27 +196,72 @@ export interface HydratedData {
 export async function loadAllForUser(userId: string): Promise<HydratedData> {
   const collections: Record<string, any[]> = {};
   const entries = Object.entries(ENTITY_TABLES);
-  const failures: { table: string; error: any }[] = [];
+  const failed = new Map<string, string>(); // storeKey -> table, still failing
+  let lastError: any = null;
+
+  const loadTable = async (storeKey: string, table: string) => {
+    // Artworks can carry large embedded image data, so a whole-table fetch can be
+    // a very big response that times out on big studios. Page it so each request
+    // is bounded and far more likely to succeed (ordered by id for stable paging).
+    if (table === "artworks") {
+      const PAGE = 100;
+      const all: any[] = [];
+      for (let from = 0; ; from += PAGE) {
+        const { data, error } = await db
+          .from(table)
+          .select("*")
+          .eq("user_id", userId)
+          .order("id", { ascending: true })
+          .range(from, from + PAGE - 1);
+        if (error) throw error;
+        const batch = data ?? [];
+        all.push(...batch);
+        if (batch.length < PAGE) break;
+      }
+      collections[storeKey] = all.map(rowFromDb);
+      return;
+    }
+    const { data, error } = await db.from(table).select("*").eq("user_id", userId);
+    if (error) throw error;
+    collections[storeKey] = (data ?? []).map(rowFromDb);
+  };
 
   await Promise.all(
     entries.map(async ([storeKey, table]) => {
       try {
-        const { data, error } = await db.from(table).select("*").eq("user_id", userId);
-        if (error) throw error;
-        collections[storeKey] = (data ?? []).map(rowFromDb);
+        await loadTable(storeKey, table);
       } catch (e) {
-        // One failing table shouldn't blank the whole studio, load what we can.
+        lastError = e;
+        failed.set(storeKey, table);
         console.error(`[sync] failed to load ${table}`, e);
-        collections[storeKey] = [];
-        failures.push({ table, error: e });
       }
     })
   );
 
-  // If EVERY table failed, this is systemic (auth/network/RLS), surface it so
-  // the user sees a real error instead of a silently empty studio.
-  if (failures.length === entries.length) {
-    throw failures[0].error;
+  // Retry whatever failed once. A transient timeout (common on large, image-heavy
+  // studios where the row payload is big) shouldn't drop a table's data.
+  if (failed.size) {
+    await Promise.all(
+      [...failed].map(async ([storeKey, table]) => {
+        try {
+          await loadTable(storeKey, table);
+          failed.delete(storeKey);
+        } catch (e) {
+          lastError = e;
+          console.error(`[sync] retry failed to load ${table}`, e);
+        }
+      })
+    );
+  }
+
+  // A table that STILL failed is deliberately left OUT of `collections` (never set
+  // to []). hydrateAll merges collections into state, so an omitted table keeps the
+  // member's current rows instead of blanking them, this is what stops inventory
+  // from "disappearing" on a transient fetch error. Unsynced writes stay safe in
+  // the outbox, and the next focus/refresh reloads the table.
+  if (failed.size === entries.length) {
+    // Every table failed: systemic (auth/network/RLS). Surface a real error.
+    throw lastError ?? new Error("Failed to load your studio");
   }
 
   // Coerce legacy single-axis artworks into the two-axis (status/location) shape
