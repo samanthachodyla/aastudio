@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Trash2, Sparkles, Loader2, ChevronDown, CalendarClock, Search, ExternalLink, Check, Paperclip, Download, X } from "lucide-react";
+import { Plus, Trash2, Sparkles, Loader2, ChevronDown, CalendarClock, Search, ExternalLink, Check, Paperclip, Download, X, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { useStore, fmtDate, daysUntil } from "@/lib/store";
@@ -30,8 +30,17 @@ const typeLabels: Record<string, string> = {
 };
 
 // Built-in types the "New opportunity" form offers, in this order.
-const BUILT_IN_OPP_TYPES = ["exhibition", "residency", "grant", "prize", "commission", "delivery"];
+const BUILT_IN_OPP_TYPES = ["exhibition", "open_call", "residency", "grant", "prize", "commission", "delivery"];
 const ADD_NEW_OPP_TYPE = "__add_new_opp_type__";
+
+// Map a type returned by the screenshot scanner onto a type the form's picker
+// can display (the scanner may return "show" or "other", which aren't built-ins).
+const mapScanType = (t?: string): OpportunityType => {
+  const v = (t ?? "").trim().toLowerCase();
+  if (v === "show") return "exhibition";
+  if (BUILT_IN_OPP_TYPES.includes(v)) return v;
+  return "exhibition";
+};
 
 // Turn a custom type value (e.g. "artist_talk" or "Pop-up market") into a
 // readable label. Known types use their curated label; anything else is
@@ -155,6 +164,74 @@ const Exhibitions = () => {
   const [query, setQuery] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // Screenshot → AI: read an uploaded image, extract opportunity fields, and open
+  // the form prefilled so the artist can confirm before saving. ("Found something
+  // on Instagram? Upload a screenshot.")
+  const [scanning, setScanning] = useState(false);
+  const [scanPrefill, setScanPrefill] = useState<OppFormInitial | null>(null);
+  const [scanAttachment, setScanAttachment] = useState<PendingAttachment[]>([]);
+  const [scanOpen, setScanOpen] = useState(false);
+  const screenshotInputRef = useRef<HTMLInputElement>(null);
+
+  const handleScreenshot = async (file: File) => {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("That image is over 10MB, try a smaller screenshot.");
+      return;
+    }
+    setScanning(true);
+    try {
+      const dataUrl: string = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result ?? ""));
+        reader.onerror = () => reject(new Error("Couldn't read that image."));
+        reader.readAsDataURL(file);
+      });
+      const base64 = dataUrl.split(",")[1] ?? "";
+      const { data, error } = await supabase.functions.invoke("opportunity-scan", {
+        body: { imageBase64: base64, mediaType: file.type },
+      });
+      if (error) {
+        let msg = error.message || "Couldn't read that screenshot.";
+        try {
+          const body = await (error as { context?: Response }).context?.json?.();
+          if (body?.error) msg = body.error;
+        } catch { /* keep default */ }
+        throw new Error(msg);
+      }
+      if (data?.error) throw new Error(data.error);
+
+      const prefill: OppFormInitial = {
+        title: data.title ?? "",
+        organization: data.organization ?? "",
+        type: mapScanType(data.type),
+        link: data.link ?? "",
+        fee: data.fee != null ? String(data.fee) : "",
+        award: data.award ?? "",
+        requirements: data.requirements ?? "",
+        notes: data.notes ?? "",
+      };
+      if (data.deadline) prefill.deadline = data.deadline;
+
+      // Keep the screenshot itself as an attachment (reusing the data URL we
+      // already read), silently skipping if it's over the 5MB attachment cap.
+      const att: PendingAttachment | null = file.size <= MAX_ATT_BYTES
+        ? { name: file.name || "screenshot.png", mime: file.type || "image/png", size: file.size, dataUrl }
+        : null;
+      setScanAttachment(att ? [att] : []);
+      setScanPrefill(prefill);
+      setScanOpen(true);
+      if (!data.title && !data.deadline) {
+        toast("Couldn't read much from that image", { description: "Fill in what's missing, then save." });
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't read that screenshot.");
+    } finally {
+      setScanning(false);
+      if (screenshotInputRef.current) screenshotInputRef.current.value = "";
+    }
+  };
+
   // Deep-link from the dashboard "On the horizon" list: /exhibitions?open=<id>
   // expands that opportunity and scrolls it into view.
   useEffect(() => {
@@ -204,6 +281,25 @@ const Exhibitions = () => {
                 className="pl-9"
               />
             </div>
+            <input
+              ref={screenshotInputRef}
+              type="file"
+              accept="image/*,application/pdf"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleScreenshot(f); }}
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="gap-2 shrink-0"
+              disabled={scanning}
+              onClick={() => screenshotInputRef.current?.click()}
+              title="Found something on Instagram? Upload a screenshot and we'll read the details."
+            >
+              {scanning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
+              {scanning ? "Reading…" : "Scan a screenshot"}
+            </Button>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild><Button size="sm" className="gap-2 shrink-0"><Plus className="h-3.5 w-3.5" /> New opportunity</Button></DialogTrigger>
               <OpportunityForm onSubmit={(d, files) => {
@@ -212,7 +308,29 @@ const Exhibitions = () => {
                 setOpen(false);
               }} />
             </Dialog>
+            <Dialog open={scanOpen} onOpenChange={(v) => { setScanOpen(v); if (!v) { setScanPrefill(null); setScanAttachment([]); } }}>
+              {scanPrefill && (
+                <OpportunityForm
+                  key={JSON.stringify(scanPrefill)}
+                  initial={scanPrefill}
+                  initialAttachments={scanAttachment}
+                  heading="Review and save"
+                  intro="Read from your screenshot. Check the details, fix anything that's off, then save."
+                  onSubmit={(d, files) => {
+                    const created = addOpportunity(d);
+                    files.forEach(f => addOppAttachment(created.id, f));
+                    setScanOpen(false);
+                    setScanPrefill(null);
+                    setScanAttachment([]);
+                    toast.success("Opportunity saved to your deadlines");
+                  }}
+                />
+              )}
+            </Dialog>
           </div>
+          <p className="text-xs text-muted-foreground italic mb-4 -mt-1">
+            Found an open call on Instagram or in an email? Tap <span className="not-italic font-medium">Scan a screenshot</span> and we'll read the title, deadline, and link for you.
+          </p>
           <ul className="divide-y divide-border border-b border-border">
             {filtered.map(o => {
               const d = daysUntil(o.deadline);
@@ -393,13 +511,25 @@ const Exhibitions = () => {
   );
 };
 
-function OpportunityForm({ onSubmit }: { onSubmit: (d: any, files: PendingAttachment[]) => void }) {
+type OppFormInitial = Partial<{
+  title: string; organization: string; deadline: string; type: OpportunityType;
+  status: OpportunityStatus; notes: string; link: string; fee: string;
+  requirements: string; award: string; vaultDocId: string;
+}>;
+
+function OpportunityForm({ onSubmit, initial, initialAttachments, heading = "New opportunity", intro }: {
+  onSubmit: (d: any, files: PendingAttachment[]) => void;
+  initial?: OppFormInitial;
+  initialAttachments?: PendingAttachment[];
+  heading?: string;
+  intro?: string;
+}) {
   const customOpportunityTypes = useStore(s => s.customOpportunityTypes);
   const addCustomOpportunityType = useStore(s => s.addCustomOpportunityType);
   const linkableVaultDocs = useStore(s => s.vaultDocs).filter(d => LINKABLE_VAULT_KINDS.includes(d.kind));
   const [addingType, setAddingType] = useState(false);
   const [newType, setNewType] = useState("");
-  const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
+  const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>(initialAttachments ?? []);
   const [form, setForm] = useState({
     title: "", organization: "",
     deadline: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
@@ -411,6 +541,7 @@ function OpportunityForm({ onSubmit }: { onSubmit: (d: any, files: PendingAttach
     requirements: "",
     award: "",
     vaultDocId: "",
+    ...initial,
   });
 
   const confirmNewType = () => {
@@ -423,7 +554,8 @@ function OpportunityForm({ onSubmit }: { onSubmit: (d: any, files: PendingAttach
   };
   return (
     <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
-      <DialogHeader><DialogTitle className="font-display text-2xl font-normal">New opportunity</DialogTitle></DialogHeader>
+      <DialogHeader><DialogTitle className="font-display text-2xl font-normal">{heading}</DialogTitle></DialogHeader>
+      {intro && <p className="text-sm text-muted-foreground -mt-1">{intro}</p>}
       <form className="grid gap-4 mt-2" onSubmit={(e) => {
         e.preventDefault();
         onSubmit({
