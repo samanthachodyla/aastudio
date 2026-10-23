@@ -16,8 +16,12 @@
   --sage:#2c533f;        /* sage-forest accent */
   --sage-2:#3d6b52;
   --line:#e6e1d5;
-  --gold:#e2ad44;        /* marigold accent, from the brand palette */
-  --terra:#e27a55;       /* terracotta accent, from the brand palette */
+  --gold:#e2ad44;        /* marigold */
+  --terra:#e27a55;       /* terracotta */
+  --peri:#7a98d3;        /* periwinkle */
+  --chart:#cfc581;       /* chartreuse */
+  --peach:#efd2c4;       /* peach */
+  --brown:#522513;       /* brown, from the brand palette */
   --radius:2px;
   --maxw:1140px;
   --font-d:'Cormorant Garamond','Times New Roman',serif;
@@ -38,9 +42,19 @@
 }
 .allegory-lp .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
 .allegory-lp .eyebrow{
-  font-size:11px;text-transform:uppercase;letter-spacing:.3em;font-weight:600;
-  color:var(--terra);font-family:var(--font-b);
+  display:inline-block;font-size:10.5px;text-transform:uppercase;letter-spacing:.24em;font-weight:600;
+  color:#032419;background:var(--gold);font-family:var(--font-b);padding:5px 11px;border-radius:2px;
 }
+/* Color-code each section's label with a different brand color, the way the
+   resource library color-codes its categories. */
+.allegory-lp #pricing .eyebrow{background:var(--gold);color:#032419}
+.allegory-lp #features .eyebrow{background:var(--peri);color:#032419}
+.allegory-lp .vs .eyebrow{background:var(--terra);color:#2a0f04}
+.allegory-lp #showcase .eyebrow{background:var(--chart);color:#032419}
+.allegory-lp #faq .eyebrow{background:var(--peri);color:#032419}
+.allegory-lp #newsletter .eyebrow{background:var(--gold);color:#032419}
+.allegory-lp .final .eyebrow{background:var(--terra);color:#2a0f04}
+.allegory-lp #founder .eyebrow{background:var(--brown);color:#f4e3d6}
 .allegory-lp .serif-i{font-family:var(--font-d);font-style:italic;font-weight:400}
 .allegory-lp .rule{height:1px;width:100%;background:var(--line)}
 /* ----------  Buttons  ---------- */
@@ -105,7 +119,7 @@
 /* ----------  Section scaffolding  ---------- */
 .allegory-lp section{padding:96px 0}
 .allegory-lp .sec-head{max-width:680px;margin:0 auto 56px;text-align:center}
-.allegory-lp .sec-head .eyebrow{display:block;margin-bottom:18px}
+.allegory-lp .sec-head .eyebrow{display:inline-block;margin-bottom:18px}
 .allegory-lp .sec-head h2{font-size:clamp(34px,5vw,52px)}
 .allegory-lp #features .sec-head h2{font-size:clamp(26px,3.4vw,38px);line-height:1.16}
 .allegory-lp .sec-head p{color:var(--muted);margin-top:18px;font-size:18px}
@@ -121,6 +135,8 @@
 .allegory-lp .hero .lead{font-size:18px;color:var(--ink-2);margin:18px 0 26px;max-width:520px}
 .allegory-lp .hero .cta-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
 .allegory-lp .hero .trust{margin-top:6px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:10px}
+.allegory-lp .hero-swatches{display:flex;gap:6px;margin-top:22px;max-width:380px}
+.allegory-lp .hero-swatches span{height:28px;flex:1;border-radius:3px}
 .allegory-lp .hero .trust .star{color:var(--gold);letter-spacing:2px}
 .allegory-lp .hero-tag{display:inline-block;font-family:var(--font-b);font-size:14px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--sage)}
 /* hero device mock */
@@ -188,7 +204,7 @@
 .allegory-lp .show-row{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;margin-bottom:90px}
 .allegory-lp .show-row:last-child{margin-bottom:0}
 .allegory-lp .show-row.flip .show-text{order:2}
-.allegory-lp .show-text .eyebrow{display:block;margin-bottom:14px}
+.allegory-lp .show-text .eyebrow{display:inline-block;margin-bottom:14px}
 .allegory-lp .show-text h3{font-size:clamp(28px,3.6vw,40px);margin-bottom:16px}
 .allegory-lp .show-text p{color:var(--muted);font-size:16px}
 .allegory-lp .show-text ul{list-style:none;margin-top:20px}
@@ -256,7 +272,7 @@
 /* ----------  Testimonials  ---------- */
 .allegory-lp .quotes{background:var(--forest);color:var(--bg)}
 .allegory-lp .quotes .sec-head h2{color:var(--bg)}
-.allegory-lp .quotes .sec-head .eyebrow{color:rgba(245,243,238,.6)}
+.allegory-lp .quotes .sec-head .eyebrow{background:var(--peach);color:#532a12}
 .allegory-lp .q-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1080px;margin:0 auto}
 .allegory-lp .q{background:rgba(245,243,238,.05);border:1px solid rgba(245,243,238,.14);border-radius:3px;padding:24px 22px;text-align:center;display:flex;flex-direction:column;justify-content:center}
 .allegory-lp .q .stars{color:var(--gold);letter-spacing:3px;font-size:12px;margin-bottom:14px}
@@ -274,7 +290,9 @@
 .allegory-lp .faq details[open] summary .pl{transform:rotate(45deg)}
 .allegory-lp .faq .ans{padding:0 0 24px;color:var(--muted);font-size:15.5px;max-width:640px}
 /* ----------  Final CTA  ---------- */
-.allegory-lp .final{text-align:center;background:var(--bg-2);padding-bottom:52px}
+.allegory-lp .final{text-align:center;background:var(--bg-2);padding-bottom:52px;position:relative;overflow:hidden}
+.allegory-lp .final-bar{position:absolute;top:0;left:0;right:0;display:flex;height:6px}
+.allegory-lp .final-bar i{flex:1}
 .allegory-lp .final h2{font-size:clamp(38px,6vw,68px);max-width:760px;margin:0 auto 8px}
 .allegory-lp .final h2 em{font-style:italic;color:var(--sage)}
 .allegory-lp .final p{color:var(--muted);font-size:19px;margin:18px auto 34px;max-width:520px}
@@ -450,6 +468,9 @@
         <p class="signup-msg" role="status" aria-live="polite"></p>
       </form>
       <div class="trust">Developed by an arts admin, for artists.</div>
+      <div class="hero-swatches" aria-hidden="true">
+        <span style="background:#032419"></span><span style="background:#7a98d3"></span><span style="background:#e27a55"></span><span style="background:#cfc581"></span><span style="background:#e2ad44"></span><span style="background:#efd2c4"></span><span style="background:#522513"></span>
+      </div>
     </div>
     <div class="reveal">
       <div class="device">
@@ -798,6 +819,7 @@
 </section>
 <!-- ===== Final CTA ===== -->
 <section class="final">
+  <div class="final-bar" aria-hidden="true"><i style="background:#7a98d3"></i><i style="background:#e27a55"></i><i style="background:#cfc581"></i><i style="background:#e2ad44"></i><i style="background:#efd2c4"></i><i style="background:#522513"></i></div>
   <div class="wrap reveal">
     <span class="eyebrow">Launching August 1, 2026</span>
     <h2 style="margin-top:18px">A good day to <em>make artwork.</em></h2>
