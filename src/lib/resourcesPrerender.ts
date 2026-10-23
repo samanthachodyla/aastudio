@@ -97,7 +97,7 @@ export function resourceRoutes(): PrerenderRoute[] {
   const routes: PrerenderRoute[] = [
     {
       path: "/resources",
-      file: "resources.html",
+      file: "resources/index.html",
       title: "Allegory Art Studio Resource Library",
       description:
         "Practical, plain-language guides for the business of an art practice: pricing, galleries, consignment, applications, artist statements, CVs, taxes, and marketing. Written by an arts administrator, for working artists.",
@@ -107,7 +107,7 @@ export function resourceRoutes(): PrerenderRoute[] {
   for (const g of GUIDES) {
     routes.push({
       path: `/resources/${g.id}`,
-      file: `resources/${g.id}.html`,
+      file: `resources/${g.id}/index.html`,
       title: `${g.title} | Allegory Art Studio Resource Library`,
       description: g.dek,
       html: guideHTML(g),
