@@ -4,6 +4,14 @@ import path from "path";
 import fs from "node:fs";
 import { componentTagger } from "lovable-tagger";
 import { isLaunched, toLiveLanding, toLiveIndexHead } from "./src/lib/landingLive";
+import { resourceRoutes } from "./src/lib/resourcesPrerender";
+
+// Shared guard: strips the prerendered #prerender block before React boots on any
+// route it doesn't belong to, so no page flashes another route's content.
+const PRERENDER_GUARD =
+  '<script>(function(){var p=location.pathname;' +
+  'if(p!=="/"&&p!=="/index.html"){var el=document.getElementById("prerender");' +
+  'if(el&&el.parentNode)el.parentNode.removeChild(el);}})();</script>';
 
 // Build-time prerender for the marketing landing page.
 //
@@ -30,12 +38,64 @@ function prerenderLanding(): Plugin {
         landing = toLiveLanding(landing);
         html = toLiveIndexHead(html); // keep the FAQ schema in sync
       }
-      const guard =
-        '<script>(function(){var p=location.pathname;' +
-        'if(p!=="/"&&p!=="/index.html"){var el=document.getElementById("prerender");' +
-        'if(el&&el.parentNode)el.parentNode.removeChild(el);}})();</script>';
-      const block = '<div id="prerender">' + landing + "</div>" + guard;
+      const block = '<div id="prerender">' + landing + "</div>" + PRERENDER_GUARD;
       return html.replace('<div id="root"></div>', '<div id="root">' + block + "</div>");
+    },
+  };
+}
+
+// Build-time prerender for the Resource Library. Emits a static HTML file per
+// resources route (/resources and every guide) with the real content, a
+// route-specific title/description/canonical, and the resources CSS inlined, so
+// each guide is fully readable by crawlers and AI answer engines without JS.
+// React re-renders #root on boot, exactly like the landing page.
+function prerenderResources(): Plugin {
+  return {
+    name: "prerender-resources",
+    apply: "build",
+    enforce: "post",
+    generateBundle(_opts, bundle) {
+      const index = bundle["index.html"];
+      if (!index || index.type !== "asset") return;
+      const base = typeof index.source === "string" ? index.source : Buffer.from(index.source).toString("utf8");
+
+      let css = "";
+      try {
+        css = fs.readFileSync(path.resolve(__dirname, "src/styles/resources.css"), "utf8");
+      } catch { /* styling still comes from the bundled stylesheet */ }
+      const cssTag = css ? "<style>" + css + "</style>" : "";
+
+      const setMeta = (html: string, attr: string, value: string): string => {
+        const re = new RegExp(`(<meta ${attr} content=")[^"]*(")`);
+        return re.test(html) ? html.replace(re, `$1${value.replace(/"/g, "&quot;")}$2`) : html;
+      };
+
+      for (const r of resourceRoutes()) {
+        let html = base;
+        const canonical = "https://allegoryartstudio.com" + r.path;
+        html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${r.title}</title>`);
+        html = setMeta(html, 'name="description"', r.description);
+        html = setMeta(html, 'property="og:title"', r.title);
+        html = setMeta(html, 'property="og:description"', r.description);
+        html = setMeta(html, 'property="og:url"', canonical);
+        html = setMeta(html, 'name="twitter:title"', r.title);
+        html = setMeta(html, 'name="twitter:description"', r.description);
+        html = html.replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${canonical}" />`);
+        if (cssTag) html = html.replace("</head>", cssTag + "</head>");
+
+        // Swap the landing #root block for this route's prerendered content.
+        const startMarker = '<div id="root">';
+        const endMarker = PRERENDER_GUARD + "</div>";
+        const s = html.indexOf(startMarker);
+        const e = html.indexOf(endMarker);
+        if (s >= 0 && e > s) {
+          html = html.slice(0, s) + '<div id="root">' + r.html + "</div>" + html.slice(e + endMarker.length);
+        } else {
+          html = html.replace('<div id="root"></div>', '<div id="root">' + r.html + "</div>");
+        }
+
+        this.emitFile({ type: "asset", fileName: r.file, source: html });
+      }
     },
   };
 }
@@ -81,6 +141,7 @@ export default defineConfig(({ mode }) => {
       react(),
       mode === "development" && componentTagger(),
       prerenderLanding(),
+      prerenderResources(),
       emitVersion(buildId),
     ].filter(Boolean),
     resolve: {
