@@ -611,7 +611,7 @@ const Inventory = () => {
                           onClick={(e) => { e.stopPropagation(); printCertificate({ artwork: a, artistName: fullName }); }}
                           title="Certificate of authenticity"
                           aria-label="Certificate of authenticity"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
+                          className="text-muted-foreground hover:text-foreground"
                         >
                           <Award className="h-3.5 w-3.5" />
                         </button>
@@ -720,6 +720,7 @@ function CurrencyInput({ value, onChange }: { value: number; onChange: (n: numbe
 }
 
 function ArtworkForm({ initial, onSubmit }: { initial?: Artwork; onSubmit: (data: any) => void }) {
+  const { fullName } = useUserProfile();
   const [form, setForm] = useState({
     title: initial?.title ?? "", year: initial?.year ?? new Date().getFullYear(),
     medium: initial?.medium ?? "", dimensions: initial?.dimensions ?? "",
@@ -839,7 +840,28 @@ function ArtworkForm({ initial, onSubmit }: { initial?: Artwork; onSubmit: (data
             <p className="text-[11px] text-muted-foreground mt-1">We'll offer to save this buyer to your Contacts.</p>
           </div>
         )}
-        <div className="col-span-2 flex justify-end gap-2 mt-2">
+        <div className="col-span-2 flex flex-wrap justify-end gap-2 mt-2">
+          {initial && (
+            <Button
+              type="button"
+              variant="outline"
+              className="gap-2 mr-auto"
+              onClick={() => printCertificate({
+                artwork: {
+                  ...(initial as Artwork),
+                  title: form.title,
+                  year: Number(form.year) || initial.year,
+                  medium: form.medium,
+                  dimensions: form.dimensions,
+                  edition: form.edition,
+                  imageUrl: form.imageUrl,
+                } as Artwork,
+                artistName: fullName,
+              })}
+            >
+              <Award className="h-3.5 w-3.5" /> Certificate of authenticity
+            </Button>
+          )}
           <Button type="submit">{initial ? "Save changes" : "Add to catalogue"}</Button>
         </div>
       </form>
