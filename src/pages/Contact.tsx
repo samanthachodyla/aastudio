@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Seo } from "@/components/Seo";
 
 const CONTACT_EMAIL = "hello@allegoryartstudio.com";
 
@@ -38,6 +39,11 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <Seo
+        title="Contact, Allegory Art Studio"
+        description="Get in touch with Allegory Art Studio, the CRM and studio management software for working artists. Questions about plans, features, or your account."
+        canonicalPath="/contact"
+      />
       <main className="flex-1 w-full max-w-xl mx-auto px-6 py-16">
         <div className="text-center mb-10">
           <div className="eyebrow text-muted-foreground mb-4">Allegory Art Studio</div>

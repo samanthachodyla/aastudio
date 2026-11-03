@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { Seo } from "@/components/Seo";
-import { catById, guideBySlug, readMinutes } from "@/lib/resourcesContent";
+import { catById, guideBySlug, readMinutes, relatedGuides } from "@/lib/resourcesContent";
 import "@/styles/resources.css";
 
 /** A single resource guide at its own URL (/resources/<slug>). Separately
@@ -71,6 +71,17 @@ const ResourceGuide = () => {
                 Allegory Art Studio does this part for you,{" "}
                 <Link to="/#pricing">start a 7-day free trial →</Link>
               </p>
+            </div>
+            <div className="g-related">
+              <div className="g-related-label">Keep reading</div>
+              <ul>
+                {relatedGuides(guide).map((r) => (
+                  <li key={r.id}>
+                    <Link to={`/resources/${r.id}`}>{r.title}</Link>
+                    <span className="g-related-dek">{r.dek}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
             <div>
               <Link to="/resources" className="back">

@@ -3,7 +3,7 @@
 // not run JavaScript) get the real content, titles, and canonical URLs — the
 // same treatment the landing page gets. React re-renders #root on boot, so this
 // markup only needs to be valid and styled, not byte-match the components.
-import { CATS, GUIDES, catById, readMinutes, type ResGuide } from "./resourcesContent";
+import { CATS, GUIDES, catById, readMinutes, relatedGuides, type ResGuide } from "./resourcesContent";
 
 const esc = (s: string): string =>
   s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
@@ -81,6 +81,14 @@ export function guideHTML(g: ResGuide): string {
     `<div class="g-body">${g.body}</div>` +
     '<div class="g-foot"><div class="g-cta"><p>Allegory Art Studio does this part for you, ' +
     '<a href="/#pricing">start a 7-day free trial →</a></p></div>' +
+    '<div class="g-related"><div class="g-related-label">Keep reading</div><ul>' +
+    relatedGuides(g)
+      .map(
+        (r) =>
+          `<li><a href="/resources/${r.id}">${esc(r.title)}</a><span class="g-related-dek">${esc(r.dek)}</span></li>`,
+      )
+      .join("") +
+    "</ul></div>" +
     `<div><a class="back" href="/resources">${BACK} All resources</a></div></div>` +
     "</div></article></div>"
   );
