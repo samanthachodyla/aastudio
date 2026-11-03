@@ -79,7 +79,7 @@ export function StudioSnippetPopup({ enabled = true }: { enabled?: boolean }) {
                 className="text-[10.5px] font-semibold uppercase tracking-[0.2em]"
                 style={{ color: "#c35b38" }}
               >
-                Today's Studio Snippet from Cara
+                Today's snippet from our founder
               </span>
             </div>
             <p className="font-display text-xl leading-relaxed text-foreground">{snippet.tip}</p>

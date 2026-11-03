@@ -169,15 +169,15 @@ export default function PricingCalculator() {
 
                 <div className="capture">
                   {sent ? (
-                    <p className="cap-done">You're in! The full pricing worksheet and studio tips are on their way to your inbox. ✦</p>
+                    <p className="cap-done">You're on the list. Studio tips and new opportunities are on their way. ✦</p>
                   ) : (
                     <form onSubmit={submit}>
-                      <div className="cap-title">Email me the full pricing worksheet</div>
+                      <div className="cap-title">Studio tips &amp; new opportunities</div>
                       <input type="text" placeholder="First name" value={name} onChange={(e) => setName(e.target.value)} aria-label="First name" autoComplete="given-name" />
                       <input type="email" placeholder="you@studio.com" value={email} onChange={(e) => setEmail(e.target.value)} aria-label="Email address" autoComplete="email" required />
-                      <button className="btn" type="submit" disabled={busy}>{busy ? "Sending…" : "Send it to me"}</button>
+                      <button className="btn" type="submit" disabled={busy}>{busy ? "Signing up…" : "Keep me posted"}</button>
                       {err && <p className="cap-err">{err}</p>}
-                      <p className="cap-fine">Plus studio tips and new opportunities. Unsubscribe anytime.</p>
+                      <p className="cap-fine">Unsubscribe anytime.</p>
                     </form>
                   )}
                 </div>
