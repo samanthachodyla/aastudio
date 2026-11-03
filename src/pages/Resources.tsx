@@ -85,6 +85,14 @@ const Resources = () => {
                 <p>{c.blurb}</p>
               </div>
               <div className="grid">
+                {c.id === "templates" && (
+                  <Link className="card featured" to="/pricing-calculator">
+                    <span className="kind">Free tool</span>
+                    <h3>Art pricing calculator</h3>
+                    <p>Plug in a piece's size, materials, and your rate for a consistent, defensible price, and see what you keep after a gallery cut.</p>
+                    <span className="read">Open the calculator {ARROW}</span>
+                  </Link>
+                )}
                 {GUIDES.filter((g) => g.cat === c.id).map((g) => (
                   <Link key={g.id} className="card" to={`/resources/${g.id}`}>
                     <span className="kind">{g.kind}</span>

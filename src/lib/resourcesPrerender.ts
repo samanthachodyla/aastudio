@@ -37,10 +37,16 @@ export function libraryHTML(): string {
           `<span class="read">${verbFor(g.kind)} ${ARROW}</span></a>`,
       )
       .join("");
+    const featured = c.id === "templates"
+      ? '<a class="card featured" href="/pricing-calculator"><span class="kind">Free tool</span>' +
+        "<h3>Art pricing calculator</h3>" +
+        "<p>Plug in a piece's size, materials, and your rate for a consistent, defensible price, and see what you keep after a gallery cut.</p>" +
+        `<span class="read">Open the calculator ${ARROW}</span></a>`
+      : "";
     return (
       `<section class="block" id="cat-${c.id}" style="--cat:${c.color}; --cat-ink:${c.ink}">` +
       `<div class="sec-head"><h2>${esc(c.name)}</h2><p>${esc(c.blurb)}</p></div>` +
-      `<div class="grid">${cards}</div></section>`
+      `<div class="grid">${featured}${cards}</div></section>`
     );
   }).join("");
   return (

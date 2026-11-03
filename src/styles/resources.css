@@ -60,6 +60,11 @@
 .aas-res a.card h3{font-family:var(--font-display); font-weight:600; font-size:22px; line-height:1.16; margin:0; letter-spacing:-.01em;}
 .aas-res a.card p{font-size:13.5px; color:var(--ink-2); margin:0; line-height:1.55;}
 .aas-res .read{margin-top:auto; padding-top:4px; font-size:12px; font-weight:600; letter-spacing:.02em; color:var(--ink); display:inline-flex; align-items:center; gap:6px;}
+/* Featured tool card, stands out from the guide cards */
+.aas-res a.card.featured{background:color-mix(in srgb, var(--mari) 16%, var(--surface)); border-color:var(--mari); border-top-color:var(--mari); border-top-width:4px; box-shadow:0 14px 34px -22px rgba(226,173,68,.75);}
+.aas-res a.card.featured:hover{border-color:var(--mari); box-shadow:var(--shadow);}
+.aas-res a.card.featured .kind{background:var(--mari); color:#032419;}
+.aas-res a.card.featured .read svg{color:var(--brown);}
 .aas-res .read svg{width:13px; height:13px; color:var(--cat)}
 
 /* CTA */
