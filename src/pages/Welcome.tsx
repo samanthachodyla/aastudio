@@ -17,6 +17,7 @@ import { saveFbMatch } from "@/lib/fbMatch";
 export default function Welcome() {
   const navigate = useNavigate();
   const [sid, setSid] = useState<string | null>(null);
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
@@ -37,7 +38,7 @@ export default function Welcome() {
       const res = await fetch("/api/stripe/finish-signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sid, password }),
+        body: JSON.stringify({ sid, password, name: name.trim() }),
       });
       const json = await res.json();
       if (!res.ok || !json.ok) {
@@ -120,6 +121,18 @@ export default function Welcome() {
             ) : (
               <form onSubmit={submit} className="grid gap-4">
                 <div>
+                  <Label>Your name</Label>
+                  <Input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="First and last name"
+                    autoComplete="name"
+                    autoFocus
+                  />
+                </div>
+                <div>
                   <Label>Password</Label>
                   <Input
                     type="password"
@@ -129,7 +142,6 @@ export default function Welcome() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     autoComplete="new-password"
-                    autoFocus
                   />
                 </div>
                 <div>

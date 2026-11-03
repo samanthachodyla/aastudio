@@ -8,12 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTier, type Tier } from "@/lib/tier";
 import { useUserProfile } from "@/lib/userProfile";
+import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const Settings = () => {
   const { tier, setTier } = useTier();
   const { fullName, email, invoiceLogo, setProfile } = useUserProfile();
+  const { user } = useAuth();
   const [name, setName] = useState(fullName);
   const [mail, setMail] = useState(email);
   const logoRef = useRef<HTMLInputElement>(null);
@@ -63,9 +65,15 @@ const Settings = () => {
     }
   };
 
-  const saveProfile = (e: React.FormEvent) => {
+  const saveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setProfile({ fullName: name.trim(), email: mail.trim() });
+    const fn = name.trim();
+    setProfile({ fullName: fn, email: mail.trim() });
+    // Persist the name to the member's DB profile too (not just this device), so
+    // it shows in admin reports and exports, not only in local settings.
+    if (user?.id) {
+      try { await supabase.from("profiles").update({ full_name: fn }).eq("id", user.id); } catch { /* local save still applied */ }
+    }
     toast.success("Profile updated");
   };
 

@@ -67,6 +67,7 @@ export default async function handler(req: any, res: any) {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
     const sid = String(body.sid || "").trim();
     const password = String(body.password || "");
+    const providedName = String(body.name || "").trim();
     if (!sid) return res.status(400).json({ error: "Missing checkout reference." });
     if (password.length < 6) return res.status(400).json({ error: "Password must be at least 6 characters." });
 
@@ -77,8 +78,9 @@ export default async function handler(req: any, res: any) {
     }
     const email = (session.customer_details?.email || "").toLowerCase().trim();
     if (!email) return res.status(400).json({ error: "No email found on the checkout." });
-    // Name for Mailchimp + the browser to greet them (Stripe collects it).
-    const fullName = (session.customer_details?.name || "").trim();
+    // Name for Mailchimp, profiles, and the browser greeting. Prefer the name the
+    // member just typed on the welcome screen; fall back to what Stripe collected.
+    const fullName = providedName || (session.customer_details?.name || "").trim();
     const [firstName, ...restName] = fullName.split(/\s+/).filter(Boolean);
     const lastName = restName.join(" ");
 
@@ -100,6 +102,15 @@ export default async function handler(req: any, res: any) {
       } else {
         userId = data.user?.id ?? null;
       }
+    }
+
+    // Ensure the name lands in public.profiles (the handle_new_user trigger only
+    // fires on INSERT, and the webhook may have created the row first), so admin
+    // reports show a real name instead of just an email.
+    if (userId && fullName) {
+      try {
+        await supabase.from("profiles").upsert({ id: userId, email, full_name: fullName }, { onConflict: "id" });
+      } catch { /* non-blocking; auth metadata still holds the name */ }
     }
 
     // Record the subscription now so access is immediate — don't wait on the
