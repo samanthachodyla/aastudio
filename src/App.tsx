@@ -31,6 +31,7 @@ const Contact = lazy(() => import("./pages/Contact.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
 const Resources = lazy(() => import("./pages/Resources.tsx"));
 const MarketingPage = lazy(() => import("./pages/MarketingPage.tsx"));
+const PricingCalculator = lazy(() => import("./pages/PricingCalculator.tsx"));
 const ResourceGuide = lazy(() => import("./pages/ResourceGuide.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 import { TierGate } from "./components/TierGate";
@@ -77,6 +78,7 @@ const App = () => (
               <Route path="/features" element={<MarketingPage slug="features" />} />
               <Route path="/plans" element={<MarketingPage slug="plans" />} />
               <Route path="/faq" element={<MarketingPage slug="faq" />} />
+              <Route path="/pricing-calculator" element={<PricingCalculator />} />
               <Route path="/resources" element={<Resources />} />
               <Route path="/resources/:slug" element={<ResourceGuide />} />
 
