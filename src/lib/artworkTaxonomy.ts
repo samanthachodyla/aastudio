@@ -9,6 +9,7 @@ import type { Artwork, ArtworkStatus, ArtworkLocation } from "@/lib/types";
 
 export const ARTWORK_STATUSES: { value: ArtworkStatus; label: string }[] = [
   { value: "available", label: "Available" },
+  { value: "in_progress", label: "In progress" },
   { value: "sold", label: "Sold" },
   { value: "donated", label: "Donated" },
   { value: "nfs", label: "NFS" },

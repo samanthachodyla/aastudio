@@ -1,5 +1,5 @@
 // Disposition, what's happening with the piece commercially. Fixed set.
-export type ArtworkStatus = "available" | "sold" | "donated" | "nfs";
+export type ArtworkStatus = "available" | "in_progress" | "sold" | "donated" | "nfs";
 // Where the piece physically is. Separate axis from disposition.
 export type ArtworkLocation =
   | "in_studio" | "on_consignment" | "on_loan" | "in_gallery" | "in_transit" | "in_storage";

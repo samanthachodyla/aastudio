@@ -28,7 +28,7 @@ const defaultPortfolioStatuses: ArtworkStatus[] = ["available"];
 const exportableStatuses = ARTWORK_STATUSES;
 
 const statuses: { value: ArtworkStatus | "all"; label: string }[] = [
-  { value: "all", label: "All" },
+  { value: "all", label: "All statuses" },
   ...ARTWORK_STATUSES,
 ];
 
@@ -49,7 +49,7 @@ const SORT_LABELS: { value: SortKey; label: string }[] = [
 ];
 // A meaningful order for the "Status" sort (owned/available → gone).
 const STATUS_ORDER: Record<string, number> = {
-  available: 0, nfs: 1, donated: 2, sold: 3,
+  in_progress: 0, available: 1, nfs: 2, donated: 3, sold: 4,
 };
 
 /** Kebab-case slug from a name, for export filenames. */
@@ -532,19 +532,12 @@ const Inventory = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search title, medium, year…" className="pl-9 bg-card" />
             </div>
-            <div className="flex items-center gap-1 text-xs overflow-x-auto no-scrollbar -mx-1 px-1">
-              {statuses.map(s => (
-                <button
-                  key={s.value}
-                  onClick={() => setFilter(s.value)}
-                  className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-sm uppercase tracking-wider transition-colors ${
-                    filter === s.value ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
+            <Select value={filter} onValueChange={(v) => setFilter(v as ArtworkStatus | "all")}>
+              <SelectTrigger className="h-8 w-[150px] text-xs bg-card"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {statuses.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
             <div className="flex items-center gap-2 sm:ml-auto">
               <Select value={locFilter} onValueChange={(v) => setLocFilter(v as ArtworkLocation | "all")}>
                 <SelectTrigger className="h-8 w-[150px] text-xs bg-card"><SelectValue /></SelectTrigger>

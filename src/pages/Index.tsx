@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRight, AlertCircle, Clock, DollarSign, Boxes, Inbox, Megaphone, CalendarClock, Lightbulb } from "lucide-react";
+import { ArrowUpRight, AlertCircle, Clock, DollarSign, Boxes, Inbox, Megaphone, CalendarClock } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useStore, fmtMoney, fmtDate, daysUntil, daysSince } from "@/lib/store";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { StatusPill } from "@/components/StatusPill";
 import { StudioManagerBubble } from "@/components/StudioManagerBubble";
 import { DashboardTodos } from "@/components/DashboardTodos";
 import { useUserProfile, getFirstName } from "@/lib/userProfile";
-import { snippetForToday } from "@/lib/studioSnippets";
+import { StudioSnippetPopup } from "@/components/StudioSnippetPopup";
 import { useSubscription } from "@/lib/subscription";
 import { toast } from "sonner";
 
@@ -162,7 +162,6 @@ const Dashboard = () => {
     ? `Daily check-in · ${firstName}'s studio · ${dateStr}`
     : `Daily check-in · ${dateStr}`;
   const showWelcome = !!firstName && !welcomeDismissed;
-  const snippet = useMemo(() => snippetForToday(), []);
 
   return (
     <AppShell
@@ -210,16 +209,8 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Studio Snippet, a rotating daily tip */}
-      <section className="mb-12">
-        <div className="hairline-card px-6 py-5 flex items-start gap-5">
-          <Lightbulb className="h-4 w-4 shrink-0 text-muted-foreground mt-1" strokeWidth={1.5} />
-          <div className="min-w-0">
-            <div className="eyebrow mb-2">Studio snippet · {snippet.category}</div>
-            <p className="text-[15px] leading-relaxed font-display">{snippet.tip}</p>
-          </div>
-        </div>
-      </section>
+      {/* Daily studio snippet, shown once a day as a branded popup */}
+      <StudioSnippetPopup enabled={!showWelcome} />
 
       {/* To-do */}
       <DashboardTodos />
