@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Plus, Search, Download, Trash2, Upload, X, ImageIcon, Boxes, Handshake, FileText, Link2, Copy, Check, ArrowUp, ArrowDown, Tag } from "lucide-react";
+import { Plus, Search, Download, Trash2, Upload, X, ImageIcon, Boxes, Handshake, FileText, Link2, Copy, Check, ArrowUp, ArrowDown, Tag, Award } from "lucide-react";
+import { printCertificate } from "@/lib/certificateExport";
 import { AppShell } from "@/components/AppShell";
 import { useStore, fmtMoney } from "@/lib/store";
 import type { Artwork } from "@/lib/types";
@@ -605,9 +606,19 @@ const Inventory = () => {
                     </td>
                     <td className="px-4 py-4 tabular-nums text-right">{fmtMoney(a.price)}</td>
                     <td className="px-4 py-4 text-right">
-                      <button onClick={(e) => { e.stopPropagation(); deleteArtwork(a.id); }} className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive">
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); printCertificate({ artwork: a, artistName: fullName }); }}
+                          title="Certificate of authenticity"
+                          aria-label="Certificate of authenticity"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
+                        >
+                          <Award className="h-3.5 w-3.5" />
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); deleteArtwork(a.id); }} className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -632,13 +643,22 @@ const Inventory = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <span className="font-display italic text-base leading-tight">{a.title}</span>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); deleteArtwork(a.id); }}
-                      aria-label="Delete work"
-                      className="shrink-0 -mr-1 -mt-1 p-1.5 text-muted-foreground hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center gap-1 shrink-0 -mr-1 -mt-1">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); printCertificate({ artwork: a, artistName: fullName }); }}
+                        aria-label="Certificate of authenticity"
+                        className="p-1.5 text-muted-foreground hover:text-foreground"
+                      >
+                        <Award className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); deleteArtwork(a.id); }}
+                        aria-label="Delete work"
+                        className="p-1.5 text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                   <div className="text-xs text-muted-foreground mt-0.5">
                     {[a.medium, a.year, a.dimensions].filter(Boolean).join(" · ")}
