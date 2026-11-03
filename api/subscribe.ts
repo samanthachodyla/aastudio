@@ -48,6 +48,9 @@ export default async function handler(req: any, res: any) {
   const firstName = str(body.first_name);
   const lastName = str(body.last_name);
   const phone = str(body.phone);
+  // Explicit SMS marketing opt-in from the newsletter checkbox. Recorded (with a
+  // timestamp) for TCPA consent record-keeping; only consented numbers get texts.
+  const smsConsent = body.sms_consent === true || str(body.sms_consent) === "yes" || str(body.sms_consent) === "true";
   const source = str(body.source) || "landing";
   const eventId = str(body.event_id) || crypto.randomUUID();
   // Lead forms send "Lead"; full app signups send "CompleteRegistration".
@@ -69,7 +72,7 @@ export default async function handler(req: any, res: any) {
           email_address: email,
           status_if_new: "subscribed",
           ...(Object.keys(merge).length ? { merge_fields: merge } : {}),
-          tags: [source],
+          tags: smsConsent ? [source, "sms-consent"] : [source],
         }),
       });
       const text = await r.text().catch(() => "");
@@ -108,6 +111,8 @@ export default async function handler(req: any, res: any) {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
         email, first_name: firstName, last_name: lastName, phone, source,
+        sms_consent: smsConsent ? "yes" : "no",
+        sms_consent_at: smsConsent ? new Date().toISOString() : "",
         name: [firstName, lastName].filter(Boolean).join(" "),
         event_id: eventId, event_source_url: str(body.event_source_url),
         referrer: str(body.referrer), user_agent: str(body.user_agent),

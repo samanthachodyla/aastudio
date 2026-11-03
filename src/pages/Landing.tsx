@@ -65,6 +65,8 @@ export default function Landing() {
         const lastName = (lastEl?.value || "").trim();
         const phoneEl = form.querySelector<HTMLInputElement>('input[name="phone"]');
         const phone = (phoneEl?.value || "").trim();
+        const consentEl = form.querySelector<HTMLInputElement>('input[name="sms_consent"]');
+        const smsConsent = !!consentEl?.checked;
         const hp = (form.querySelector<HTMLInputElement>('input[name="company"]')?.value || "").trim();
         // Bot caught by the honeypot, show the normal success state so it moves
         // on, but record nothing and fire NO Lead event (Pixel or CAPI).
@@ -108,6 +110,7 @@ export default function Landing() {
             first_name: firstName,
             last_name: lastName,
             phone,
+            sms_consent: smsConsent, // explicit SMS opt-in from the newsletter checkbox
             company: hp, // honeypot (always empty for real people; server also checks)
             source: formSource,
             referrer: document.referrer || "",
