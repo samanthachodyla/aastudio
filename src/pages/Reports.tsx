@@ -79,6 +79,7 @@ function lifecycleOf(status: string | null, lastActive: string | null, joined: s
 const CATEGORY_OPTIONS = [
   "All members", "Paying", "Trialing", "Past due", "Churned", "Comp",
   "Pro plan", "Starter plan", "Active (7d)", "Dormant (30d+)", "Activated", "Not activated",
+  "Joined, last 7 days", "Joined, last 30 days", "Joined, last 90 days",
 ] as const;
 type Category = typeof CATEGORY_OPTIONS[number];
 
@@ -96,6 +97,9 @@ function matchesCategory(r: UserAgg, cat: Category): boolean {
     case "Dormant (30d+)": return !r.lastActive || Date.now() - new Date(r.lastActive).getTime() >= 30 * 86400000;
     case "Activated": return r.artworks > 0;
     case "Not activated": return r.artworks === 0;
+    case "Joined, last 7 days": return !!r.joined && Date.now() - new Date(r.joined).getTime() < 7 * 86400000;
+    case "Joined, last 30 days": return !!r.joined && Date.now() - new Date(r.joined).getTime() < 30 * 86400000;
+    case "Joined, last 90 days": return !!r.joined && Date.now() - new Date(r.joined).getTime() < 90 * 86400000;
     default: return true;
   }
 }
@@ -557,6 +561,8 @@ const Reports = () => {
             <tr className="text-left text-muted-foreground border-b border-border">
               <SortTh label="Member" k="name" sortBy={sortBy} sortDir={sortDir} onSort={sortByCol} />
               <SortTh label="Plan" k="mrr" sortBy={sortBy} sortDir={sortDir} onSort={sortByCol} />
+              <SortTh label="MRR" k="mrr" sortBy={sortBy} sortDir={sortDir} onSort={sortByCol} align="right" />
+              <SortTh label="Joined" k="joined" sortBy={sortBy} sortDir={sortDir} onSort={sortByCol} />
               <SortTh label="Last active" k="lastActive" sortBy={sortBy} sortDir={sortDir} onSort={sortByCol} />
               <SortTh label="Page views" k="pageViews" sortBy={sortBy} sortDir={sortDir} onSort={sortByCol} align="right" />
               <SortTh label="Active time" k="activeMinutes" sortBy={sortBy} sortDir={sortDir} onSort={sortByCol} align="right" />
@@ -598,6 +604,8 @@ const Reports = () => {
                     );
                   })()}
                 </td>
+                <td className="px-4 py-3 text-right tabular-nums">{r.mrr > 0 ? fmtMoney(r.mrr) : "-"}</td>
+                <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{fmtWhen(r.joined)}</td>
                 <td className="px-4 py-3 text-muted-foreground">{fmtWhen(r.lastActive)}</td>
                 <td className="px-4 py-3 text-right tabular-nums">{r.pageViews}</td>
                 <td className="px-4 py-3 text-right tabular-nums">{fmtMinutes(r.activeMinutes)}</td>
@@ -607,7 +615,7 @@ const Reports = () => {
               </tr>
             ))}
             {!visibleRows.length && (
-              <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground text-sm">
+              <tr><td colSpan={10} className="px-4 py-8 text-center text-muted-foreground text-sm">
                 {!rows.length && !error ? "Loading members…" : "No members match this filter."}
               </td></tr>
             )}
