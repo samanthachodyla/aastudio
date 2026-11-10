@@ -1,6 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.allegoryartstudio.com" }],
+      "destination": "https://allegoryartstudio.com/:path*",
+      "permanent": true
+    },
     { "source": "/index.html", "destination": "/", "permanent": true }
   ],
   "rewrites": [
@@ -16,6 +22,12 @@
       "source": "/version.json",
       "headers": [
         { "key": "Cache-Control", "value": "no-store, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/login",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
       ]
     }
   ]
