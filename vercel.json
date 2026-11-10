@@ -5,9 +5,9 @@
       "source": "/:path*",
       "has": [{ "type": "host", "value": "www.allegoryartstudio.com" }],
       "destination": "https://allegoryartstudio.com/:path*",
-      "permanent": true
+      "statusCode": 301
     },
-    { "source": "/index.html", "destination": "/", "permanent": true }
+    { "source": "/index.html", "destination": "/", "statusCode": 301 }
   ],
   "rewrites": [
     { "source": "/features", "destination": "/features/index.html" },
