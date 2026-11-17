@@ -217,14 +217,14 @@ async function handleSyncInvoice(req: Any, res: Any) {
   if (uerr || !ures.user) return res.status(401).json({ error: "Invalid session" });
   const userId = ures.user.id;
   const { data: grant } = await supabase.from("quickbooks_grants").select("realm_id, access_token, refresh_token, token_expires_at").eq("user_id", userId).maybeSingle();
-  if (!grant) return res.status(200).json({ synced: false, reason: "not_connected" });
+  if (!grant) { console.log("[qb] sync: not connected", { number }); return res.status(200).json({ synced: false, reason: "not_connected" }); }
   const realm = grant.realm_id;
   const at = await validAccessToken(supabase, userId, grant);
   const paid = status === "paid";
   const entity = paid ? "salesreceipt" : "invoice";
   const qbType = paid ? "SalesReceipt" : "Invoice";
   const dupe = await qbQuery(realm, at, `select Id from ${qbType} where DocNumber = '${esc(number)}'`);
-  if (dupe[qbType]?.[0]?.Id) return res.status(200).json({ synced: true, skipped: true, type: qbType, id: dupe[qbType][0].Id });
+  if (dupe[qbType]?.[0]?.Id) { console.log("[qb] sync: already exists", { number, type: qbType, id: dupe[qbType][0].Id }); return res.status(200).json({ synced: true, skipped: true, type: qbType, id: dupe[qbType][0].Id }); }
   const customerId = await findOrCreateCustomer(realm, at, inv.buyerName || "Collector", inv.buyerEmail, inv.buyerPhone);
   const itemId = await findOrCreateItem(realm, at);
   const itemRef = { value: itemId };
@@ -246,6 +246,7 @@ async function handleSyncInvoice(req: Any, res: Any) {
   if (inv.buyerEmail) doc.BillEmail = { Address: inv.buyerEmail };
   if (!paid && inv.dueAt) doc.DueDate = String(inv.dueAt).slice(0, 10);
   const created = await qbPost(realm, at, entity, doc);
+  console.log("[qb] synced", { number, type: qbType, id: created[qbType]?.Id, total: amount });
   return res.status(200).json({ synced: true, type: qbType, id: created[qbType]?.Id });
 }
 
