@@ -1,11 +1,23 @@
 import { useEffect } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { Seo } from "@/components/Seo";
-import { catById, guideBySlug, readMinutes, relatedGuides } from "@/lib/resourcesContent";
+import {
+  catById, guideBySlug, readMinutes, guideTitleTag, guideDescription,
+  guideKeepReading, guideJsonLd, RESOURCE_AUTHOR,
+} from "@/lib/resourcesContent";
 import "@/styles/resources.css";
 
+const fmtUpdated = (iso: string): string => {
+  try {
+    return new Date(iso + "T12:00:00").toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  } catch {
+    return iso;
+  }
+};
+
 /** A single resource guide at its own URL (/resources/<slug>). Separately
- *  indexable, with per-page title/description/canonical for SEO. */
+ *  indexable, with per-page title/description/canonical, a byline, an FAQ and
+ *  Article/FAQPage/BreadcrumbList structured data for SEO + AI answer engines. */
 const ResourceGuide = () => {
   const { slug = "" } = useParams();
   const guide = guideBySlug(slug);
@@ -20,14 +32,18 @@ const ResourceGuide = () => {
   const cat = catById(guide.cat);
   const catColor = cat ? cat.color : "#032419";
   const catInk = cat ? cat.ink : "#f7f5ef";
+  const keepReading = guideKeepReading(guide);
 
   return (
     <div className="aas-res" style={{ ["--cat" as string]: catColor, ["--cat-ink" as string]: catInk }}>
       <Seo
-        title={`${guide.title} | Allegory Art Studio Resource Library`}
-        description={guide.dek}
+        title={guideTitleTag(guide)}
+        description={guideDescription(guide)}
         canonicalPath={`/resources/${guide.id}`}
       />
+      {guideJsonLd(guide).map((block, i) => (
+        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(block) }} />
+      ))}
 
       <header className="mast">
         <div className="wrap">
@@ -58,27 +74,50 @@ const ResourceGuide = () => {
           <span className="g-eyebrow">{cat?.name}</span>
           <h1 className="g-title">{guide.title}</h1>
           <div className="g-rule" />
-          <p className="g-dek">{guide.dek}</p>
-          <div className="g-meta">
-            <span>{guide.kind}</span><span>·</span><span>{readMinutes(guide.body)} min read</span>
+
+          <div className="g-byline">
+            By <Link to={RESOURCE_AUTHOR.url}>{RESOURCE_AUTHOR.name}</Link>, {RESOURCE_AUTHOR.role}
+            <span className="sep">·</span>
+            <a href={RESOURCE_AUTHOR.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            {guide.updated && <><span className="sep">·</span>Updated {fmtUpdated(guide.updated)}</>}
+            <span className="sep">·</span>{readMinutes(guide.body)} min read
           </div>
 
+          {guide.shortAnswer
+            ? <p className="g-answer">{guide.shortAnswer}</p>
+            : <p className="g-dek">{guide.dek}</p>}
+
           <div className="g-body" dangerouslySetInnerHTML={{ __html: guide.body }} />
+
+          {guide.faqs && guide.faqs.length > 0 && (
+            <section className="g-faq">
+              <h2>Frequently asked questions</h2>
+              {guide.faqs.map((f, i) => (
+                <div className="g-faq-item" key={i}>
+                  <h3>{f.q}</h3>
+                  <p>{f.a}</p>
+                </div>
+              ))}
+            </section>
+          )}
+
+          {guide.disclaimer && <p className="g-disclaimer">{guide.disclaimer}</p>}
 
           <div className="g-foot">
             <div className="g-cta">
               <p>
-                Allegory Art Studio does this part for you,{" "}
-                <Link to="/#pricing">start a 7-day free trial →</Link>
+                {guide.cta || "Allegory Art Studio does this part for you."}{" "}
+                <Link to="/#pricing">Start your 7-day free trial →</Link>
               </p>
             </div>
             <div className="g-related">
               <div className="g-related-label">Keep reading</div>
               <ul>
-                {relatedGuides(guide).map((r) => (
-                  <li key={r.id}>
-                    <Link to={`/resources/${r.id}`}>{r.title}</Link>
-                    <span className="g-related-dek">{r.dek}</span>
+                {keepReading.map((r, i) => (
+                  <li key={i}>
+                    {r.href.startsWith("/")
+                      ? <Link to={r.href}>{r.title}</Link>
+                      : <a href={r.href} target="_blank" rel="noopener noreferrer">{r.title}</a>}
                   </li>
                 ))}
               </ul>

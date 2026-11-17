@@ -12,9 +12,19 @@ export interface ResGuide {
   cat: string;
   kind: string;
   id: string; // URL slug
-  title: string;
-  dek: string;
-  body: string;
+  title: string; // H1 + card title
+  dek: string; // card subtitle / teaser
+  body: string; // main HTML (sections); short answer, FAQ, CTA and keep-reading are separate
+  // SEO/GEO fields (optional). When present, the guide page uses them; the older
+  // guides without them fall back to sensible defaults.
+  titleTag?: string; // full <title>, e.g. "How Art Consignment Works … | Allegory Art Studio"
+  metaDescription?: string; // meta + og description
+  shortAnswer?: string; // 40–60 word answer shown right under the H1 (AI/Google quote this)
+  faqs?: { q: string; a: string }[]; // renders the visible FAQ AND the FAQPage JSON-LD (one source)
+  keepReading?: { title: string; href: string }[]; // explicit "Keep reading" links
+  cta?: string; // closing CTA sentence (before the trial button)
+  updated?: string; // "Last updated" date, ISO (YYYY-MM-DD)
+  disclaimer?: string; // one-line note for tax/legal/money pages
 }
 
 export const CATS: ResCat[] = [
@@ -29,21 +39,58 @@ export const CATS: ResCat[] = [
 
 export const GUIDES: ResGuide[] = [
 // ---------------- PRICING ----------------
-{cat:"pricing", kind:"Guide", id:"how-to-price", title:"How to price your work", dek:"A simple, repeatable formula, and how to know when it's time to raise your prices.",
-body:`<p>Pricing is the question that stops more artists in their tracks than any other. The goal isn't a perfect number, it's a <strong>consistent, defensible</strong> one you can repeat without second-guessing every time someone asks.</p>
-<h2>Start with a formula, not a feeling</h2>
-<p>Most working artists price with some version of a size-based formula, then sanity-check it against the market. A common starting point:</p>
-<div class="keybox"><h4>A starting formula</h4><ul>
-<li><strong>(Height + Width in inches) × your $-per-inch</strong>, plus the cost of materials and framing.</li>
-<li>Set your $-per-inch low when you're starting out (say $2–$6) and raise it as your sales history and demand grow.</li>
-<li>Keep the same formula across a body of work so a 16×20 and a 30×40 relate to each other sensibly.</li></ul></div>
-<h2>Check it against three things</h2>
-<ul><li><strong>Your market:</strong> what do artists at a similar career stage, medium, and region actually sell for?</li>
-<li><strong>Your costs:</strong> materials, framing, and the gallery's cut all have to fit inside the price.</li>
-<li><strong>Your time:</strong> if a piece took 40 hours, does the price respect that at all?</li></ul>
-<h2>Raise prices deliberately</h2>
-<p>Prices go up, not down, dropping a price trains collectors to wait for discounts. Raise when you have steady sell-through, a waitlist, a notable show or award, or genuinely rising costs. Move in measured steps (often 10–25%), and apply the new $-per-inch to new work rather than re-pricing everything overnight.</p>
-<p class="note">Consistency matters more than any single number. A collector who sees your prices scale logically with size trusts the whole system.</p>`},
+{cat:"pricing", kind:"Guide", id:"how-to-price", title:"How to price your artwork",
+dek:"A simple, repeatable formula, worked examples, and how to know when it's time to raise your prices.",
+titleTag:"How to Price Your Artwork: A Simple Formula | Allegory Art Studio",
+metaDescription:"A repeatable way to price your art by size, with worked examples, how to check it against costs and the market, and when to raise your prices.",
+updated:"2026-11-17",
+shortAnswer:"Most working artists price by size. Add the height and width in inches, multiply by a per-inch rate, then add the cost of materials and framing. Newer artists often start at $2 to $6 per inch. Check the result against your costs, your time and what similar artists charge, and use the same formula across your work.",
+body:`<h2>The size-based pricing formula</h2>
+<p>Pricing by feel leads to prices that don't match each other, and collectors notice. A formula gives every piece a price you can explain.</p>
+<div class="keybox"><h4>Formula</h4><ul>
+<li><strong>(height + width in inches) × your rate per inch + materials and framing</strong></li>
+<li>Start between $2 and $6 per inch if you're early in your career, and raise the rate as your sales history grows.</li></ul></div>
+<h3>Two worked examples</h3>
+<p>Both use a rate of $4 per inch.</p>
+<div class="g-table-wrap"><table class="g-table">
+<thead><tr><th>Size</th><th>Height + width</th><th>× $4 per inch</th><th>Materials and framing</th><th>Price</th></tr></thead>
+<tbody>
+<tr><td>16 × 20 in</td><td>36 in</td><td>$144</td><td>$60</td><td>$204</td></tr>
+<tr><td>30 × 40 in</td><td>70 in</td><td>$280</td><td>$120</td><td>$400</td></tr>
+</tbody></table></div>
+<p>Many artists round to a clean number, such as $200 and $400. The point is that a larger piece always costs more, by a predictable amount.</p>
+<p>Want to skip the math? The free <a href="/pricing-calculator">art pricing calculator</a> runs it for you and shows what you keep after a gallery's commission.</p>
+<h2>Check your price against three things</h2>
+<h3>Your costs</h3>
+<p>Materials, framing, shipping and a gallery's commission all have to fit inside the price. If a gallery takes 50%, a $400 price leaves you $200. See <a href="/resources/gallery-splits">understanding gallery splits</a>.</p>
+<h3>Your time</h3>
+<p>Compare the price to the hours the piece took. A 40-hour painting priced at $400 pays $10 an hour before costs.</p>
+<h3>The market</h3>
+<p>Look at what artists at a similar career stage, in your medium and region, sell for. You don't need to match them, but you should be able to explain a big gap.</p>
+<h2>Keep prices the same everywhere</h2>
+<p>A piece should cost the same in your studio, online and in a gallery. Selling for less on your own undercuts the gallery and teaches collectors to skip it.</p>
+<h2>When and how to raise your prices</h2>
+<p>Prices should go up over time, not down. Regular discounts teach collectors to wait for the next one. Signs it's time to raise them:</p>
+<ul>
+<li>Work sells steadily, or you have a waitlist</li>
+<li>You've had a notable show, award or press</li>
+<li>Your material costs have gone up</li>
+</ul>
+<p>Raise in measured steps, often 10 to 25% at a time. Apply the new per-inch rate to new work rather than repricing everything at once.</p>`,
+faqs:[
+{q:"How do I price my art as a beginner?",a:"Use a size-based formula: height plus width in inches, times $2 to $6 per inch, plus materials and framing. Check the result against your costs and similar artists, then keep it consistent."},
+{q:"Should I price my art by the hour?",a:"Use hours as a check, not the formula. Pricing purely by time means a slow piece costs more than a quick one of the same size, which confuses collectors."},
+{q:"How much should I charge for a painting?",a:"It depends on size, medium and your sales history. Run your sizes through the formula above, or use the free art pricing calculator."},
+{q:"How often should artists raise their prices?",a:"When work sells steadily or demand grows, usually in steps of 10 to 25%. Many artists review prices once a year."},
+{q:"Should my prices be different in a gallery and in my studio?",a:"No. Keep the same retail price everywhere so you don't undercut the gallery."},
+],
+keepReading:[
+{title:"Art pricing calculator",href:"/pricing-calculator"},
+{title:"Understanding gallery splits",href:"/resources/gallery-splits"},
+{title:"Free art invoice template",href:"/resources/invoices-paid"},
+],
+cta:"Allegory Art Studio keeps your prices, sizes and sales history together, so every new piece is priced the same way.",
+},
 
 {cat:"pricing", kind:"Guide", id:"invoices-paid", title:"Invoices that actually get paid", dek:"Deposits, terms, and the follow-up that closes the gap between a sale and the deposit in your account.",
 body:`<p>A sale isn't finished when someone says yes, it's finished when the money lands. A clear invoice and a calm follow-up routine are what get you there.</p>
@@ -62,100 +109,276 @@ body:`<p>A sale isn't finished when someone says yes, it's finished when the mon
 <li><strong>Two weeks:</strong> a direct note with the due date and payment link, offering to help if there's an issue.</li></ol>
 <div class="keybox"><h4>The quiet rule</h4><ul><li>Don't release or ship the work until payment (or the agreed deposit) has cleared.</li></ul></div>`},
 
-{cat:"pricing", kind:"Guide", id:"gallery-splits", title:"Understanding gallery splits", dek:"What a 40–50% commission really covers, and how to price so a split still leaves you whole.",
-body:`<p>The first time you see half your sale price go to a gallery, it can sting. Understanding what that commission buys, and pricing for it from the start, turns it from a loss into a partnership.</p>
-<h2>What the gallery's cut pays for</h2>
-<ul><li>Physical space, staff, lighting, and hours spent with collectors.</li>
-<li>Marketing, openings, art fairs, and their existing relationships.</li>
-<li>Sales they make that you never could have on your own.</li></ul>
-<p>A standard commission is <strong>40–50%</strong>. It's not a fee taken from "your" money, it's the cost of reaching buyers you otherwise wouldn't.</p>
-<h2>Price so the split works</h2>
-<p>The number one rule: <strong>your prices must be the same everywhere.</strong> If a gallery sells a piece for $2,000, your studio price for the same piece is also $2,000, not $1,000. Otherwise you undercut your gallery and erode collector trust.</p>
-<div class="keybox"><h4>Build the split into your formula</h4><ul>
-<li>Decide what you need to net on a piece.</li>
-<li>If the gallery takes 50%, your retail price is <strong>double</strong> that net.</li>
-<li>Use that same retail price for direct sales too, you simply keep more on those.</li></ul></div>
-<p class="note">Consistent pricing across every channel is what makes galleries want to keep working with you.</p>`},
+{cat:"pricing", kind:"Guide", id:"gallery-splits", title:"Gallery commission: what the split covers and how to price for it",
+dek:"What a 40–50% commission really covers, and how to price so a split still leaves you whole.",
+titleTag:"Gallery Commission: What a 40–50% Split Covers | Allegory Art Studio",
+metaDescription:"How much galleries take from art sales, what the commission pays for, and how to set prices so you still earn what you need from each piece.",
+updated:"2026-11-17",
+shortAnswer:"Most galleries take a 40 to 50% commission on each sale. That pays for their space, staff, marketing, openings and collector relationships. To make the split work, decide what you need to earn from a piece, then set the retail price so your share covers it. At 50%, that means doubling what you need.",
+body:`<h2>How much do galleries take?</h2>
+<p>The standard commission is 40 to 50% of the retail price. Some shops, cafes and co-op spaces take less. Whatever the rate, it should be in your <a href="/resources/consignment-agreement">consignment agreement</a>, along with whether framing and shipping come out before the split.</p>
+<h2>What the commission pays for</h2>
+<ul>
+<li>The space, lighting and staff who show your work</li>
+<li>Time spent with collectors, and the relationships the gallery already has</li>
+<li>Marketing, openings and art fairs</li>
+</ul>
+<p>The commission pays for sales you couldn't make alone. It isn't money taken out of a sale you would have made anyway.</p>
+<h2>How to price so the split still works</h2>
+<h3>Work back from what you need to earn</h3>
+<p>Decide the amount you need from a piece, then divide by your share.</p>
+<div class="g-table-wrap"><table class="g-table">
+<thead><tr><th>You need to earn</th><th>Gallery takes 40%</th><th>Gallery takes 50%</th></tr></thead>
+<tbody>
+<tr><td>$600</td><td>Retail price $1,000</td><td>Retail price $1,200</td></tr>
+<tr><td>$1,000</td><td>Retail price about $1,667</td><td>Retail price $2,000</td></tr>
+</tbody></table></div>
+<p>The formula: retail price = what you need ÷ (1 − commission rate). The <a href="/pricing-calculator">art pricing calculator</a> shows this for any rate.</p>
+<h3>Use the same price for direct sales</h3>
+<p>A piece that's $2,000 in the gallery is $2,000 in your studio, not $1,000. You keep more when you sell directly, and the gallery isn't undercut.</p>
+<h2>Questions to ask before you agree to a split</h2>
+<ul>
+<li>Is the commission on the retail price before or after framing and shipping?</li>
+<li>Who covers a discount the gallery offers a buyer?</li>
+<li>Does the gallery take a commission on sales you make yourself, such as studio visits from people who saw your work there?</li>
+<li>How soon after a sale do you get paid?</li>
+</ul>
+<p>For the full list, see <a href="/resources/reading-consignment-agreement">reading a consignment agreement</a>.</p>`,
+faqs:[
+{q:"What percentage do art galleries take?",a:"Most take 40 to 50% of the retail price. Smaller shops, cafes and co-ops sometimes take less."},
+{q:"Is a 50% gallery commission fair?",a:"It's standard for established galleries, because they cover space, staff, marketing and collector relationships. Make sure the agreement also covers insurance and payment timing."},
+{q:"How do I price my art for a gallery?",a:"Decide what you need to earn, then divide by your share. At a 50% commission, the retail price is double what you need."},
+{q:"Should my studio prices be lower than my gallery prices?",a:"No. Keep one retail price everywhere so you don't undercut the gallery or confuse collectors."},
+],
+keepReading:[
+{title:"How to price your artwork",href:"/resources/how-to-price"},
+{title:"Free art consignment agreement",href:"/resources/consignment-agreement"},
+{title:"Reading a consignment agreement",href:"/resources/reading-consignment-agreement"},
+],
+cta:"Allegory Art Studio shows what you keep from each sale, so a gallery split never surprises you.",
+},
 
-{cat:"pricing", kind:"Guide", id:"sales-tax", title:"Sales tax, plainly", dek:"When you need to collect it, how to keep track, and how much to set aside.",
-body:`<p>Sales tax feels intimidating because the rules vary by place, but the habits that keep you out of trouble are simple and the same everywhere.</p>
-<h2>The basic idea</h2>
-<p>In most U.S. states, selling a physical artwork directly to a buyer means you're expected to <strong>collect sales tax</strong> and pass it to the state. Galleries that sell on your behalf usually handle tax on those sales, one more thing their commission covers.</p>
-<h2>Three steps to stay clean</h2>
-<ol><li><strong>Register</strong> for a seller's permit in your state (often free, done online).</li>
-<li><strong>Collect</strong> the right rate on direct sales, it's an add-on to your price, not a cut of it.</li>
-<li><strong>Set it aside and file</strong> on your state's schedule. The tax you collect was never your money.</li></ol>
-<div class="keybox"><h4>Make it painless</h4><ul>
-<li>Show tax as its own line on every invoice.</li>
-<li>Move collected tax to a separate savings "bucket" the day it comes in.</li>
-<li>Keep a running log of what you collected and remitted.</li></ul></div>
-<p class="note">This is general guidance, not tax advice, rules differ by state and change over time. A quick conversation with an accountant once, up front, saves a lot of worry later.</p>`},
+{cat:"pricing", kind:"Guide", id:"sales-tax", title:"Sales tax for artists, plainly",
+dek:"When you need to collect it, how to get a seller's permit, and how much to set aside.",
+titleTag:"Sales Tax for Artists: When to Collect It | Allegory Art Studio",
+metaDescription:"Do artists charge sales tax on art? When you need to collect it, how to get a seller's permit, and a simple way to track and set aside what you owe.",
+updated:"2026-11-17",
+shortAnswer:"In most US states, when you sell physical artwork directly to a buyer, you need to collect sales tax and pay it to the state. When a gallery sells your work, the gallery usually handles the tax. Register for a seller's permit, add tax on top of your price, and set it aside until you file.",
+body:`<h2>Do artists have to charge sales tax?</h2>
+<p>Usually yes, for physical work you sell directly: from your studio, at a fair or market, or through your own website. Rules, rates and exemptions vary by state, and sometimes by city or county.</p>
+<p>When a gallery or shop sells your work, it usually collects and remits the tax. Confirm this in your <a href="/resources/consignment-agreement">consignment agreement</a>.</p>
+<h2>Three steps to handle sales tax</h2>
+<ol>
+<li><strong>Register.</strong> Get a seller's permit from your state. It's often free and done online.</li>
+<li><strong>Collect.</strong> Charge the correct rate on direct sales. Tax is added to your price, not taken out of it.</li>
+<li><strong>Set aside and file.</strong> Pay the state on its schedule, which may be monthly, quarterly or yearly. The tax you collect was never your money.</li>
+</ol>
+<h2>Make it painless</h2>
+<ul>
+<li>Show tax as its own line on every invoice. The free <a href="/resources/invoices-paid">art invoice template</a> has a line for it.</li>
+<li>Move collected tax into a separate savings account as soon as it comes in.</li>
+<li>Keep a running log of tax collected and paid.</li>
+</ul>`,
+disclaimer:"This is general guidance, not tax advice. Rules differ by state and change over time. One conversation with an accountant can save a lot of worry.",
+faqs:[
+{q:"Do I charge sales tax when I sell my art?",a:"In most US states, yes, for physical work sold directly to the final buyer. Check your state's rules."},
+{q:"Do I charge sales tax if a gallery sells my work?",a:"Usually not. The gallery collects and remits the tax on its sales. Confirm it in your agreement."},
+{q:"Do I need a seller's permit to sell art?",a:"Most states require one before you collect sales tax. It's often free and available online."},
+{q:"Is sales tax included in my art price?",a:"No. Add it on top of the price and show it as a separate line on the invoice."},
+],
+keepReading:[
+{title:"Free art invoice template",href:"/resources/invoices-paid"},
+{title:"Tax time for artists",href:"/resources/tax-time"},
+{title:"Set up simple studio finances",href:"/resources/studio-finances"},
+],
+cta:"Allegory Art Studio logs each sale with its tax, so filing time is a total rather than a search.",
+},
 
 // ---------------- GALLERIES ----------------
-{cat:"galleries", kind:"Guide", id:"how-consignment-works", title:"How consignment works", dek:"Who owns the piece, who insures it, and exactly what happens when it sells.",
-body:`<p>Consignment is the most common way artists place work with galleries and shops. You keep ownership; they display and sell on your behalf for a commission. Knowing how it works makes every agreement easier to read.</p>
-<h2>The essentials</h2>
-<ul><li><strong>You still own the work</strong> while it's on consignment, it hasn't been bought, just placed.</li>
-<li>The gallery takes a <strong>commission</strong> (usually 40–50%) only when it sells.</li>
-<li>Unsold work comes back to you at the end of the agreed term.</li></ul>
-<h2>What to pin down before it leaves your studio</h2>
-<ul><li><strong>Insurance:</strong> who covers the piece while it's in their care? (It should be them.)</li>
-<li><strong>Duration:</strong> how long will they hold it before returning it?</li>
-<li><strong>Payment timing:</strong> how soon after a sale do you get paid, 30 days? 60?</li>
-<li><strong>Price integrity:</strong> can they discount without your okay? (Set a floor.)</li></ul>
-<div class="keybox"><h4>Keep your own record</h4><ul>
-<li>Note every piece you've placed, where it is, and when it's due back.</li>
-<li>Photograph work before it goes, and get a signed receipt or agreement.</li></ul></div>
-<p>A good consignment relationship runs on clarity. When both sides know the terms, you can focus on the part that matters: your work finding collectors.</p>`},
+{cat:"galleries", kind:"Guide", id:"how-consignment-works", title:"How art consignment works",
+dek:"Who owns the piece, who insures it, when you get paid, and how consignment compares with selling outright.",
+titleTag:"How Art Consignment Works: A Plain Guide for Artists | Allegory Art Studio",
+metaDescription:"How consigning art to a gallery works: who owns the work, who insures it, when you get paid, and how consignment compares with selling outright.",
+updated:"2026-11-17",
+shortAnswer:"Art consignment means a gallery or shop displays and sells your work while you keep ownership. When a piece sells, the gallery keeps an agreed commission, usually 40 to 50% of the retail price, and pays you the rest. Unsold work comes back to you when the agreed term ends.",
+body:`<h2>The essentials</h2>
+<ul>
+<li><strong>You keep ownership</strong> until a piece sells. The work is not the gallery's property.</li>
+<li><strong>The gallery earns a commission</strong> only when a piece sells, typically 40 to 50% of the retail price. See <a href="/resources/gallery-splits">understanding gallery splits</a>.</li>
+<li><strong>Unsold work comes back</strong> to you when the term ends.</li>
+</ul>
+<h2>Consignment vs. outright sale vs. commissioned work</h2>
+<p>Three arrangements get confused because they share words. This table is the part AI tools and Google are most likely to quote.</p>
+<div class="g-table-wrap"><table class="g-table">
+<thead><tr><th></th><th>Consignment</th><th>Outright sale</th><th>Commissioned work</th></tr></thead>
+<tbody>
+<tr><td><strong>Who owns the work</strong></td><td>You, until it sells</td><td>The buyer or gallery, once paid</td><td>The client, once paid in full</td></tr>
+<tr><td><strong>When you get paid</strong></td><td>After the piece sells, minus the commission</td><td>Up front, at the agreed price</td><td>A deposit up front, the balance on delivery</td></tr>
+<tr><td><strong>Who carries the risk if it doesn't sell</strong></td><td>You</td><td>The buyer or gallery</td><td>No risk: the piece is made to order</td></tr>
+<tr><td><strong>What "commission" means</strong></td><td>The gallery's cut, usually 40 to 50%</td><td>Not used</td><td>The job itself</td></tr>
+<tr><td><strong>Paperwork</strong></td><td>Consignment agreement</td><td>Invoice or bill of sale</td><td>Commission contract</td></tr>
+</tbody></table></div>
+<p>Galleries usually buy outright only from established artists, often at a wholesale price around half of retail. Consignment is how most working artists place work. Start from the free <a href="/resources/consignment-agreement">consignment agreement</a> or the <a href="/resources/invoices-paid">art invoice template</a>.</p>
+<h2>What to agree on before work leaves your studio</h2>
+<ol>
+<li><strong>Insurance:</strong> who covers the work while the gallery holds it.</li>
+<li><strong>Term:</strong> how long the gallery keeps the work, and who pays return shipping.</li>
+<li><strong>Payment:</strong> how many days after a sale you get paid. 30 is common.</li>
+<li><strong>Pricing:</strong> whether the gallery can discount without your approval, and your minimum price.</li>
+</ol>
+<p>Put all four in writing. The free <a href="/resources/consignment-agreement">consignment agreement</a> covers each one, and <a href="/resources/reading-consignment-agreement">reading a consignment agreement</a> explains what to look for in a gallery's own contract.</p>
+<h2>Keep your own record</h2>
+<p>Photograph each piece before it leaves, get a signed receipt, and log where it is and when it is due back. <a href="/resources/tracking-work">Tracking work out in the world</a> has a simple system.</p>`,
+faqs:[
+{q:"How does consigning art to a gallery work?",a:"You deliver work to the gallery under a written agreement. The gallery shows and sells it, keeps an agreed commission from each sale, and pays you the rest. You keep ownership until a piece sells."},
+{q:"Is consignment better than selling art outright?",a:"Selling outright gets you paid sooner and moves the risk to the buyer, but galleries usually buy outright only from established artists, at a lower price. Consignment earns more per sale and is how most working artists place work."},
+{q:"What percentage does a gallery take on consigned art?",a:"Most galleries take 40 to 50% of the retail price. Shops, cafes and co-ops sometimes take less."},
+{q:"What happens to consigned art that doesn't sell?",a:"It comes back to you at the end of the agreed term. The agreement should say how quickly and who pays to ship it."},
+],
+keepReading:[
+{title:"Free art consignment agreement",href:"/resources/consignment-agreement"},
+{title:"Reading a consignment agreement",href:"/resources/reading-consignment-agreement"},
+{title:"Understanding gallery splits",href:"/resources/gallery-splits"},
+],
+cta:"Allegory Art Studio tracks every consigned piece: where it is, what it's priced at and when it's due back.",
+},
 
-{cat:"galleries", kind:"Checklist", id:"reading-consignment-agreement", title:"Reading a consignment agreement", dek:"The clauses that matter most, in plain language.",
-body:`<p>A consignment agreement doesn't need to be long to be good, it needs to be <strong>clear</strong>. Here's what to look for, and what each clause is really protecting.</p>
-<div class="keybox"><h4>The clauses that matter</h4><ul>
-<li><strong>Commission %</strong>, the gallery's share of each sale. 40–50% is standard.</li>
-<li><strong>Term & return</strong>, how long they hold the work, and who pays to ship it back.</li>
-<li><strong>Insurance</strong>, the gallery should insure work in its care against damage and theft.</li>
-<li><strong>Payment window</strong>, how many days after a sale you're paid (30 is common; push back on anything over 60).</li>
-<li><strong>Discount authority</strong>, whether they can discount, and by how much, without asking you.</li>
-<li><strong>Price list</strong>, your prices, agreed in writing, so there's no drift.</li></ul></div>
-<h2>Quiet red flags</h2>
-<ul><li>No mention of insurance, or liability pushed onto you.</li>
-<li>Vague or missing return terms ("indefinitely").</li>
-<li>Exclusive rights to <em>all</em> your work, not just the consigned pieces.</li>
-<li>Payment "when convenient" instead of a defined window.</li></ul>
-<p class="note">This is a guide to reading an agreement, not legal advice. For a long-term or high-value relationship, it's worth having an arts lawyer glance at the contract once.</p>`},
+{cat:"galleries", kind:"Checklist", id:"reading-consignment-agreement", title:"How to read a consignment agreement: a checklist for artists",
+dek:"The clauses that matter, the red flags, and the questions to ask before you sign.",
+titleTag:"Consignment Agreement Checklist for Artists | Allegory Art Studio",
+metaDescription:"What to look for before you sign a gallery's consignment agreement: the clauses that matter, the red flags, and the questions to ask.",
+updated:"2026-11-17",
+shortAnswer:"Before you sign a gallery's consignment agreement, check six things: the commission rate, the term and return terms, insurance, how soon you get paid, whether the gallery can discount, and the agreed prices. Watch for missing insurance, vague return dates, exclusivity over all your work, and payment “when convenient.”",
+body:`<h2>The six clauses to check</h2>
+<div class="g-table-wrap"><table class="g-table">
+<thead><tr><th>Clause</th><th>What to look for</th><th>Common terms</th></tr></thead>
+<tbody>
+<tr><td><strong>Commission</strong></td><td>The gallery's share, and whether framing and shipping come out first</td><td>40 to 50% of retail</td></tr>
+<tr><td><strong>Term and return</strong></td><td>How long the gallery holds the work, and who pays return shipping</td><td>3 to 12 months</td></tr>
+<tr><td><strong>Insurance</strong></td><td>The gallery insures work in its care against damage and theft</td><td>Covered at your share of retail</td></tr>
+<tr><td><strong>Payment window</strong></td><td>How many days after a sale you get paid</td><td>30 days; challenge anything over 60</td></tr>
+<tr><td><strong>Discount authority</strong></td><td>Whether the gallery can discount without asking you</td><td>Up to 10% without approval</td></tr>
+<tr><td><strong>Price list</strong></td><td>Prices agreed in writing, piece by piece</td><td>Attached as a schedule</td></tr>
+</tbody></table></div>
+<h2>Red flags</h2>
+<ul>
+<li><strong>No insurance clause,</strong> or liability shifted to you.</li>
+<li><strong>Vague return terms,</strong> such as “indefinitely.”</li>
+<li><strong>Exclusive rights to all your work,</strong> not only the pieces consigned.</li>
+<li><strong>Payment “when convenient”</strong> instead of a set number of days.</li>
+</ul>
+<h2>Questions to ask the gallery</h2>
+<ul>
+<li>Do you take a commission on sales I make myself, such as a collector who saw my work at the gallery?</li>
+<li>Who pays for shipping and installation, in each direction?</li>
+<li>Will I get the buyer's name and contact details?</li>
+<li>Can we review the agreement after six months?</li>
+</ul>
+<p>Don't have a contract yet? Start from the free <a href="/resources/consignment-agreement">consignment agreement</a> and send it to the gallery.</p>`,
+disclaimer:"This is a reading guide, not legal advice.",
+faqs:[
+{q:"What should a consignment agreement include?",a:"The works and their prices, ownership, the commission, the term and return terms, insurance, how soon you get paid, and signatures from both sides."},
+{q:"What is a fair payment window for consigned art?",a:"30 days after the gallery receives payment is common. Push back on anything over 60 days."},
+{q:"Should I sign an exclusive consignment agreement?",a:"Only if exclusivity is limited to the consigned pieces, a defined area and a set period. Avoid clauses that cover everything you make."},
+{q:"Do I need a lawyer to review a consignment agreement?",a:"For most everyday consignments a careful read is enough. For high-value work or a long-term relationship, have an arts attorney review it once."},
+],
+keepReading:[
+{title:"Free art consignment agreement",href:"/resources/consignment-agreement"},
+{title:"How art consignment works",href:"/resources/how-consignment-works"},
+{title:"Understanding gallery splits",href:"/resources/gallery-splits"},
+],
+cta:"Allegory Art Studio keeps each gallery's terms, commission and payment dates next to the work it holds.",
+},
 
-{cat:"galleries", kind:"Guide", id:"approaching-a-gallery", title:"Approaching a gallery", dek:"How to research the right fit and make an introduction that gets a reply.",
-body:`<p>Most gallery rejections aren't about talent, they're about fit and timing. A little research and a respectful approach put you miles ahead of the mass emails galleries ignore.</p>
-<h2>Research before you reach out</h2>
-<ul><li>Does the gallery show work in your medium, scale, and sensibility?</li>
-<li>Who do they already represent, and is there room for you, not a duplicate?</li>
-<li>How do <em>they</em> say they want to be contacted? Follow it exactly.</li></ul>
-<h2>Make it easy to say yes</h2>
-<p>Galleries are busy. A strong first contact is short and complete:</p>
-<ul><li>A warm, specific opening, why <em>this</em> gallery, referencing a show you saw.</li>
-<li>One tight paragraph on who you are and what your work is about.</li>
-<li>A link to a clean portfolio and your CV, not fifteen attachments.</li>
-<li>A clear, low-pressure ask.</li></ul>
-<div class="keybox"><h4>Before you hit send</h4><ul>
-<li>Your website and images are current and professional.</li>
-<li>Your statement, bio, and CV are ready to share.</li>
-<li>You're contacting them the way they asked to be contacted.</li></ul></div>
-<p class="note">Relationships beat cold emails. Openings, studio visits, and introductions from other artists open more doors than any single email ever will.</p>`},
+{cat:"galleries", kind:"Guide", id:"approaching-a-gallery", title:"How to approach an art gallery",
+dek:"How to research the right fit and make an introduction that gets a reply, with a sample email.",
+titleTag:"How to Approach an Art Gallery (With a Sample Email) | Allegory Art Studio",
+metaDescription:"How to research the right galleries, what to send, and a sample introduction email that gets a reply. Plus a checklist before you hit send.",
+updated:"2026-11-17",
+shortAnswer:"Research galleries that already show work like yours, then contact them the way they ask, usually by email. Send a short note that says why this gallery, one paragraph about your work, and links to your portfolio and CV. Most rejections come down to fit and timing, not talent.",
+body:`<h2>Research before you reach out</h2>
+<ol>
+<li>Does the gallery show work in your medium, scale and sensibility?</li>
+<li>Who do they already represent, and is there room for you rather than someone similar?</li>
+<li>How do they say they want to be contacted? Follow it exactly.</li>
+</ol>
+<h2>What to send</h2>
+<ul>
+<li>A specific opening that says why this gallery, such as a show you saw.</li>
+<li>One short paragraph on who you are and what your work is about.</li>
+<li>A link to a clean portfolio and your CV, not a pile of attachments.</li>
+<li>A clear, low-pressure ask.</li>
+</ul>
+<h2>Sample introduction email</h2>
+<div class="keybox"><h4>Copy and adapt</h4>
+<p><strong>Subject:</strong> [Your name], [medium] work for [Gallery name]</p>
+<p>Dear [Director's name],</p>
+<p>I saw [show name] at [Gallery] last month, and [one specific detail you noticed]. My work explores [one sentence on subject and approach], and I think it would sit well alongside the artists you show.</p>
+<p>I'm a [medium] artist based in [city]. Recent work includes [one or two shows, awards or residencies].</p>
+<p>You can see recent work here: [portfolio link]. My CV is here: [CV link].</p>
+<p>If it's a fit, I'd welcome the chance to send more images or arrange a studio visit. Thank you for your time.</p>
+<p>[Name] · [website] · [Instagram]</p></div>
+<h2>Before you hit send</h2>
+<ul>
+<li>Your website and images are current. See <a href="/resources/photographing-work">photographing your work</a>.</li>
+<li>Your <a href="/resources/artist-statement">artist statement</a>, <a href="/resources/bio-cv">bio and CV</a> are ready to share.</li>
+<li>You're contacting the gallery the way it asks.</li>
+<li>You know your terms if they say yes. Read <a href="/resources/how-consignment-works">how art consignment works</a>.</li>
+</ul>
+<h2>Relationships open more doors than cold emails</h2>
+<p>Go to openings, invite curators to studio visits, and ask artists the gallery already shows for an introduction. A warm introduction gets read; a cold email often doesn't.</p>`,
+faqs:[
+{q:"How do I get my art into a gallery?",a:"Find galleries that already show work like yours, build a relationship through openings and introductions, and send a short, specific email with a portfolio link when they accept submissions."},
+{q:"Should I email or visit a gallery?",a:"Follow the gallery's instructions. Most prefer email. Don't walk in with work unannounced."},
+{q:"How long should I wait before following up?",a:"Three to four weeks. Send one short follow-up, then move on if there's no reply."},
+],
+keepReading:[
+{title:"How art consignment works",href:"/resources/how-consignment-works"},
+{title:"Writing an artist statement",href:"/resources/artist-statement"},
+{title:"Keep your bio & CV current",href:"/resources/bio-cv"},
+],
+cta:"Allegory Art Studio keeps your gallery contacts and follow-up dates in one place, so no introduction goes cold.",
+},
 
-{cat:"galleries", kind:"Guide", id:"tracking-work", title:"Tracking work out in the world", dek:"A system for knowing where every piece is, who has it, and when it's due back.",
-body:`<p>The more your work travels, galleries, shows, consignments, loans, the easier it is to lose track. A simple system means you always know where every piece is without digging through emails.</p>
-<h2>What to record for each piece</h2>
-<ul><li>Title, year, medium, size, and price.</li>
-<li>Its current <strong>status</strong> (in studio, on consignment, on loan, sold).</li>
-<li>Its current <strong>location</strong>, and the specific gallery or collector when it's out.</li>
-<li>Key dates: when it went out, and when it's due back.</li></ul>
-<h2>Two axes, not one</h2>
-<p>It helps to track <strong>status</strong> (is it available, sold, donated?) separately from <strong>location</strong> (where is it physically?). A piece can be <em>available</em> and <em>on consignment at a gallery</em> at the same time, one fact is about the sale, the other about the place.</p>
-<div class="keybox"><h4>A few habits that prevent headaches</h4><ul>
-<li>Update a piece's status the day it moves, not "later."</li>
-<li>Photograph work before it leaves, and keep the receipt.</li>
-<li>Set a reminder for return dates so nothing lingers past its term.</li></ul></div>
-<p class="note">This is exactly what Allegory's inventory is built for, status, location, and the specific place, all in one view.</p>`},
+{cat:"galleries", kind:"Guide", id:"tracking-work", title:"How to track consigned and loaned artwork",
+dek:"A system for knowing where every piece is, who has it, and when it's due back.",
+titleTag:"How to Track Consigned Artwork: A Simple System | Allegory Art Studio",
+metaDescription:"Know where every piece is, who has it and when it's due back. What to record for consigned and loaned artwork, and habits that keep the record current.",
+updated:"2026-11-17",
+shortAnswer:"Keep one record for every piece with its details, its status (in studio, on consignment, on loan or sold), where it is, who has it, and when it's due back. Track status and location separately, update the record the day a piece moves, and set a reminder for every return date.",
+body:`<h2>What to record for each piece</h2>
+<div class="g-table-wrap"><table class="g-table">
+<thead><tr><th>Field</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td><strong>Title, year, medium, size</strong></td><td>Low Tide, 2026, oil on linen, 24 × 30 in</td></tr>
+<tr><td><strong>Retail price</strong></td><td>$1,800</td></tr>
+<tr><td><strong>Status</strong></td><td>On consignment</td></tr>
+<tr><td><strong>Location and holder</strong></td><td>[Gallery name], [city]</td></tr>
+<tr><td><strong>Date out and date due back</strong></td><td>March 3 to September 3</td></tr>
+<tr><td><strong>Paperwork</strong></td><td>Signed agreement and delivery receipt, with photos</td></tr>
+</tbody></table></div>
+<h2>Track status and location separately</h2>
+<p>Status is about the sale: available, sold or donated. Location is about the place. A piece can be available and on consignment at the same time, so one column can't hold both.</p>
+<h2>Habits that keep the record accurate</h2>
+<ul>
+<li>Update the record the day a piece moves, not later.</li>
+<li>Photograph work before it leaves, and keep the signed receipt.</li>
+<li>Set a reminder for every return date, so nothing stays out past its term.</li>
+<li>Check the record against each gallery's inventory a couple of times a year.</li>
+</ul>
+<p>Starting from scratch? The free <a href="/resources/inventory-starter">inventory starter</a> spreadsheet has these columns set up.</p>`,
+faqs:[
+{q:"How do artists keep track of consigned work?",a:"With one record per piece showing its status, location, holder and due-back date, updated whenever a piece moves. A spreadsheet works to start; studio software keeps it in one place as the inventory grows."},
+{q:"What should an artwork inventory include?",a:"Title, year, medium, size, price, status, current location and holder, key dates, and photos and paperwork for each piece."},
+{q:"How often should I check my consignment records?",a:"Update them every time a piece moves, and reconcile with each gallery a couple of times a year."},
+],
+keepReading:[
+{title:"Inventory starter (free spreadsheet)",href:"/resources/inventory-starter"},
+{title:"How art consignment works",href:"/resources/how-consignment-works"},
+{title:"Free art consignment agreement",href:"/resources/consignment-agreement"},
+],
+cta:"Allegory Art Studio's inventory shows status, location and the exact gallery or collector in one view.",
+},
 
 // ---------------- OPPORTUNITIES ----------------
 {cat:"opportunities", kind:"Guide", id:"finding-opps", title:"Finding open calls, grants & residencies", dek:"Where to look, how to vet them, and how to spot the ones worth your time.",
@@ -497,3 +720,80 @@ export const relatedGuides = (g: ResGuide, n = 3): ResGuide[] => {
   const otherCat = GUIDES.filter((x) => x.id !== g.id && x.cat !== g.cat);
   return [...sameCat, ...otherCat].slice(0, n);
 };
+
+// Byline author for every guide (links to the About page and Cara's LinkedIn).
+export const RESOURCE_AUTHOR = {
+  name: "Cara Alford",
+  role: "arts administrator and founder of Allegory Art Studio",
+  url: "/about",
+  linkedin: "https://www.linkedin.com/in/cara-alford-34471217/",
+};
+
+const RES_SITE = "https://allegoryartstudio.com";
+
+// Resolved SEO title/description for a guide (falls back for older guides).
+export const guideTitleTag = (g: ResGuide): string =>
+  g.titleTag || `${g.title} | Allegory Art Studio Resource Library`;
+export const guideDescription = (g: ResGuide): string => g.metaDescription || g.dek;
+
+// The "Keep reading" links for a guide: explicit when set, else related guides.
+export const guideKeepReading = (g: ResGuide): { title: string; href: string }[] =>
+  g.keepReading && g.keepReading.length
+    ? g.keepReading
+    : relatedGuides(g).map((r) => ({ title: r.title, href: `/resources/${r.id}` }));
+
+// Structured data for a guide: Article + BreadcrumbList, plus FAQPage when the
+// guide has an FAQ. Both the live page and the prerendered file emit this, so the
+// visible FAQ and the FAQPage schema come from the one `faqs` source.
+export function guideJsonLd(g: ResGuide): object[] {
+  const url = `${RES_SITE}/resources/${g.id}`;
+  const cat = catById(g.cat);
+  const date = g.updated || "2026-11-17";
+  const headline = guideTitleTag(g).split(" | ")[0];
+  const blocks: object[] = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline,
+      description: guideDescription(g),
+      author: {
+        "@type": "Person",
+        name: RESOURCE_AUTHOR.name,
+        jobTitle: "Arts administrator",
+        url: `${RES_SITE}${RESOURCE_AUTHOR.url}`,
+        sameAs: RESOURCE_AUTHOR.linkedin,
+      },
+      publisher: {
+        "@type": "Organization",
+        name: "Allegory Art Studio",
+        logo: { "@type": "ImageObject", url: `${RES_SITE}/Allegory_Studio_Logo.png` },
+      },
+      datePublished: date,
+      dateModified: date,
+      mainEntityOfPage: { "@type": "WebPage", "@id": url },
+      image: `${RES_SITE}/Allegory_Studio_Logo.png`,
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: `${RES_SITE}/` },
+        { "@type": "ListItem", position: 2, name: "Resources", item: `${RES_SITE}/resources` },
+        { "@type": "ListItem", position: 3, name: cat ? cat.name : "Guides", item: `${RES_SITE}/resources#cat-${g.cat}` },
+        { "@type": "ListItem", position: 4, name: g.title, item: url },
+      ],
+    },
+  ];
+  if (g.faqs && g.faqs.length) {
+    blocks.push({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: g.faqs.map((f) => ({
+        "@type": "Question",
+        name: f.q,
+        acceptedAnswer: { "@type": "Answer", text: f.a },
+      })),
+    });
+  }
+  return blocks;
+}

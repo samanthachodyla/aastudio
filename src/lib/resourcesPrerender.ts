@@ -3,7 +3,19 @@
 // not run JavaScript) get the real content, titles, and canonical URLs — the
 // same treatment the landing page gets. React re-renders #root on boot, so this
 // markup only needs to be valid and styled, not byte-match the components.
-import { CATS, GUIDES, catById, readMinutes, relatedGuides, type ResGuide } from "./resourcesContent";
+import {
+  CATS, GUIDES, catById, readMinutes,
+  guideTitleTag, guideDescription, guideKeepReading, guideJsonLd, type ResGuide,
+} from "./resourcesContent";
+
+const LINKEDIN = "https://www.linkedin.com/in/cara-alford-34471217/";
+const fmtUpdated = (iso: string): string => {
+  try {
+    return new Date(iso + "T12:00:00").toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  } catch {
+    return iso;
+  }
+};
 
 const esc = (s: string): string =>
   s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
@@ -76,27 +88,55 @@ export function libraryHTML(): string {
 export function guideHTML(g: ResGuide): string {
   const c = catById(g.cat);
   const style = `--cat:${c ? c.color : "#032419"}; --cat-ink:${c ? c.ink : "#f7f5ef"}`;
+
+  const byline =
+    '<div class="g-byline">By <a href="/about">Cara Alford</a>, arts administrator and founder of Allegory Art Studio' +
+    `<span class="sep">·</span><a href="${LINKEDIN}" target="_blank" rel="noopener noreferrer">LinkedIn</a>` +
+    (g.updated ? `<span class="sep">·</span>Updated ${esc(fmtUpdated(g.updated))}` : "") +
+    `<span class="sep">·</span>${readMinutes(g.body)} min read</div>`;
+
+  const lead = g.shortAnswer
+    ? `<p class="g-answer">${esc(g.shortAnswer)}</p>`
+    : `<p class="g-dek">${esc(g.dek)}</p>`;
+
+  const faq = g.faqs && g.faqs.length
+    ? '<section class="g-faq"><h2>Frequently asked questions</h2>' +
+      g.faqs.map((f) => `<div class="g-faq-item"><h3>${esc(f.q)}</h3><p>${esc(f.a)}</p></div>`).join("") +
+      "</section>"
+    : "";
+
+  const disclaimer = g.disclaimer ? `<p class="g-disclaimer">${esc(g.disclaimer)}</p>` : "";
+
+  const cta =
+    '<div class="g-cta"><p>' + esc(g.cta || "Allegory Art Studio does this part for you.") +
+    ' <a href="/#pricing">Start your 7-day free trial →</a></p></div>';
+
+  const keepReading =
+    '<div class="g-related"><div class="g-related-label">Keep reading</div><ul>' +
+    guideKeepReading(g)
+      .map((r) => {
+        const ext = !r.href.startsWith("/") ? ' target="_blank" rel="noopener noreferrer"' : "";
+        return `<li><a href="${esc(r.href)}"${ext}>${esc(r.title)}</a></li>`;
+      })
+      .join("") +
+    "</ul></div>";
+
+  const jsonLd = guideJsonLd(g)
+    .map((b) => `<script type="application/ld+json">${JSON.stringify(b).replace(/</g, "\\u003c")}</script>`)
+    .join("");
+
   return (
     `<div class="aas-res" style="${style}">` + MAST +
     '<article id="guide"><div class="read-wrap">' +
     `<a class="back" href="/resources">${BACK} All resources</a>` +
     `<span class="g-eyebrow">${esc(c ? c.name : "")}</span>` +
     `<h1 class="g-title">${esc(g.title)}</h1><div class="g-rule"></div>` +
-    `<p class="g-dek">${esc(g.dek)}</p>` +
-    `<div class="g-meta"><span>${esc(g.kind)}</span><span>·</span><span>${readMinutes(g.body)} min read</span></div>` +
+    byline + lead +
     `<div class="g-body">${g.body}</div>` +
-    '<div class="g-foot"><div class="g-cta"><p>Allegory Art Studio does this part for you, ' +
-    '<a href="/#pricing">start a 7-day free trial →</a></p></div>' +
-    '<div class="g-related"><div class="g-related-label">Keep reading</div><ul>' +
-    relatedGuides(g)
-      .map(
-        (r) =>
-          `<li><a href="/resources/${r.id}">${esc(r.title)}</a><span class="g-related-dek">${esc(r.dek)}</span></li>`,
-      )
-      .join("") +
-    "</ul></div>" +
+    faq + disclaimer +
+    "<div class=\"g-foot\">" + cta + keepReading +
     `<div><a class="back" href="/resources">${BACK} All resources</a></div></div>` +
-    "</div></article></div>"
+    "</div></article>" + jsonLd + "</div>"
   );
 }
 
@@ -123,8 +163,8 @@ export function resourceRoutes(): PrerenderRoute[] {
     routes.push({
       path: `/resources/${g.id}`,
       file: `resources/${g.id}/index.html`,
-      title: `${g.title} | Allegory Art Studio Resource Library`,
-      description: g.dek,
+      title: guideTitleTag(g),
+      description: guideDescription(g),
       html: guideHTML(g),
     });
   }
