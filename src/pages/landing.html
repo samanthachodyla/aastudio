@@ -300,6 +300,18 @@
 .allegory-lp .q .av{width:34px;height:34px;border-radius:50%;background:rgba(245,243,238,.14);flex:none;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:15px}
 .allegory-lp .q .who .nm{font-size:13px;font-weight:500}
 .allegory-lp .q .who .ro{font-size:11px;opacity:.62;letter-spacing:.04em}
+/* ----------  Partnerships  ---------- */
+.allegory-lp #partners .sec-head .eyebrow{background:var(--sage);color:#f4f0e8}
+.allegory-lp .partners-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;max-width:1080px;margin:0 auto}
+.allegory-lp .partner{display:flex;align-items:center;justify-content:center;text-align:center;min-height:132px;padding:22px 18px;background:var(--card);border:1px solid var(--line);border-radius:3px;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}
+.allegory-lp a.partner:hover{transform:translateY(-3px);box-shadow:0 18px 40px -30px rgba(3,36,25,.5);border-color:var(--sage)}
+.allegory-lp .partner img{max-height:62px;max-width:84%;width:auto;object-fit:contain;opacity:.92;transition:opacity .25s ease}
+.allegory-lp a.partner:hover img{opacity:1}
+.allegory-lp .partner .partner-name{font-family:var(--font-d);font-size:21px;line-height:1.22;color:var(--ink);letter-spacing:-.005em}
+.allegory-lp .partner .partner-sub{display:block;font-family:var(--font-b);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+.allegory-lp #partners .partners-note{text-align:center;color:var(--muted);font-size:13px;margin-top:30px}
+@media(max-width:900px){.allegory-lp .partners-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.allegory-lp .partners-grid{grid-template-columns:repeat(2,1fr)}.allegory-lp .partner{min-height:108px;padding:18px 14px}.allegory-lp .partner .partner-name{font-size:19px}}
 /* ----------  FAQ  ---------- */
 .allegory-lp .faq{max-width:760px;margin:0 auto}
 .allegory-lp .faq details{border-bottom:1px solid var(--line)}
@@ -781,6 +793,40 @@
         <blockquote>Honestly, having everything in one place is just so, so amazing and helpful. I’m really excited to start using Allegory more and see how much it streamlines everything for me.</blockquote>
         <div class="who"><span class="av">S</span><div><div class="nm">Stephanie Checton</div><div class="ro">Artist</div></div></div>
       </div>
+    </div>
+  </div>
+</section>
+<!-- ===== Partnerships ===== -->
+<section id="partners">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Partnerships</span>
+      <h2>In good <em>company.</em></h2>
+      <p>The galleries, studios, and creative partners we're proud to work alongside.</p>
+    </div>
+    <div class="partners-grid reveal">
+      <!-- Allegory Art Collective — brandmark on hand; URL to confirm -->
+      <div class="partner" aria-label="Allegory Art Collective">
+        <img src="/AAC_Brandmark-03_Emerald.png" alt="Allegory Art Collective" />
+      </div>
+      <!-- Allegory Art Consulting — URL to confirm -->
+      <div class="partner"><span class="partner-name">Allegory Art Consulting</span></div>
+      <!-- Redux Contemporary Art Center -->
+      <a class="partner" href="https://reduxstudios.org" target="_blank" rel="noopener"><span class="partner-name">Redux Contemporary Art Center</span></a>
+      <!-- Silver Linings -->
+      <a class="partner" href="https://moresilverlinings.com" target="_blank" rel="noopener"><span class="partner-name">Silver Linings</span></a>
+      <!-- Hailey Art Coaching Club — URL to confirm -->
+      <div class="partner"><span class="partner-name">Hailey Art Coaching Club</span></div>
+      <!-- Lia Burke Libaire — URL to confirm -->
+      <div class="partner"><span class="partner-name">Lia Burke Libaire</span></div>
+      <!-- Meredith Walker Studio — URL to confirm -->
+      <div class="partner"><span class="partner-name">Meredith Walker Studio</span></div>
+      <!-- Whitney Stoddard Art — URL to confirm -->
+      <div class="partner"><span class="partner-name">Whitney Stoddard Art</span></div>
+      <!-- Mallie Loring Pratt — URL to confirm -->
+      <div class="partner"><span class="partner-name">Mallie Loring Pratt</span></div>
+      <!-- Jae Space — URL to confirm -->
+      <div class="partner"><span class="partner-name">Jae Space</span></div>
     </div>
   </div>
 </section>
