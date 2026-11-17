@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { Plus, Download, Trash2, FileText, Pencil, ScanLine } from "lucide-react";
 import { PnLStatement, EXPENSE_CATEGORIES, catLabel } from "@/components/PnLStatement";
+import { ArtworkPricingCalculator } from "@/components/ArtworkPricingCalculator";
 import { AppShell } from "@/components/AppShell";
 import { useStore, fmtMoney, fmtDate } from "@/lib/store";
 import { supabase } from "@/integrations/supabase/client";
@@ -219,6 +220,7 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
           <TabsTrigger value="overview" className={TAB_TRIGGER}>Overview</TabsTrigger>
           <TabsTrigger value="invoices" className={TAB_TRIGGER}>Invoices</TabsTrigger>
           <TabsTrigger value="expenses" className={TAB_TRIGGER}>Expenses</TabsTrigger>
+          <TabsTrigger value="calculator" className={TAB_TRIGGER}>Calculator</TabsTrigger>
           {/* Pricing tab hidden for the time being (PricingIntelligence remains defined below). */}
         </TabsList>
 
@@ -518,6 +520,18 @@ ${artistLine ? `<div class="eyebrow" style="margin-top:4px">${artistLine}</div>`
               </div>
             </>
           )}
+        </TabsContent>
+
+        <TabsContent value="calculator" className="mt-0">
+          <section>
+            <div className="eyebrow mb-2">Artwork Pricing Calculator</div>
+            <h2 className="font-display text-2xl tracking-tight mb-1">Price your work with confidence</h2>
+            <p className="text-sm text-muted-foreground mb-6 max-w-2xl">
+              Enter the dimensions, materials, and your hourly rate, and we’ll calculate a value while helping
+              you build a consistent pricing structure for your work.
+            </p>
+            <ArtworkPricingCalculator />
+          </section>
         </TabsContent>
 
         {/* Pricing tab hidden for the time being. */}

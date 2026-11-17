@@ -1,14 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Seo } from "@/components/Seo";
+import { computePricing, money, num, type PricingInputs } from "@/lib/pricing";
 import "@/styles/marketing.css";
-
-const money = (n: number) => "$" + Math.round(Math.max(0, n)).toLocaleString("en-US");
-const round5 = (n: number) => Math.max(0, Math.round(n / 5) * 5);
-const num = (v: string) => {
-  const n = parseFloat(v);
-  return isNaN(n) ? 0 : n;
-};
 
 /**
  * Free art pricing calculator (the "pricing worksheet as a tool" from the SEO
@@ -26,14 +20,8 @@ export default function PricingCalculator() {
   const [hours, setHours] = useState("");
   const [rate, setRate] = useState("");
 
-  const calc = useMemo(() => {
-    const base = (num(w) + num(h)) * num(perInch);
-    const subtotal = base + num(materials) + num(framing);
-    const retail = round5(subtotal);
-    const net = retail * (1 - num(commission) / 100);
-    const timeValue = num(hours) * num(rate);
-    return { base, subtotal, retail, net, timeValue };
-  }, [w, h, perInch, materials, framing, commission, hours, rate]);
+  const inputs: PricingInputs = { w, h, perInch, materials, framing, commission, hours, rate };
+  const calc = useMemo(() => computePricing(inputs), [w, h, perInch, materials, framing, commission, hours, rate]);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
