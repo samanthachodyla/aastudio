@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Upload, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useTier, type Tier } from "@/lib/tier";
 import { useUserProfile } from "@/lib/userProfile";
 import { useAuth } from "@/lib/auth";
+import { QUICKBOOKS_ENABLED } from "@/lib/quickbooks";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -20,6 +21,68 @@ const Settings = () => {
   const [mail, setMail] = useState(email);
   const [zapHook, setZapHook] = useState(zapierHookUrl);
   const logoRef = useRef<HTMLInputElement>(null);
+
+  // ---- Native QuickBooks Online connection ----
+  const [qbConnected, setQbConnected] = useState(false);
+  const [qbCompany, setQbCompany] = useState("");
+  const [qbBusy, setQbBusy] = useState(false);
+
+  useEffect(() => {
+    if (!QUICKBOOKS_ENABLED) return;
+    // Toast + clean up the ?quickbooks= flag the OAuth callback redirects back with.
+    const params = new URLSearchParams(window.location.search);
+    const qb = params.get("quickbooks");
+    if (qb === "connected") toast.success("QuickBooks connected. New invoices will sync to your books.");
+    else if (qb === "error") toast.error("Couldn't connect QuickBooks. Please try again.");
+    if (qb) window.history.replaceState({}, "", "/settings");
+    // Load the current connection status to drive the UI.
+    if (!user?.id) return;
+    (async () => {
+      const { data } = await supabase
+        .from("quickbooks_connections")
+        .select("company_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (data) { setQbConnected(true); setQbCompany(data.company_name || ""); }
+    })();
+  }, [user?.id]);
+
+  const connectQuickBooks = async () => {
+    setQbBusy(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error("Please sign in again."); setQbBusy(false); return; }
+      const res = await fetch("/api/quickbooks/auth", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const json = await res.json();
+      if (json.authUrl) { window.location.href = json.authUrl; return; }
+      toast.error(json.error || "Couldn't start the QuickBooks connection.");
+    } catch {
+      toast.error("Couldn't reach QuickBooks. Please try again.");
+    } finally {
+      setQbBusy(false);
+    }
+  };
+
+  const disconnectQuickBooks = async () => {
+    setQbBusy(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error("Please sign in again."); setQbBusy(false); return; }
+      const res = await fetch("/api/quickbooks/disconnect", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (res.ok) { setQbConnected(false); setQbCompany(""); toast.success("QuickBooks disconnected."); }
+      else toast.error("Couldn't disconnect. Please try again.");
+    } catch {
+      toast.error("Couldn't reach QuickBooks. Please try again.");
+    } finally {
+      setQbBusy(false);
+    }
+  };
 
   const saveZapier = (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,6 +220,33 @@ const Settings = () => {
             </button>
           )}
         </section>
+
+        {/* Native QuickBooks Online (gated until Intuit keys + migration are live) */}
+        {QUICKBOOKS_ENABLED && (
+          <section className="hairline-card p-6">
+            <div className="eyebrow mb-2">Integrations</div>
+            <h2 className="font-display text-2xl tracking-tight mb-2">QuickBooks Online</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Connect your QuickBooks and every invoice you create here flows straight into your books —
+              a paid sale as a <span className="font-medium text-foreground">Sales Receipt</span>, an unpaid
+              one as an <span className="font-medium text-foreground">Invoice</span>. No spreadsheets, no copy-paste.
+            </p>
+            {qbConnected ? (
+              <div className="flex items-center gap-3">
+                <span className="text-sm">
+                  Connected{qbCompany ? <> to <span className="font-medium text-foreground">{qbCompany}</span></> : ""}.
+                </span>
+                <Button variant="outline" size="sm" className="rounded-sm" onClick={disconnectQuickBooks} disabled={qbBusy}>
+                  {qbBusy ? "…" : "Disconnect"}
+                </Button>
+              </div>
+            ) : (
+              <Button className="rounded-sm" onClick={connectQuickBooks} disabled={qbBusy}>
+                {qbBusy ? "Connecting…" : "Connect QuickBooks"}
+              </Button>
+            )}
+          </section>
+        )}
 
         {/* Integrations */}
         <section className="hairline-card p-6">

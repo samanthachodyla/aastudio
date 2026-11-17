@@ -11,6 +11,7 @@ import {
 } from "./sync";
 import { nextRecurrence } from "./todoParse";
 import { emitInvoiceToZapier } from "./zapier";
+import { syncInvoiceToQuickBooks } from "./quickbooks";
 import { useAttachments } from "./attachments";
 
 interface State {
@@ -235,6 +236,9 @@ export const useStore = create<State>()(
         // Zap can mirror it into QuickBooks / Shopify. Fire-and-forget.
         const art = get().artworks.find(a => a.id === item.artworkId);
         emitInvoiceToZapier(item, art?.title ?? "");
+        // If the member connected QuickBooks natively, mirror the invoice there
+        // too (paid -> Sales Receipt, unpaid -> Invoice). No-op until enabled.
+        void syncInvoiceToQuickBooks(item, art?.title ?? "");
         return item;
       },
       updateInvoice: (id, patch) => {
