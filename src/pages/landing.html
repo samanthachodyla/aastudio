@@ -1,7 +1,8 @@
 <div class="allegory-lp" id="allegory-top">
 <style>
-/* ----------  Fonts  ---------- */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Work+Sans:wght@300;400;500;600&display=swap');
+/* Fonts are loaded once in index.html <head> (Cormorant Garamond + Work Sans),
+   so no @import here — a duplicate @import is render-blocking and discovered
+   late inside the CSS, which hurts first paint. */
 /* ----------  Scoped reset + tokens  ---------- */
 .allegory-lp *{box-sizing:border-box;margin:0;padding:0}
 .allegory-lp{
@@ -471,7 +472,7 @@
 <nav class="nav">
   <div class="wrap nav-in">
     <a href="#allegory-top" class="brand" aria-label="Allegory Art Studio">
-      <img class="brand-logo" src="/Allegory_Studio_Logo.png" alt="Allegory Art Studio" />
+      <picture><source srcset="/Allegory_Studio_Logo.webp" type="image/webp" /><img class="brand-logo" src="/Allegory_Studio_Logo_opt.png" alt="Allegory Art Studio" width="600" height="300" fetchpriority="high" /></picture>
     </a>
     <input type="checkbox" id="navchk">
     <label class="nav-toggle" for="navchk"><span></span><span></span><span></span></label>
@@ -909,7 +910,7 @@
   <div class="wrap">
     <div class="foot-grid">
       <div>
-        <img class="foot-logo" src="/Allegory_Studio_Logo.png" alt="Allegory Art Studio" />
+        <picture><source srcset="/Allegory_Studio_Logo.webp" type="image/webp" /><img class="foot-logo" src="/Allegory_Studio_Logo_opt.png" alt="Allegory Art Studio" width="600" height="300" loading="lazy" /></picture>
         <div class="foot-note">The studio manager tool for working artists.</div>
         <a class="btn btn-light btn-sm" href="/about" style="margin-top:16px">About the founder</a>
       </div>
