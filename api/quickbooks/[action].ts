@@ -162,7 +162,10 @@ async function handleCallback(req: Any, res: Any) {
     body: new URLSearchParams({ grant_type: "authorization_code", code, redirect_uri: REDIRECT_URI }).toString(),
   });
   const tok = await tokenRes.json().catch(() => ({}));
-  if (!tokenRes.ok || !tok.access_token || !tok.refresh_token) return back("quickbooks=error&reason=token_exchange_failed");
+  if (!tokenRes.ok || !tok.access_token || !tok.refresh_token) {
+    console.error("[qb] callback token exchange failed", { status: tokenRes.status, error: tok?.error, detail: tok?.error_description });
+    return back("quickbooks=error&reason=token_exchange_failed");
+  }
   const now = Date.now();
   const tokenExpiresAt = new Date(now + (Number(tok.expires_in) || 3600) * 1000).toISOString();
   const refreshExpiresAt = tok.x_refresh_token_expires_in ? new Date(now + Number(tok.x_refresh_token_expires_in) * 1000).toISOString() : null;
@@ -176,6 +179,7 @@ async function handleCallback(req: Any, res: Any) {
     { user_id: userId, realm_id: realmId, company_name: companyName, connected_at: new Date().toISOString() },
     { onConflict: "user_id" },
   );
+  console.log("[qb] connected", { realmId, company: companyName || "(none)", env: QBO_ENV });
   return back("quickbooks=connected");
 }
 
@@ -247,16 +251,19 @@ async function handleSyncInvoice(req: Any, res: Any) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
+  const act = String(req.query.action || "");
+  console.log("[qb] request", { action: act, method: req.method });
   try {
-    const action = String(req.query.action || "");
+    const action = act;
     if (action === "auth") return await handleAuth(req, res);
     if (action === "callback") return await handleCallback(req, res);
     if (action === "disconnect") return await handleDisconnect(req, res);
     if (action === "sync-invoice") return await handleSyncInvoice(req, res);
     return res.status(404).json({ error: "Unknown action" });
   } catch (e: unknown) {
+    console.error("[qb] handler error", { action: act, error: e instanceof Error ? e.message : String(e) });
     // The callback redirects; everything else returns JSON (fire-and-forget on the client).
-    if (String(req.query.action || "") === "callback") return res.redirect(302, `${APP_URL}/settings?quickbooks=error&reason=server_error`);
+    if (act === "callback") return res.redirect(302, `${APP_URL}/settings?quickbooks=error&reason=server_error`);
     return res.status(200).json({ synced: false, error: e instanceof Error ? e.message : "unknown" });
   }
 }
