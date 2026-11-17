@@ -223,68 +223,95 @@ const Settings = () => {
           )}
         </section>
 
-        {/* Native QuickBooks Online. During the sandbox phase this is admin-only;
-            drop the isAdmin check to open it to all members once we're on
-            production (approved) Intuit keys. */}
-        {QUICKBOOKS_ENABLED && isAdmin && (
-          <section className="hairline-card p-6">
-            <div className="eyebrow mb-2">Integrations</div>
-            <h2 className="font-display text-2xl tracking-tight mb-2">QuickBooks Online</h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              Connect your QuickBooks and every invoice you create here flows straight into your books —
-              a paid sale as a <span className="font-medium text-foreground">Sales Receipt</span>, an unpaid
-              one as an <span className="font-medium text-foreground">Invoice</span>. No spreadsheets, no copy-paste.
-            </p>
-            {qbConnected ? (
-              <div className="flex items-center gap-3">
-                <span className="text-sm">
-                  Connected{qbCompany ? <> to <span className="font-medium text-foreground">{qbCompany}</span></> : ""}.
-                </span>
-                <Button variant="outline" size="sm" className="rounded-sm" onClick={disconnectQuickBooks} disabled={qbBusy}>
-                  {qbBusy ? "…" : "Disconnect"}
-                </Button>
-              </div>
-            ) : (
-              <Button className="rounded-sm" onClick={connectQuickBooks} disabled={qbBusy}>
-                {qbBusy ? "Connecting…" : "Connect QuickBooks"}
-              </Button>
-            )}
-          </section>
-        )}
-
-        {/* Integrations */}
+        {/* Integrations — one clean section, a button per tool. Native QuickBooks
+            is admin-only during the sandbox phase; drop the isAdmin check to open
+            "Connect" to all members once on production (approved) Intuit keys. */}
         <section className="hairline-card p-6">
           <div className="eyebrow mb-2">Integrations</div>
-          <h2 className="font-display text-2xl tracking-tight mb-2">QuickBooks, Shopify & more (via Zapier)</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Connect your own tools with Zapier. In Zapier, create a Zap with a{" "}
-            <span className="font-medium text-foreground">Webhooks by Zapier → Catch Hook</span> trigger, copy the
-            webhook URL it gives you, and paste it below. Then add an action like{" "}
-            <span className="font-medium text-foreground">QuickBooks Online → Create Sales Receipt</span> (or a Shopify
-            action). From then on, every new invoice you create here is sent to that Zap.
+          <h2 className="font-display text-2xl tracking-tight mb-2">Connect your tools</h2>
+          <p className="text-sm text-muted-foreground mb-5">
+            Link your accounts so your studio stays in sync — new invoices flow out automatically.
           </p>
-          <form onSubmit={saveZapier} className="grid gap-3 max-w-xl">
-            <div>
-              <Label htmlFor="zap-hook">Zapier webhook URL</Label>
-              <Input
-                id="zap-hook"
-                type="url"
-                inputMode="url"
-                placeholder="https://hooks.zapier.com/hooks/catch/…"
-                value={zapHook}
-                onChange={(e) => setZapHook(e.target.value)}
-              />
-              <p className="text-[11px] text-muted-foreground mt-1">
-                Leave blank to turn the integration off. Each new invoice sends the buyer, item, amounts, tax and date.
-              </p>
+
+          <div className="border border-border rounded-sm divide-y divide-border">
+            {/* QuickBooks (native) */}
+            <div className="flex items-center justify-between gap-4 p-4">
+              <div className="min-w-0">
+                <div className="font-medium">QuickBooks Online</div>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Each invoice posts to your books — paid as a Sales Receipt, unpaid as an Invoice.
+                </p>
+              </div>
+              <div className="shrink-0">
+                {QUICKBOOKS_ENABLED && isAdmin ? (
+                  qbConnected ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground hidden sm:inline">
+                        {qbCompany ? `Connected · ${qbCompany}` : "Connected"}
+                      </span>
+                      <Button variant="outline" size="sm" className="rounded-sm" onClick={disconnectQuickBooks} disabled={qbBusy}>
+                        {qbBusy ? "…" : "Disconnect"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button size="sm" className="rounded-sm" onClick={connectQuickBooks} disabled={qbBusy}>
+                      {qbBusy ? "Connecting…" : "Connect"}
+                    </Button>
+                  )
+                ) : (
+                  <Button size="sm" variant="outline" className="rounded-sm" disabled>Coming soon</Button>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button type="submit" size="sm" className="rounded-sm">Save</Button>
-              {zapierHookUrl && (
-                <span className="text-[11px] text-muted-foreground">Connected · invoices are being sent to Zapier.</span>
-              )}
+
+            {/* Shopify (native, next) */}
+            <div className="flex items-center justify-between gap-4 p-4">
+              <div className="min-w-0">
+                <div className="font-medium">Shopify</div>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Bring your online store orders into your studio.
+                </p>
+              </div>
+              <div className="shrink-0">
+                <Button size="sm" variant="outline" className="rounded-sm" disabled>Coming soon</Button>
+              </div>
             </div>
-          </form>
+
+            {/* Everything else, via Zapier */}
+            <div className="p-4">
+              <div className="min-w-0">
+                <div className="font-medium">
+                  Other apps <span className="text-xs text-muted-foreground font-normal">· via Zapier</span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Send new invoices to 1,000+ apps. In Zapier, make a{" "}
+                  <span className="font-medium text-foreground">Webhooks → Catch Hook</span> Zap and paste its URL below.
+                </p>
+              </div>
+              <form onSubmit={saveZapier} className="grid gap-3 max-w-xl mt-3">
+                <div>
+                  <Label htmlFor="zap-hook" className="sr-only">Zapier webhook URL</Label>
+                  <Input
+                    id="zap-hook"
+                    type="url"
+                    inputMode="url"
+                    placeholder="https://hooks.zapier.com/hooks/catch/…"
+                    value={zapHook}
+                    onChange={(e) => setZapHook(e.target.value)}
+                  />
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    Leave blank to turn it off. Each invoice sends the buyer, item, amounts, tax and date.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button type="submit" size="sm" variant="outline" className="rounded-sm">Save</Button>
+                  {zapierHookUrl && (
+                    <span className="text-[11px] text-muted-foreground">Connected · invoices sent to Zapier.</span>
+                  )}
+                </div>
+              </form>
+            </div>
+          </div>
         </section>
 
         {/* Plan */}
