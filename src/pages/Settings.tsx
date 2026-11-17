@@ -10,6 +10,7 @@ import { useTier, type Tier } from "@/lib/tier";
 import { useUserProfile } from "@/lib/userProfile";
 import { useAuth } from "@/lib/auth";
 import { QUICKBOOKS_ENABLED } from "@/lib/quickbooks";
+import { useIsAdmin } from "@/lib/admin";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -21,6 +22,7 @@ const Settings = () => {
   const [mail, setMail] = useState(email);
   const [zapHook, setZapHook] = useState(zapierHookUrl);
   const logoRef = useRef<HTMLInputElement>(null);
+  const { isAdmin } = useIsAdmin();
 
   // ---- Native QuickBooks Online connection ----
   const [qbConnected, setQbConnected] = useState(false);
@@ -221,8 +223,10 @@ const Settings = () => {
           )}
         </section>
 
-        {/* Native QuickBooks Online (gated until Intuit keys + migration are live) */}
-        {QUICKBOOKS_ENABLED && (
+        {/* Native QuickBooks Online. During the sandbox phase this is admin-only;
+            drop the isAdmin check to open it to all members once we're on
+            production (approved) Intuit keys. */}
+        {QUICKBOOKS_ENABLED && isAdmin && (
           <section className="hairline-card p-6">
             <div className="eyebrow mb-2">Integrations</div>
             <h2 className="font-display text-2xl tracking-tight mb-2">QuickBooks Online</h2>

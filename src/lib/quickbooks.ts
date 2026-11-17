@@ -7,9 +7,10 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Invoice } from "@/lib/types";
 
-// Master switch. Stays false until the Intuit app keys are set on Vercel and the
-// quickbooks_* migration is applied; flip to true to turn the feature on.
-export const QUICKBOOKS_ENABLED = false;
+// Master switch. Turned on once the Intuit app keys are set on Vercel and the
+// quickbooks_* migration is applied. (During the sandbox phase the Settings
+// Connect button is additionally gated to admins — see Settings.tsx.)
+export const QUICKBOOKS_ENABLED = true;
 
 export async function syncInvoiceToQuickBooks(invoice: Invoice, artworkTitle = ""): Promise<void> {
   if (!QUICKBOOKS_ENABLED) return;
