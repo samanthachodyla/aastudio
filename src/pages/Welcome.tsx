@@ -66,10 +66,12 @@ export default function Welcome() {
         const label = `${json.plan}-${json.cycle}`;
         const g = (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag;
         const fbq = (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq;
-        g?.("event", "sign_up", { method: "stripe" });
-        g?.("event", "start_trial", { value, currency: "USD", plan: label });
-        fbq?.("track", "CompleteRegistration", { content_name: label }, { eventID: `signup_${sid}` });
+        // GA4 primary conversion: fire once, now that the trial account is created.
+        g?.("event", "start_trial", { plan: json.plan, billing_period: json.cycle });
+        // Matching Meta Pixel event; eventID matches the server CAPI StartTrial so Meta de-dupes.
         fbq?.("track", "StartTrial", { value, currency: "USD", predicted_ltv: value, content_name: label }, { eventID: `trial_${sid}` });
+        // Meta-only registration signal (paired with the server CAPI CompleteRegistration).
+        fbq?.("track", "CompleteRegistration", { content_name: label }, { eventID: `signup_${sid}` });
       } catch { /* analytics is best-effort */ }
       // Account is ready, sign them straight in.
       const { error } = await supabase.auth.signInWithPassword({ email: json.email, password });

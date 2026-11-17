@@ -36,7 +36,8 @@ const Dashboard = () => {
           "pro:monthly": 55, "pro:annual": 528,
         };
         const value = PRICE[`${plan}:${cycle}`];
-        (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", "start_trial", { value, currency: "USD", plan: label });
+        // GA4 primary conversion: once, now that the member's trial is active.
+        (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", "start_trial", { plan, billing_period: cycle });
         (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq?.(
           "track", "StartTrial",
           { value, currency: "USD", predicted_ltv: value, content_name: label },

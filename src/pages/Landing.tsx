@@ -137,25 +137,26 @@ export default function Landing() {
                 ? "You're in! Your 20% code is on its way to your inbox. ✦"
                 : "Thanks, you're on the list. ✦";
             }
-            // GA4 generate_lead, fires only after a successful lead submission.
-            try {
-              (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", "generate_lead", {
-                form_source: formSource,
-                utm_source: qs.get("utm_source") || undefined,
-                utm_medium: qs.get("utm_medium") || undefined,
-                utm_campaign: qs.get("utm_campaign") || undefined,
-                utm_content: qs.get("utm_content") || undefined,
-                utm_term: qs.get("utm_term") || undefined,
-              });
-            } catch { /* analytics is best-effort */ }
-            // Fire the Meta Pixel Lead event so Meta ads can optimize for signups.
-            // The eventID matches the server (CAPI) event so Meta de-dupes them.
-            try {
-              (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq?.("track", "Lead", {
-                content_name: "waitlist",
-                source: formSource,
-              }, { eventID: eventId });
-            } catch { /* analytics is best-effort */ }
+            // Newsletter conversion (GA4 primary metric). Fires exactly ONCE, and
+            // only for the "Get my 20% code" forms: the footer newsletter section
+            // (source "newsletter") and the members-only popup (source "popup").
+            // Other forms (e.g. first-access) intentionally fire no conversion here.
+            if (formSource === "newsletter" || formSource === "popup") {
+              const formLocation = formSource === "popup" ? "modal" : "footer";
+              try {
+                (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", "newsletter_signup", {
+                  form_location: formLocation,
+                });
+              } catch { /* analytics is best-effort */ }
+              // Matching Meta Pixel Lead. The eventID matches the server (CAPI) Lead
+              // so Meta de-dupes the browser + server events into one conversion.
+              try {
+                (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq?.("track", "Lead", {
+                  content_name: "newsletter",
+                  form_location: formLocation,
+                }, { eventID: eventId });
+              } catch { /* analytics is best-effort */ }
+            }
           })
           .catch(() => {
             if (btn) { btn.disabled = false; btn.textContent = "Try again"; }
