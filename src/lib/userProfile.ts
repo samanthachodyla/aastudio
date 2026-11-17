@@ -6,8 +6,11 @@ interface UserProfileState {
   email: string;
   /** Optional custom logo (data URL) shown on printed/exported invoices. */
   invoiceLogo: string;
+  /** Optional Zapier Catch Hook URL. When set, new invoices are POSTed to it so
+   *  Zapier can create matching records in QuickBooks, Shopify, etc. */
+  zapierHookUrl: string;
   welcomeDismissed: boolean;
-  setProfile: (patch: Partial<Pick<UserProfileState, "fullName" | "email" | "invoiceLogo">>) => void;
+  setProfile: (patch: Partial<Pick<UserProfileState, "fullName" | "email" | "invoiceLogo" | "zapierHookUrl">>) => void;
   dismissWelcome: () => void;
 }
 
@@ -17,6 +20,7 @@ export const useUserProfile = create<UserProfileState>()(
       fullName: "",
       email: "",
       invoiceLogo: "",
+      zapierHookUrl: "",
       welcomeDismissed: false,
       setProfile: (patch) => set(patch),
       dismissWelcome: () => set({ welcomeDismissed: true }),

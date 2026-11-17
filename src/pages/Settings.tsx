@@ -14,11 +14,23 @@ import { toast } from "sonner";
 
 const Settings = () => {
   const { tier, setTier } = useTier();
-  const { fullName, email, invoiceLogo, setProfile } = useUserProfile();
+  const { fullName, email, invoiceLogo, zapierHookUrl, setProfile } = useUserProfile();
   const { user } = useAuth();
   const [name, setName] = useState(fullName);
   const [mail, setMail] = useState(email);
+  const [zapHook, setZapHook] = useState(zapierHookUrl);
   const logoRef = useRef<HTMLInputElement>(null);
+
+  const saveZapier = (e: React.FormEvent) => {
+    e.preventDefault();
+    const url = zapHook.trim();
+    if (url && !/^https?:\/\/\S+$/i.test(url)) {
+      toast.error("Please paste a full URL starting with https://");
+      return;
+    }
+    setProfile({ zapierHookUrl: url });
+    toast.success(url ? "Zapier connected, new invoices will be sent to it." : "Zapier disconnected.");
+  };
 
   const handleLogoFile = (file: File | undefined) => {
     if (!file) return;
@@ -144,6 +156,41 @@ const Settings = () => {
               <span className="text-[10px] text-muted-foreground">PNG, JPG, or SVG up to 2MB</span>
             </button>
           )}
+        </section>
+
+        {/* Integrations */}
+        <section className="hairline-card p-6">
+          <div className="eyebrow mb-2">Integrations</div>
+          <h2 className="font-display text-2xl tracking-tight mb-2">QuickBooks, Shopify & more (via Zapier)</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Connect your own tools with Zapier. In Zapier, create a Zap with a{" "}
+            <span className="font-medium text-foreground">Webhooks by Zapier → Catch Hook</span> trigger, copy the
+            webhook URL it gives you, and paste it below. Then add an action like{" "}
+            <span className="font-medium text-foreground">QuickBooks Online → Create Sales Receipt</span> (or a Shopify
+            action). From then on, every new invoice you create here is sent to that Zap.
+          </p>
+          <form onSubmit={saveZapier} className="grid gap-3 max-w-xl">
+            <div>
+              <Label htmlFor="zap-hook">Zapier webhook URL</Label>
+              <Input
+                id="zap-hook"
+                type="url"
+                inputMode="url"
+                placeholder="https://hooks.zapier.com/hooks/catch/…"
+                value={zapHook}
+                onChange={(e) => setZapHook(e.target.value)}
+              />
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Leave blank to turn the integration off. Each new invoice sends the buyer, item, amounts, tax and date.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button type="submit" size="sm" className="rounded-sm">Save</Button>
+              {zapierHookUrl && (
+                <span className="text-[11px] text-muted-foreground">Connected · invoices are being sent to Zapier.</span>
+              )}
+            </div>
+          </form>
         </section>
 
         {/* Plan */}

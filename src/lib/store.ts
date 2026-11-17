@@ -10,6 +10,7 @@ import {
   pushInsert, pushUpdate, pushDelete, pushInboxConnection, type HydratedData,
 } from "./sync";
 import { nextRecurrence } from "./todoParse";
+import { emitInvoiceToZapier } from "./zapier";
 import { useAttachments } from "./attachments";
 
 interface State {
@@ -230,6 +231,10 @@ export const useStore = create<State>()(
         const item: Invoice = { ...i, id: uid(), number, issuedAt: today() };
         set({ invoices: [item, ...get().invoices] });
         track(pushInsert("invoices", item));
+        // If the member connected Zapier, push the new invoice to their hook so a
+        // Zap can mirror it into QuickBooks / Shopify. Fire-and-forget.
+        const art = get().artworks.find(a => a.id === item.artworkId);
+        emitInvoiceToZapier(item, art?.title ?? "");
         return item;
       },
       updateInvoice: (id, patch) => {
