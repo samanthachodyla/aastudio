@@ -99,10 +99,10 @@ export default function PricingCalculator() {
         <section className="hero">
           <div className="wrap">
             <div className="eyebrow">Free tool</div>
-            <h1>Art pricing calculator</h1>
+            <h1>Artwork Pricing Calculator</h1>
             <p className="lead">
-              Get a consistent, defensible price for any piece, from its size, materials, and your rate.
-              Then see what you keep after a gallery takes its cut.
+              Price your work with confidence. Enter the dimensions, materials, and your hourly rate,
+              and we’ll calculate a value while helping you build a consistent pricing structure for your work.
             </p>
             <div className="accent" />
           </div>
