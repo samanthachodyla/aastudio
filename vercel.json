@@ -7,6 +7,12 @@
       "destination": "https://allegoryartstudio.com/:path*",
       "statusCode": 301
     },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "aastudio-ten.vercel.app" }],
+      "destination": "https://allegoryartstudio.com/:path*",
+      "statusCode": 301
+    },
     { "source": "/index.html", "destination": "/", "statusCode": 301 }
   ],
   "rewrites": [
