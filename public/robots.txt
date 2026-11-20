@@ -12,7 +12,7 @@ Disallow: /studio-manager
 Disallow: /profile-vault
 Disallow: /communications
 Disallow: /marketing
-Disallow: /pricing
+Disallow: /pricing$
 Disallow: /settings
 Disallow: /reports
 Disallow: /login
@@ -40,7 +40,7 @@ Disallow: /studio-manager
 Disallow: /profile-vault
 Disallow: /communications
 Disallow: /marketing
-Disallow: /pricing
+Disallow: /pricing$
 Disallow: /settings
 Disallow: /reports
 Disallow: /login
